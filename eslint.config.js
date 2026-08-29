@@ -123,6 +123,13 @@ export default tseslint.config(
       'unicorn/no-computed-property-existence-check': 'off',
       // Mise en forme pure : c'est le domaine de Prettier, pas du lint.
       'unicorn/single-line-block-comment-style': 'off',
+
+      // Les identifiants de contenu sont des alias de `string` par décision
+      // écrite (docs/plans/01-domaine-donnees.md, « Identifiants ») : les
+      // typer par marque imposerait ~400 casts dans data/ pour un bénéfice
+      // que les tests d'intégrité référentielle couvrent mieux. L'alias porte
+      // l'intention entre cinq lots ; c'est sa raison d'être.
+      'sonarjs/redundant-type-aliases': 'off',
     },
   },
 
