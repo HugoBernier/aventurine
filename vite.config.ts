@@ -22,6 +22,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/domain/**'],
+      // Jeux d'essai : du matériel de test, pas du code livré.
+      exclude: ['src/domain/fixtures/**'],
       thresholds: { lines: 90, functions: 90, statements: 90, branches: 85 },
     },
   },
