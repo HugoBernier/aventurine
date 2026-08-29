@@ -492,6 +492,61 @@ que l'interdit échoue **et** que l'autorisé passe — `ui → data`,
 précisément le levier de découpage prévu au-delà de 150 ko gzip. Un garde-fou
 qu'on n'a jamais vu se taire est un garde-fou qu'on finira par contourner.
 
+### A28. Rigueur maximale — le critère n'est pas le nombre de règles
+
+Demande explicite de l'utilisateur : TypeScript et le lint poussés au maximum.
+Cela renverse l'arbitrage du lot 5, qui avait retenu un jeu minimal et écarté
+les familles typées.
+
+**Le critère retenu n'est pas « le plus de règles possible » mais : est-ce que
+cette règle attrape une classe de bugs, ou impose-t-elle un goût ?** Une
+configuration maximale qu'on finit par désactiver en bloc est une dette pire
+qu'une configuration modeste. Chaque règle écartée l'est nommément, avec sa
+raison, dans `eslint.config.js`.
+
+**Activé — familles typées.** `strictTypeChecked` et `stylisticTypeChecked` de
+typescript-eslint, qui voient les types et attrapent donc ce que `tsc` ne
+signale pas : promesses ignorées, comparaisons impossibles, `unknown` mal
+réduit, `any` qui se propage. C'est l'essentiel du gain. S'y ajoutent
+`no-unnecessary-condition`, `switch-exhaustiveness-check`, `sonarjs`
+(complexité cognitive, branches dupliquées), `regexp`, `unicorn`,
+`jsx-a11y` en mode strict — l'accessibilité est une exigence de la charte —
+`react-hooks`, `vitest` et `testing-library`.
+
+Le lot 5 avait écarté `recommendedTypeChecked` en craignant un facteur 3 à 5
+sur la durée du lint. **Mesuré : `verify` prend 10 s, dont 4 s de lint typé.**
+Sa crainte était raisonnable, les chiffres ne la confirment pas à cette
+échelle. Le seuil de la charte reste 30 s ; c'est lui qu'on surveille quand le
+code grossira, pas le nombre de règles.
+
+**Activé — TypeScript.** Toutes les options de rigueur : `strict`,
+`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`,
+`noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUnusedLocals`,
+`noUnusedParameters`, `allowUnreachableCode: false`, `erasableSyntaxOnly`.
+
+Deux notes. `exactOptionalPropertyTypes` : le lot 5 l'avait écarté en pensant
+que le brouillon serait un objet partiellement rempli. La forme finalement
+retenue en §A1 n'utilise **pas** de propriétés optionnelles mais `T | null`,
+choisi pour la stabilité JSON — l'option est donc gratuite ici. Sa crainte
+portait sur une conception qui n'a pas été retenue.
+`erasableSyntaxOnly` interdit `enum`, `namespace` et les propriétés de
+constructeur : cela sert directement la charte, qui proscrit la
+métaprogrammation.
+
+**Écarté — cinq règles, nommément.**
+
+| Écartée | Raison |
+|---|---|
+| `noPropertyAccessFromIndexSignature` | Vite type les CSS Modules en `Record<string, string>` : la règle imposerait `styles['page']` partout sans attraper un seul bug. Seule option de rigueur TypeScript refusée. |
+| `unicorn/name-replacements` | Renommer `dir` en `directory` n'évite aucun bug. |
+| `unicorn/prevent-abbreviations` | `props`, `ref`, `e` sont l'idiome React ; les allonger nuit à la lecture. |
+| `unicorn/prefer-query-selector` | `getElementById` est plus rapide et plus clair que `querySelector('#x')`. |
+| `unicorn/no-null` | Les plans écrivent délibérément `raceId: string \| null` : `null` se sérialise en JSON, `undefined` disparaît. |
+
+`explicit-module-boundary-types` est **portée** plutôt qu'écartée : exigée sur
+`domain/` et `state/`, qui sont des contrats entre lots ; muette sur les
+composants, dont le type de retour est toujours le même et n'apprend rien.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)

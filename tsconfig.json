@@ -10,14 +10,26 @@
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
 
+    /* --- Rigueur maximale. Chaque ligne interdit une classe de bugs. --- */
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    /* `noPropertyAccessFromIndexSignature` est volontairement absent : Vite
+       type les CSS Modules en Record<string, string>, la règle imposerait
+       styles['page'] partout sans attraper le moindre bug. Seule option de
+       rigueur écartée, et c'est la seule qui coûtait plus qu'elle ne rapporte. */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "vite.config.ts", "eslint.config.js"]
+  "include": ["src", "vite.config.ts"]
 }
