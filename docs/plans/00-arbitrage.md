@@ -387,6 +387,68 @@ cours : `state/` écrit déjà dans `localStorage` à chaque changement, donc un
 rechargement reprend là où on en était. Une tentative de sauvegarde depuis un
 état déjà cassé ferait plus de mal que de bien.
 
+### A22. Le cadre d'écran coupe l'impression — bug entre lots, trouvé par le lot 4
+
+`AppShell` (lot 3) est une grille `height: 100dvh; overflow: hidden`, ce qui est
+la bonne solution à l'écran et **coupe l'impression à la première page**. Aucun
+des deux lots ne pouvait le voir seul : le lot 3 n'imprime pas, le lot 4 ne
+possède pas le cadre. C'est le seul défaut de conception croisé de toute la
+revue, et il n'aurait été découvert qu'à la première impression réelle.
+
+**Tranché :**
+
+- `AppShell` pose `data-print="frame"` sur sa racine ;
+- `ProgressBanner` et `ActionBar` posent `data-print="hide"` ;
+- la **première** règle de `print.css` remet le cadre à plat :
+  `[data-print="frame"] { display: block; height: auto; overflow: visible; }`.
+
+Les attributs sont ciblés parce que les classes CSS Modules sont hachées au build
+et qu'une feuille globale ne peut pas les atteindre. La liste de vérification
+manuelle du lot 4 teste ce point **en premier**.
+
+### A23. `MissingChoice` porte une cible, pas un identifiant de créneau
+
+Le lot 4 relève que `{ kind, remaining, slotId }` ne sait pas exprimer un manque
+de **champ** — le nom absent, les caractéristiques non réparties — qui ne
+correspond à aucun créneau.
+
+**Il a raison, et il retourne correctement l'argument de §A16 contre ma propre
+rédaction** : trois mécanismes identiques valent mieux que deux plus une
+exception. `MissingChoice` porte donc `target: IssueTarget`, exactement le type
+déjà défini pour `Issue` : `{ kind: 'slot', slotId }` ou
+`{ kind: 'field', field }`.
+
+### A24. `validateDraft` enveloppe `listMissingChoices`
+
+Le lot 4 signale un doublon réel dans mon arbitrage : `validateDraft` (lots 1 et
+2) produit des `Issue` de sévérité `incomplete`, et `listMissingChoices`
+(lot 4) calcule la même chose. Deux fonctions, une seule vérité — celle qui
+divergera un jour.
+
+**Tranché :** `listMissingChoices` est la source unique. `validateDraft`
+construit sa branche `incomplete` en enveloppant son résultat (même `target`,
+`severity: 'incomplete'`) et n'écrit elle-même que la branche `invalid`.
+Une source, deux vues.
+
+### A25. Bornes à l'entrée du dictionnaire de créneaux
+
+Le lot 4 chiffre honnêtement ce que la forme retenue en §A1 coûte à l'import :
+`Record<string, string[]>` a des **clés non bornées**, là où des tableaux par
+catégorie l'étaient par construction. C'est le seul point où sa proposition
+initiale était plus sûre.
+
+**Le coût est accepté et compensé**, pour une dizaine de lignes dans le
+validateur : au plus 64 clés ; clé conforme à
+`^(race|class|background):[a-z0-9-]+:[a-z-]+$`, sinon avertissement et clé
+ignorée ; au plus 12 valeurs par créneau. Le bénéfice — une invalidation en
+cascade sans une ligne par catégorie — reste très supérieur.
+
+Corollaire noté par le lot 4 et retenu : les identifiants de contenu deviennent
+un **contrat public**, puisqu'ils apparaissent dans les clés des fichiers
+exportés. Renommer `'roublard'` invaliderait les fichiers déjà enregistrés. D'où
+la règle : un créneau inconnu à l'import est un **avertissement**, jamais une
+erreur, et le joueur est renvoyé à l'écran concerné.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)

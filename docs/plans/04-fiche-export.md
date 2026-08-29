@@ -1,171 +1,273 @@
-# LOT 4 — Fiche de personnage, récapitulatif & Export
+# LOT 4 — Récapitulatif, fiche de personnage, impression & export
+
+> Ce plan est subordonné à `docs/plans/00-arbitrage.md`. Version 2 : intègre
+> §A1 (dictionnaire de créneaux), §A5 (aucune phrase française dans le domaine),
+> §A7 et §A8 (frontière avec le lot 3), §A15 (expertise différée), §A16 (raisons
+> structurées), §A18 (le produit s'appelle **Aventurine**), §B1, §B2, §B3.
+> Les numéros de lots sont corrigés : **lot 1** domaine et données, **lot 2**
+> assistant et état, **lot 3** interface et design, **lot 5** outillage.
 
 ## Objectif
 
-Fermer le parcours : l'utilisateur a fait ses choix, il doit **voir ce qu'il a créé**, savoir **ce qui manque**, et **emporter sa fiche** (papier, PDF, fichier). Trois écrans, zéro nouvelle dépendance, zéro règle D&D calculée dans un composant.
+Fermer le parcours : le joueur a fait ses choix, il doit **voir ce qu'il a créé**,
+savoir **ce qui manque**, et **emporter sa fiche** — papier, PDF, fichier.
 
-Contraintes qui pilotent tout le lot :
-- `ui → state → domain ← data` : la fiche est une **projection pure** du domaine ; les composants n'additionnent rien.
-- Mobile 360 px d'abord : la fiche papier A4 recto-verso est un format **de sortie**, jamais le modèle d'écran.
-- Aucune chaîne française dans `domain/` : le domaine renvoie des données structurées, `ui/` les formule.
-- Pas de jsPDF, pas de html2canvas (justification en section Impression).
+Trois surfaces, zéro nouvelle dépendance, aucun calcul de règle dans un composant.
 
-### Fichiers prévus (LOT 4)
+Ce que je possède (§A8) : le récapitulatif, la fiche, l'impression, l'import/export.
+Ce que je ne possède pas : `src/ui/` en général, les jetons, le cadre `AppShell`, les
+écrans 0 à 9, le type `CharacterDraft`, le type `CharacterSheet`, les règles.
+
+### Trois conséquences de l'arbitrage que j'acte sans réserve
+
+1. **Je ne déclare plus `CharacterDraft`.** Il est défini par le lot 1 dans
+   `src/domain/draft.ts`, avec un dictionnaire unique
+   `choices: Readonly<Record<ChoiceSlotId, readonly string[]>>`. Mon fichier exporté
+   le transporte **tel quel** : mon schéma s'en trouve plus court, pas plus long.
+2. **Je ne déclare plus `CharacterSheet`.** Il est produit par
+   `buildCharacter(draft, catalogue)` du lot 1 et servi par `useCharacterSheet()`.
+   Comme j'en suis le seul consommateur, j'en **spécifie la forme** ci-dessous —
+   même posture que le lot 2 vis-à-vis du brouillon.
+3. **Le domaine ne rédige aucune phrase.** Mon `formatSheetAsText` et ma table
+   « 1 compétence à choisir » descendent donc dans `ui/format/`. Ce sont des
+   fonctions pures, testées par Vitest sans React : rien n'est perdu.
+
+### Fichiers du lot
 
 ```
-src/domain/sheet/CharacterSheet.ts        type de la fiche (contrat de vue)
-src/domain/sheet/buildCharacterSheet.ts   assemblage à partir des primitives du LOT 1
-src/domain/sheet/formatSheetAsText.ts     résumé texte brut
-src/domain/export/CharacterFile.ts        format + version du fichier
-src/domain/export/toCharacterFile.ts      sérialisation
-src/domain/export/parseCharacterFile.ts   validation défensive à l'entrée
-src/domain/export/fileName.ts             slug du nom de fichier
-src/ui/summary/SummaryScreen.tsx          récapitulatif avant validation
-src/ui/summary/MissingChoiceList.tsx      « Il te reste 1 compétence à choisir »
-src/ui/sheet/SheetScreen.tsx              la fiche (page unique)
-src/ui/sheet/SheetJumpMenu.tsx            accès rapide collant « Aller à… »
-src/ui/sheet/SheetBlock.tsx               enveloppe de bloc (titre + ancre + data-print)
-src/ui/sheet/DefinitionList.tsx           liste étiquette → valeur(s)
-src/ui/sheet/CombatBlock.tsx AbilitiesBlock.tsx SkillsBlock.tsx
-src/ui/sheet/AttacksBlock.tsx SpellcastingBlock.tsx FeaturesBlock.tsx
-src/ui/sheet/SheetActions.tsx             imprimer / exporter / partager / modifier
+src/domain/completeness.ts            listMissingChoices — à ma charge (§ arbitrage)
+src/domain/export/characterFile.ts    format, version, types de résultat
+src/domain/export/toCharacterFile.ts  sérialisation
+src/domain/export/parseCharacterFile.ts  validation défensive à l'entrée
+src/domain/export/fileName.ts         « fiche-alric-guerrier.json »
+src/ui/format/missing.ts              MissingChoice → phrase française
+src/ui/format/breakdown.ts            ValueBreakdown → « 16 (cotte) + 2 (écu) »
+src/ui/format/summaryText.ts          résumé en texte brut
+src/ui/summary/SummaryScreen.tsx      récapitulatif
+src/ui/summary/MissingChoiceList.tsx  ce qui manque, une ligne = un geste
+src/ui/sheet/SheetScreen.tsx          la fiche, page unique
+src/ui/sheet/SheetJumpMenu.tsx        accès rapide collant « Aller à… »
+src/ui/sheet/SheetBlock.tsx           enveloppe : titre, ancre, crochet d'impression
+src/ui/sheet/StatTile.tsx             étiquette + grand chiffre + détail
+src/ui/sheet/DataRow.tsx              étiquette · valeur alignée
+src/ui/sheet/CombatBlock.tsx AttacksBlock.tsx AbilitiesBlock.tsx
+src/ui/sheet/SkillsBlock.tsx SpellcastingBlock.tsx FeaturesBlock.tsx
+src/ui/sheet/SheetActions.tsx         imprimer · exporter · partager · modifier
 src/ui/io/ImportButton.tsx downloadJson.ts printSheet.ts shareSummary.ts
-src/ui/styles/print.css                   feuille d'impression globale unique
+src/ui/styles/print.css               feuille d'impression, unique et globale
 ```
 
-`SheetBlock` + `DefinitionList` sont génériques **parce qu'il y a trois cas réels** (maîtrises, personnalité, équipement), conformément à la règle KISS de la charte. Pas un de moins.
+`SheetBlock`, `StatTile`, `DataRow`, `SheetJumpMenu` sont **à moi** (§A7) : le lot 3
+n'exporte pas de composants génériques tant qu'il n'y a pas trois usages, et il a
+raison. Je réutilise son inventaire réel là où il existe : `AppShell` (cadre),
+`ActionBar` (barre basse du récapitulatif), `Notice` (erreurs d'import), `Explainer`
+(explication d'un terme de règle).
 
 ### Séquencement (tranches verticales, chacune verte)
 
-1. Type `CharacterSheet` + jeux d'essai (`alric-guerrier`, `lyra-magicienne`, `perso-incomplet`) → la fiche se développe **avant** que le LOT 1 soit livré.
-2. `SheetScreen` en lecture sur jeu d'essai (la tranche la plus risquée en premier).
-3. `SummaryScreen` + navigation vers l'étape manquante.
-4. Export JSON + nom de fichier.
-5. Import + validation défensive.
+1. `listMissingChoices` + tests, sur un catalogue miniature.
+2. Fiche en lecture sur trois jeux d'essai (`alric-guerrier`, `lyra-magicienne`,
+   `perso-incomplet`) — la tranche la plus risquée en premier, avant que
+   `buildCharacter` ne soit livré.
+3. Récapitulatif et retour vers l'écran manquant.
+4. Export JSON et nom de fichier.
+5. Import et validation défensive.
 6. `print.css`.
-7. Copie du résumé / partage.
+7. Copie du résumé, puis partage.
 
 ---
 
 ## Récapitulatif avant validation
 
-### Tranchée : oui, on peut terminer avec un personnage incomplet
+### Tranché : oui, on termine avec un personnage incomplet
 
-La charte §4 le dit déjà : « Progression linéaire, sans blocage : on peut avancer avec des choix incomplets, l'écran final récapitule ce qui manque. » Je ne rediscute pas cette décision, je l'applique jusqu'au bout :
+La charte l'a déjà décidé (§4 : « on peut avancer avec des choix incomplets, l'écran
+final récapitule ce qui manque »). Je l'applique jusqu'au bout :
 
-- Le bouton principal **n'est jamais désactivé**. Un bouton grisé sans explication est le pire échec possible pour un débutant qui ne sait pas ce qu'est une « compétence ».
-- Un personnage incomplet **produit quand même une fiche**, un export et une impression. Les trous s'affichent en toutes lettres : `À choisir`.
-- Ce qui manque n'est jamais caché ni minimisé : un bloc dédié en haut du récapitulatif, avant les choix déjà faits.
-- L'export porte `complete: false` (calculé, non stocké) — voir section Export.
+- Le bouton principal **n'est jamais désactivé**. Un bouton grisé sans explication est
+  le pire échec possible pour quelqu'un qui ne sait pas encore ce qu'est une compétence.
+- Un personnage incomplet **produit une fiche, un export et une impression**. Les trous
+  s'affichent en toutes lettres : `À choisir`.
+- Rien n'est caché : le manque est en haut de l'écran, avant les choix déjà faits.
+- **Le fichier exporté ne porte aucun indicateur de complétude** : ce serait une valeur
+  dérivée stockée, interdite par le lot 2 comme par la charte. Elle se recalcule à
+  l'import en une ligne.
 
-Dégradation quand le socle manque (race ou classe absente) : les valeurs indérivables (PV, CA, dés de vie, magie) valent `null` dans `CharacterSheet` et le bloc affiche une phrase d'aide (« Choisis ta classe pour connaître tes points de vie »), pas un tiret muet.
+Le récapitulatif n'est pas seulement terminal : `ProgressBanner` du lot 3 expose
+`onOpenSummary` sur **tous** les écrans (« Ma fiche »). C'est mon écran qui s'ouvre.
+Il sert donc deux usages avec un seul code : aperçu à tout moment, et bilan final.
 
-### Contenu de l'écran
+### Retour à l'écran manquant « en un geste » — sans nouveau mécanisme
+
+Ma version 1 demandait au lot 2 un drapeau `returnToSummary`. **Je retire cette
+demande** : elle est inutile.
+
+- **Aller** : la ligne entière de `MissingChoiceList` est un `<button>` de 56 px qui
+  appelle `useWizard().goTo(issue.screenId)`. Un geste.
+- **Revenir** : le bouton « Ma fiche » de `ProgressBanner` est présent sur l'écran
+  d'arrivée. Un geste.
+
+Zéro état ajouté, zéro action nouvelle, zéro ligne dans le reducer. C'est le meilleur
+échange du lot.
+
+### Maquette, 360 px
 
 ```
-┌────────────────────────────────────────────┐ 360 px
-│ Étape 8 sur 8                              │
-│ Presque prêt !                             │
+┌────────────────────────────────────────────┐
+│ ‹ Retour      Étape 8 sur 8      Ma fiche  │  ProgressBanner (lot 3)
+│ ████████████████████████████████████████░  │
+├────────────────────────────────────────────┤
+│ Presque prêt !                             │  h1 22 px serif
 │                                            │
 │ ┌────────────────────────────────────────┐ │
 │ │ ALRIC                                  │ │
 │ │ Nain des collines · Guerrier · Niv. 1  │ │
-│ │ Historique : Soldat                    │ │
+│ │ Soldat · Loyal bon                     │ │
 │ └────────────────────────────────────────┘ │
 │                                            │
-│ ⚠ Il te reste 2 choix à faire              │
+│ Il te reste 2 choix à faire                │  h2
 │ ┌────────────────────────────────────────┐ │
-│ │ Compétences                        →   │ │ ← ligne entière tactile, 56 px
-│ │ Il te reste 1 compétence à choisir      │ │
+│ │ Ce que tu sais faire               →   │ │  56 px, ligne entière tactile
+│ │ Il te reste 1 compétence à choisir     │ │
 │ ├────────────────────────────────────────┤ │
-│ │ Langues                            →   │ │
-│ │ Il te reste 1 langue à choisir          │ │
+│ │ Ton identité                       →   │ │
+│ │ Ton personnage n'a pas encore de nom   │ │
 │ └────────────────────────────────────────┘ │
 │                                            │
-│ Tes choix                                  │
+│ Tes choix                                  │  h2
 │ ┌────────────────────────────────────────┐ │
-│ │ Race     Nain des collines    Modifier │ │
-│ │ Classe   Guerrier             Modifier │ │
-│ │ Historiq. Soldat              Modifier │ │
-│ │ Caracs   16 14 15 8 12 10     Modifier │ │
-│ │ Équipem. Épée longue, écu, …  Modifier │ │
+│ │ Race       Nain des collines  Modifier │ │
+│ │ Classe     Guerrier           Modifier │ │
+│ │ Caracs     16 14 15 8 12 10   Modifier │ │
+│ │ Historique Soldat             Modifier │ │
+│ │ Équipement Épée longue, écu…  Modifier │ │
 │ └────────────────────────────────────────┘ │
-│                                            │
-│  ⌄ (fin de page)                           │
+│ ⌄                                          │
 ├────────────────────────────────────────────┤
-│ [        Voir ma fiche        ]            │ ← barre collante basse
+│ [           Voir ma fiche           ]      │  ActionBar (lot 3)
 └────────────────────────────────────────────┘
 ```
 
-### Retour à l'écran concerné « en un geste »
+Le signalement ne passe **jamais** par la couleur seule : le mot « Il te reste… »
+porte l'information, la couleur ne fait que la doubler.
 
-- La **ligne entière** de `MissingChoiceList` est un `<button>` (pas une icône seule, pas un lien de 12 px), hauteur ≥ 56 px.
-- Un appui envoie `GO_TO_STEP(stepId, { returnToSummary: true })`.
-- À l'arrivée sur l'étape, la barre basse affiche **« Revenir au récapitulatif »** à la place de « Suivant » tant que `returnToSummary` est vrai. Un geste à l'aller, un geste au retour.
-- Le champ concerné reçoit le focus (`ref.focus()` sur le premier groupe de choix restant), et un bandeau d'une ligne rappelle la raison : « Il te reste 1 compétence à choisir. »
+### `listMissingChoices` — à ma charge, dans `domain/completeness.ts`
 
-Le signalement n'est **jamais** porté par la couleur seule : mot `À choisir`, icône **plus** libellé, texte explicite du reste à faire.
+C'est une composition des primitives du lot 1, pas une règle : d'où sa place chez moi.
 
-### Formulation française
+```ts
+// src/domain/completeness.ts
+import type { CharacterDraft, Catalogue, ChoiceKind, IssueTarget } from './…';
 
-Le domaine renvoie `{ kind: 'skill', remaining: 1, stepId: 'competences' }`. `ui/` porte la table :
+export type MissingKind = ChoiceKind | 'name' | 'abilities' | 'personality';
 
-| `kind` | singulier | pluriel |
+export interface MissingChoice {
+  readonly kind: MissingKind;
+  readonly remaining: number;   // 1, 2… jamais 0
+  readonly target: IssueTarget; // { kind:'slot', slotId } | { kind:'field', field }
+}
+
+export function listMissingChoices(
+  draft: CharacterDraft, catalogue: Catalogue,
+): readonly MissingChoice[];
+```
+
+Trois précisions :
+
+1. **Aucun texte.** Conforme à §A16 : la phrase se compose dans `ui/format/missing.ts`.
+2. **`target` plutôt que `slotId` nu.** Un manque peut viser un créneau *ou* un champ
+   du brouillon (le nom, la répartition). Réutiliser `IssueTarget` du lot 1 donne
+   **une** forme au lieu de deux plus une exception — c'est l'argument même de §A16 —
+   et rend `validateDraft` capable d'envelopper mon résultat sans le transformer.
+3. **L'ordre est celui de `openChoices`**, donc l'ordre du parcours, donc l'expertise
+   en dernier (§A15). Je ne trie pas, je ne regroupe pas : je conserve.
+
+Un point que je signale plutôt que de le contourner : `validateDraft` du lot 1 rend
+déjà des `Issue` de sévérité `incomplete`. **Deux fonctions ne doivent pas calculer la
+même chose.** Contrat demandé : `validateDraft` construit sa branche `incomplete` en
+enveloppant `listMissingChoices` (`severity: 'incomplete'`, même `target`), et n'écrit
+elle-même que la branche `invalid`. Une source, deux vues.
+
+### Mise en français, dans `ui/format/missing.ts`
+
+| `kind` | 1 | N |
 |---|---|---|
-| `skill` | 1 compétence à choisir | N compétences à choisir |
-| `language` | 1 langue à choisir | N langues à choisir |
-| `tool` | 1 outil à choisir | N outils à choisir |
-| `cantrip` | 1 tour de magie à choisir | N tours de magie à choisir |
-| `spell` | 1 sort à choisir | N sorts à choisir |
-| `equipment` | 1 choix d'équipement | N choix d'équipement |
-| `name` | Ton personnage n'a pas de nom | — |
-| `ability` | Tes caractéristiques ne sont pas réparties | — |
+| `skill` | Il te reste 1 compétence à choisir | …N compétences… |
+| `expertise` | Il te reste 1 compétence à doubler | …N compétences… |
+| `language` | 1 langue à choisir | N langues |
+| `tool` | 1 outil à choisir | N outils |
+| `cantrip` | 1 tour de magie à choisir | N tours de magie |
+| `spell` | 1 sort à choisir | N sorts |
+| `equipment` | 1 choix d'équipement à faire | N choix d'équipement |
+| `fighting-style` / `ancestry` | 1 choix de classe à faire | — |
+| `ability` | 1 bonus de caractéristique à placer | N bonus |
+| `name` | Ton personnage n'a pas encore de nom | — |
+| `abilities` | Tes caractéristiques ne sont pas réparties | — |
+| `personality` | Tes traits de personnalité sont vides | — |
 
-Titre du bloc : « Il te reste N choix à faire » (N = nombre de lignes, pas la somme des unités : plus lisible).
+Titre du bloc : « Il te reste N choix à faire », N = nombre de lignes (plus lisible que
+la somme des unités). En français, 0 et 1 prennent le singulier ; la fonction de
+pluriel tient en trois lignes et n'est pas une couche d'internationalisation.
 
 ---
 
 ## Architecture de la fiche mobile
 
-### Décision : page unique, défilement vertical, ordre imposé par l'usage, plus une barre collante « Aller à… »
+### Décision : page unique à défilement vertical, ordre dicté par l'usage, plus une barre collante « Aller à… »
 
-Une seule colonne, tous les blocs dans le DOM en permanence, ancres natives (`<a href="#competences">` + `scroll-margin-top`). Une barre collante de 48 px en haut contient le nom du personnage et un unique bouton `Aller à…` qui déplie un `<details>` listant les blocs en lignes pleine largeur de 48 px.
+Une colonne, tous les blocs présents dans le DOM en permanence, ancres natives
+(`<a href="#competences">` + `scroll-margin-top`). Une barre collante de 48 px porte
+le nom du personnage et un unique bouton `Aller à…` qui déplie un `<details>` listant
+les blocs en lignes pleine largeur de 48 px.
 
-### Défense contre les onglets
+### Contre les onglets
 
-Les onglets sont la fausse bonne idée du lot :
-- **L'impression casse.** Une fiche imprimée doit tout montrer ; il faut donc que tous les panneaux existent déjà dans le DOM et que le CSS d'impression les force à s'afficher. Les onglets ne sont alors qu'un masque CSS : on paie la complexité (`role="tablist"`, gestion des flèches clavier, état actif, focus) pour un bénéfice d'un seul appui.
-- **La recherche dans la page meurt.** « Rechercher dans la page » du navigateur est un outil réel à table ; il ne trouve pas le contenu masqué par `display: none`.
-- **Six onglets ne rentrent pas dans 360 px** sans défilement horizontal — interdit par la charte — ou sans passage à la ligne, qui mange 96 px permanents.
-- Perte de la position de lecture à chaque changement d'onglet.
+- **L'impression casse.** Une fiche imprimée montre tout ; il faudrait donc que tous
+  les panneaux existent déjà et que le CSS d'impression les force à s'afficher. Les
+  onglets ne sont alors qu'un masque : on paie `role="tablist"`, la gestion des
+  flèches, l'état actif et le focus pour économiser un appui.
+- **La recherche dans la page meurt.** « Rechercher dans la page » est un outil réel à
+  table ; il ne trouve pas ce qui est en `display: none`.
+- **Six onglets ne tiennent pas dans 360 px** sans défilement horizontal — interdit par
+  la charte — ni sans passage à la ligne, qui coûte 96 px permanents.
+- La position de lecture est perdue à chaque changement d'onglet.
 
-### Défense contre l'accordéon global
+### Contre l'accordéon comme architecture
 
-- **Tout replié** : chaque consultation coûte un appui *et* une recherche du bon en-tête. On échange une seconde de défilement contre une seconde de repérage plus un appui. Mauvaise affaire.
-- **Tout déplié** : c'est exactement mon défilement long, avec des chevrons en plus et un risque de repli accidentel.
-- L'accordéon est en revanche **excellent pour du texte long**. Je le garde donc **à l'intérieur** des blocs Aptitudes et Sorts : chaque aptitude est un `<details>` avec le nom visible et la description repliée. C'est une utilisation locale, pas l'architecture de la fiche.
+- **Tout replié** : chaque consultation coûte un appui *et* le repérage du bon
+  en-tête. On échange une seconde de défilement contre une seconde de recherche plus
+  un appui : mauvaise affaire.
+- **Tout déplié** : c'est mon défilement long, avec des chevrons en plus et un risque
+  de repli accidentel.
+- L'accordéon reste **excellent pour du texte long**. Je le garde donc **à l'intérieur**
+  des blocs Aptitudes et Sorts : chaque aptitude est un `<details>` natif, nom visible,
+  description repliée. Même mécanisme que l'`Explainer` du lot 3, même argument (§B5).
 
 ### Pourquoi le défilement gagne
 
-Le geste le moins cher sur téléphone est le défilement au pouce, pas l'appui précis. Le défilement long est aussi la seule structure qui soit **native à l'impression** (l'ordre du document = l'ordre du papier), à la recherche dans la page, au clavier et aux lecteurs d'écran, pour **zéro ligne de JavaScript** hormis les 25 lignes du menu contrôlé.
+Le geste le moins cher sur téléphone est le défilement au pouce, pas l'appui précis.
+C'est aussi la seule structure **native à l'impression** (l'ordre du document est
+l'ordre du papier), à la recherche dans la page, au clavier et aux lecteurs d'écran,
+pour zéro ligne de JavaScript hormis les 25 lignes du menu contrôlé (`<details>`
+piloté par un état React, refermé au clic sur une ancre).
 
 ### Ce qu'on voit en ouvrant sa fiche à table
 
-Budget vertical mesuré sur 360 × 640 (zone utile ≈ 600 px sous la barre système) :
+Budget vertical mesuré sur 360 × 640 (≈ 600 px utiles sous la barre système) :
 
 | Élément | Hauteur |
 |---|---|
 | Barre collante (nom + Aller à…) | 48 px |
-| Identité (2 lignes) | 56 px |
-| Bloc **En combat** (6 tuiles, 2 colonnes × 3 lignes) | 232 px |
-| Titre + 2 premières attaques | 200 px |
+| Identité, 2 lignes | 56 px |
+| Bloc **En combat**, 6 tuiles en 2 colonnes × 3 lignes | 232 px |
+| Titre **Attaques** + 2 cartes | 200 px |
 | **Total** | **536 px** |
 
-Le bonus d'attaque est visible **sans aucun appui et sans défilement** sur un écran de 640 px, à la limite du pli sur les plus petits. C'est la réponse à l'usage réel.
+Le bonus d'attaque est visible **sans un seul appui**. C'est la réponse à l'usage réel.
 
 ```
 ┌────────────────────────────────────────────┐
-│ ALRIC                    [ Aller à… ⌄ ]    │ ← collant, 48 px
+│ ALRIC                    [ Aller à… ⌄ ]    │  collant, 48 px
 ├────────────────────────────────────────────┤
 │ Nain des collines · Guerrier niveau 1      │
 │ Soldat · Loyal bon                         │
@@ -195,95 +297,148 @@ Le bonus d'attaque est visible **sans aucun appui et sans défilement** sur un �
 │ └────────────────────────────────────────┘ │
 ```
 
-### Ordre des blocs (fixe, dicté par la fréquence d'usage à table)
+### Ordre des blocs, par fréquence d'usage à table
 
-1. Identité — 2. **En combat** — 3. **Attaques** — 4. Caractéristiques et sauvegardes — 5. Compétences — 6. Magie *(si lanceur)* — 7. Aptitudes — 8. Maîtrises et langues — 9. Équipement — 10. Personnalité — 11. Actions + attribution SRD.
+1 Identité — 2 **En combat** — 3 **Attaques** — 4 Caractéristiques et sauvegardes —
+5 Compétences — 6 Magie *(si lanceur)* — 7 Aptitudes — 8 Maîtrises et langues —
+9 Équipement — 10 Personnalité — 11 Actions et attribution.
 
-Les actions (Imprimer, Exporter, Partager, Modifier) sont **en bas du document**, pas dans une barre collante : à table on lit, on n'imprime pas. Elles restent atteignables en un appui via l'entrée « Actions » du menu `Aller à…`. C'est une lecture assumée de la charte (« actions principales en bas de l'écran » vise la navigation de l'assistant).
+Les actions (Imprimer, Exporter, Partager, Modifier) sont **en fin de document**, pas
+dans une barre collante : à table on lit, on n'imprime pas. Elles restent atteignables
+en un appui par l'entrée « Actions » du menu. C'est une lecture assumée de la charte,
+dont la règle « actions principales en bas » vise la navigation de l'assistant — et le
+lot 3 rend déjà cette barre-là.
+
+### Balisage
+
+`<h1>` le nom, `<h2>` par bloc, `<section aria-labelledby>`. Aucune `<table>` :
+`<dl>` pour les paires étiquette/valeur, `<ul>` pour les tuiles et les compétences.
+Cela supprime par construction tout risque de défilement horizontal.
 
 ### Élargissement bureau
 
-`@media (min-width: 720px)` : deux colonnes en grille, la barre collante disparaît au profit d'un sommaire latéral en `position: sticky`. Aucune `max-width` en media query.
+`@media (min-width: 720px)` : deux colonnes en grille, `--content-max` relevé, barre
+collante remplacée par un sommaire latéral `position: sticky`. Aucune `max-width` en
+media query, conformément à la charte.
 
 ---
 
 ## Blocs et provenance des données
 
-Légende de la provenance : **J** = choix du joueur, **D** = calcul du domaine, **C** = contenu `data/` (SRD traduit).
+Provenance : **J** choix du joueur (`draft`), **D** calcul du domaine
+(`buildCharacter`), **C** contenu `data/` lu directement par `ui/` (autorisé §A6).
 
 ### 1. Identité
-| Champ | Provenance |
-|---|---|
-| Nom | J (défaut : « Personnage sans nom ») |
-| Race / sous-race, classe, historique, alignement | J, libellés C |
-| Niveau | Constante 1 |
+Nom (J, défaut « Personnage sans nom »), race et sous-race, classe, historique,
+alignement (J, libellés C), niveau 1 (constante).
 
 ### 2. En combat
 | Champ | Provenance |
 |---|---|
-| Classe d'armure + détail (« 16 (cotte de mailles) + 2 (écu) ») | D — `armorClass(draft)` renvoie `{ total, parts[] }` ; gère Défense sans armure du barbare et du moine |
+| Classe d'armure + détail | D — `ValueBreakdown`, meilleur candidat retenu avec sa source |
 | Initiative | D — modificateur de Dextérité |
-| Vitesse + note éventuelle | D + C — vitesse raciale **en mètres**, réduite de 3 m si armure lourde sans la Force requise |
-| Points de vie max | D — max du dé de vie + mod. Constitution (+1 nain des collines) |
-| Dés de vie | D + C — `1 d10` |
-| Bonus de maîtrise | D — `+2` au niveau 1 |
+| Vitesse (+ note si réduite par l'armure lourde) | D + C — **en mètres** |
+| Points de vie max | D — max du dé de vie + mod. Con (+1 nain des collines) |
+| Dés de vie | D + C — « 1 d10 » |
+| Bonus de maîtrise | D — +2 |
 
 ### 3. Attaques
-Une carte par arme possédée. `nom` (C), `bonus d'attaque` (D : mod. For, ou Dex si finesse/à distance, + maîtrise si l'arme est maîtrisée), `dégâts` (D : dés C + modificateur), `type de dégâts`, `propriétés`, `portée`. Si aucune arme : « Aucune arme équipée ».
+Une carte par arme possédée : nom (C), bonus d'attaque (D), dés et modificateur de
+dégâts (D), type de dégâts, propriétés, portée (C). Aucune arme → « Aucune arme
+équipée », phrase composée dans `ui/`.
 
 ### 4. Caractéristiques et jets de sauvegarde
-Six tuiles (2 colonnes) : nom, score final (D : score de base J + bonus raciaux C), modificateur (D), jet de sauvegarde (D : modificateur + maîtrise si la classe l'accorde) avec marqueur `●` maîtrisé / `○` non maîtrisé accompagné d'un `aria-label`.
+Six tuiles : nom, score final (D = base J + bonus raciaux C + créneaux `ability`),
+modificateur (D), sauvegarde (D), marqueur `●` maîtrisé / `○` non, avec `aria-label`.
 
 ### 5. Compétences
-Les 18 compétences SRD, toujours toutes affichées, ordre alphabétique français. Par ligne : marqueur de maîtrise, nom (C), caractéristique liée entre parenthèses, total signé (D). Gère la **maîtrise double** du roublard (Expertise, niveau 1) : marqueur `◉` et libellé « maîtrise double ». Provenance des maîtrises : race (C), classe (J parmi une liste C), historique (C).
+Les 18 compétences SRD, toujours toutes affichées, ordre alphabétique français.
+Marqueur, nom (C), caractéristique liée, total signé (D). **Maîtrise double** de
+l'expertise : marqueur `◉` et mention « maîtrise double » (§A15 ne change rien ici).
 
-### 6. Magie — bloc affiché seulement si `sheet.spellcasting !== null`
-Caractéristique d'incantation (C), DD de sauvegarde des sorts (D : `8 + maîtrise + mod`), bonus d'attaque de sort (D : `maîtrise + mod`), emplacements par niveau (D), tours de magie connus (J parmi C), sorts connus **ou** préparés selon la classe (J + D pour le nombre autorisé), formule expliquée (« tu prépares 1 + ton mod. de Sagesse = 3 sorts »).
+### 6. Magie — bloc rendu seulement si `sheet.spellcasting !== null`
+Caractéristique d'incantation, DD de sauvegarde (D : `8 + BM + mod`), bonus d'attaque
+de sort (D : `BM + mod`), emplacements de niveau 1 (D), tours de magie et sorts
+(J parmi C), nombre préparable avec sa formule expliquée (D).
+**§B2** : chaque sort affiche son `summary` (1 à 3 phrases, toujours présent) ; le
+`<details>` « Texte complet » **n'est rendu que si `fullText !== null`**, donc jamais
+en v1. Le composant gère le cas dès maintenant, sans champ mort ni `TODO`.
 
 ### 7. Aptitudes
-Une entrée par aptitude, groupée par source (Race / Classe / Historique), nom + description courte (C), repliée dans un `<details>` au-delà de 3 lignes. Provenance : liste C sélectionnée par le domaine selon race+classe+historique de niveau 1, plus les choix J (style de combat du guerrier, domaine du clerc, patron de l'occultiste…).
+Une entrée par aptitude, groupée par source (race, classe, historique), nom et
+description (C), repliée en `<details>` au-delà de trois lignes.
 
 ### 8. Maîtrises et langues
-Armures, armes, outils, langues — union race + classe + historique (D), les choix J inclus.
+Armures, armes, outils, langues : union race + classe + historique, créneaux compris (D).
 
 ### 9. Équipement
-Objets issus des options de départ (J parmi C) + équipement d'historique (C) + pièces d'or (D). Liste en lecture seule, pas de quantités modifiables.
+Objets issus des options de départ (J parmi C), paquetage d'historique (C), pièces d'or
+(D). Liste en lecture seule.
 
 ### 10. Personnalité
-Traits, idéal, lien, défaut (J parmi les tables C de l'historique).
+Trait, idéal, lien, défaut : quatre chaînes du brouillon (J).
+**§B3** : avec l'historique « Personnalisé », ce sont des textes saisis librement au
+lieu d'être tirés d'une table — la fiche affiche exactement la même chose, aucun code
+spécifique. Le bloc affiche en outre la mention prévue par la charte : l'historique
+Personnalisé est un assemblage des règles génériques du SRD. Si `background.feature`
+est absent, la ligne « Aptitude d'historique » n'est pas rendue.
 
-### 11. Pied de fiche
-Attribution obligatoire : « Contenu dérivé du SRD 5.1 © Wizards of the Coast, licence CC BY 4.0. » Présente à l'écran **et** à l'impression.
+### 11. Pied de fiche — écran et papier
+« **Aventurine** — contenu dérivé du SRD 5.1 © Wizards of the Coast, licence CC BY 4.0.
+Non affilié à Wizards of the Coast ni à D&D Beyond. » (charte §9, §A18).
 
 ---
 
 ## Impression
 
-### Décision : `window.print()` + `@media print`. Aucune dépendance.
+### Décision : `window.print()` + `@media print`, aucune dépendance (§B5)
 
-Justification écrite du refus de jsPDF / html2canvas, comme l'exige la charte :
-- `html2canvas` **rastérise** : texte non sélectionnable, non cherchable, fichier lourd, et il capture la mise en page mobile telle qu'affichée — donc une fiche 360 px étirée sur A4. Résultat objectivement pire.
-- `jsPDF` impose de **repositionner chaque ligne à la main** en points, d'embarquer une police pour les accents, et pèse plus de 200 Ko. On réécrirait un moteur de mise en page que le navigateur fournit gratuitement.
-- « Imprimer → Enregistrer au format PDF » donne un PDF **vectoriel, sélectionnable, cherchable**, à coût nul. Aucune des deux dépendances ne fait mieux : elles sont refusées.
+- **`html2canvas` rastérise** : texte non sélectionnable, non cherchable, fichier lourd,
+  et il capture la mise en page mobile telle qu'affichée — une fiche 360 px étirée sur
+  A4. Objectivement pire que le résultat visé.
+- **`jsPDF`** impose de placer chaque ligne à la main en points, d'embarquer une police
+  pour les accents, et pèse plus de 200 Ko : on réécrirait un moteur de mise en page que
+  le navigateur fournit gratuitement.
+- « Imprimer → Enregistrer au format PDF » donne un PDF **vectoriel, sélectionnable,
+  cherchable**, à coût nul.
 
 ### Mise en œuvre
 
-- **Une seule feuille globale** `src/ui/styles/print.css`, importée dans `App.tsx`. Elle cible des attributs stables `data-sheet-block="competences"`, `data-print="hide"` — jamais des classes CSS Modules (noms hachés).
-- `@page { size: A4 portrait; margin: 12mm; }`.
-- Masquage : barre collante, menu `Aller à…`, barre de navigation de l'assistant, boutons d'action → `[data-print="hide"] { display: none !important; }`. `position: sticky → static`.
-- **Noir sur blanc** : `* { color: #000 !important; background: transparent !important; }`. Traits en `0.4pt solid #000`.
-- **Économie d'encre** : aucun aplat de couleur, aucun cadre plein, aucune ombre. Les marqueurs de maîtrise sont des **caractères** (`●` `○` `◉`), pas des pastilles colorées — ce choix sert déjà l'accessibilité (l'information ne passe pas par la couleur) et rend l'impression correcte même quand « Graphiques d'arrière-plan » est décoché, ce qui est le réglage par défaut.
-- **Sauts de page maîtrisés** : `break-inside: avoid; page-break-inside: avoid;` sur chaque bloc ; `orphans: 3; widows: 3;` sur les descriptions ; `break-before: page` avant le bloc Magie s'il existe.
-- **Deux colonnes au papier** : la fiche est une liste linéaire de blocs, `@media print` la passe en `display: grid; grid-template-columns: 1fr 1fr; gap: 6mm;`. Objectif : 1 page sans magie, 2 pages avec.
-- **Taille** : `font-size: 9.5pt`, titres `12pt`, unités en `pt` uniquement dans `print.css`.
-- **Nom du PDF** : le navigateur utilise `document.title`. `printSheet.ts` fait `document.title = 'Fiche - Alric, guerrier niveau 1'` avant `window.print()`, puis restaure le titre sur l'évènement `afterprint`. Six lignes, gain réel.
-- **Bloc « papier » exclusif** (`data-print="only"`) : `PV actuels ____ / 12`, `Inspiration ☐`, quelques lignes de notes. C'est précisément pourquoi on imprime une fiche ; le suivi reste sur le papier, jamais dans l'appli. Coût : ~12 lignes de balisage. Si la revue le juge hors périmètre, c'est le premier élément à couper.
+- **Une feuille globale unique**, `src/ui/styles/print.css`, importée dans `App.tsx`,
+  ciblant des attributs `data-print` stables — **jamais** des classes CSS Modules, dont
+  les noms sont hachés au build.
+- **Le piège n° 1 est le cadre du lot 3.** `AppShell` est une grille
+  `height: 100dvh; overflow: hidden` : sans correction, l'impression est **coupée à la
+  première page**. Première règle du fichier :
+  `@media print { [data-print="frame"] { display:block; height:auto; overflow:visible; } }`
+  Demande au lot 3 : `data-print="frame"` sur la racine d'`AppShell`,
+  `data-print="hide"` sur `ProgressBanner` et `ActionBar` (demande déjà acceptée).
+- `@page { size: A4 portrait; margin: 12mm; }`
+- **Noir sur blanc** : `color:#000`, aucun fond, filets `0.4pt solid #000`.
+- **Économie d'encre** : aucun aplat, aucune ombre, aucune image. Les marqueurs de
+  maîtrise sont des **caractères** (`●` `○` `◉`), pas des pastilles colorées — le même
+  choix sert l'accessibilité (jamais la couleur seule) et garantit un rendu correct
+  même quand « Graphiques d'arrière-plan » est décoché, ce qui est le réglage par défaut.
+- **Sauts maîtrisés** : `break-inside: avoid` (+ `page-break-inside` pour les moteurs
+  anciens) sur chaque `SheetBlock` ; `orphans: 3; widows: 3` ; `break-before: page`
+  avant le bloc Magie.
+- **Deux colonnes au papier** : la fiche étant une liste linéaire, `@media print` la
+  passe en grille `1fr 1fr`, gouttière 6 mm. Cible : une page sans magie, deux avec.
+- **Nom du PDF** : le navigateur reprend `document.title`. `printSheet.ts` écrit
+  « **Aventurine — Fiche d'Alric, guerrier niveau 1** » avant `window.print()` et
+  restaure le titre sur l'évènement `afterprint`. Six lignes, gain réel.
+- **Bloc papier exclusif** (`data-print="only"`) : `PV actuels ____ / 12`,
+  `Inspiration ☐`, quelques lignes de notes. C'est la raison même pour laquelle on
+  imprime une fiche ; le suivi reste sur le papier, jamais dans l'appli.
+- **Contrainte lot 5** : aucune URL commençant par `/`. `print.css` n'appelle **aucun**
+  actif — pas de `url(...)`, pas de police, pas d'image. Rien à corriger, mais la règle
+  est rappelée en tête de fichier pour qu'on ne l'y introduise pas plus tard.
 
 ```
 A4 portrait, marges 12 mm — page 1
 ┌──────────────────────────────────────────────┐
 │ ALRIC — Nain des collines · Guerrier niv. 1  │
-│ Soldat · Loyal bon        Maîtrise +2        │
+│ Soldat · Loyal bon            Maîtrise +2    │
 ├──────────────────────┬───────────────────────┤
 │ CARACTÉRISTIQUES     │ EN COMBAT             │
 │ FOR 16 (+3) sauv ●+5 │ CA 18   Initiative +2 │
@@ -292,138 +447,196 @@ A4 portrait, marges 12 mm — page 1
 ├──────────────────────┼───────────────────────┤
 │ COMPÉTENCES          │ ATTAQUES              │
 │ ● Athlétisme     +5  │ Épée longue  +5 1d8+3 │
-│ ○ Acrobaties     +2  │ Arbalète lég.+4 1d8+2 │
+│ ○ Acrobaties     +2  │ Arbalète lég. +4 1d8+2│
 │ …                    ├───────────────────────┤
 │                      │ APTITUDES             │
 ├──────────────────────┴───────────────────────┤
-│ PV actuels ____/12  Inspiration ☐   Notes    │
-│ SRD 5.1 © Wizards of the Coast — CC BY 4.0   │
+│ PV actuels ____/12   Inspiration ☐    Notes  │
+│ Aventurine — SRD 5.1, CC BY 4.0 — non affilié│
 └──────────────────────────────────────────────┘
 ```
 
-### Impression depuis un téléphone
+### Depuis un téléphone
 
-Chrome Android : `window.print()` ouvre l'aperçu, « Enregistrer au format PDF » fonctionne. Safari iOS : `window.print()` est pris en charge et ouvre la feuille d'impression ; enregistrer en PDF passe par un écartement des doigts sur l'aperçu, geste peu découvrable. Les navigateurs intégrés aux applications (Facebook, Instagram) peuvent ignorer l'appel. Repli : une ligne d'aide sous le bouton — « Si rien ne se passe, utilise Partager ▸ Imprimer dans ton navigateur. »
+Chrome Android ouvre l'aperçu, « Enregistrer au format PDF » fonctionne. Safari iOS
+prend en charge `window.print()` ; l'enregistrement en PDF passe par un écartement des
+doigts sur l'aperçu, geste peu découvrable. Les navigateurs intégrés à certaines
+applications peuvent ignorer l'appel. Repli : une ligne d'aide sous le bouton —
+« Si rien ne se passe, utilise Partager ▸ Imprimer dans ton navigateur. »
 
-### Limites honnêtes
+### Limites, énoncées plutôt que tues
 
-1. On ne peut **pas** supprimer les en-têtes/pieds de page du navigateur (URL, date, numéro de page) : c'est une case à cocher côté utilisateur. On l'indique dans l'aide, on ne peut rien de plus.
+1. Les en-têtes et pieds de page du navigateur (URL, date) **ne sont pas supprimables**
+   par le code : c'est une case à cocher côté utilisateur. On l'indique, rien de plus.
 2. `@page { size }` est ignoré par Safari : le format vient de la boîte de dialogue.
-3. Pas de numérotation « page 1 sur 2 » : les compteurs `@page` ne sont pas implémentés dans les navigateurs.
-4. Le rendu diffère d'un navigateur à l'autre ; **aucun test automatique** ne couvre `@media print` (jsdom ne rend pas le papier). Il y aura une liste de vérification manuelle.
-5. Une police web du système de design peut ne pas s'imprimer : `print.css` impose une pile système avec empattements pour le papier.
+3. Pas de « page 1 sur 2 » : les compteurs `@page` ne sont pas implémentés.
+4. Le rendu diffère d'un navigateur à l'autre et **aucun test automatique ne couvre
+   `@media print`** (jsdom ne rend pas le papier). D'où la liste de vérification manuelle.
 
 ---
 
 ## Export / import JSON
 
-### Ce qu'on exporte : les **choix**, jamais les valeurs calculées
+### Ce qu'on exporte : le brouillon, rien d'autre
 
-Exporter la fiche calculée serait redondant, périmable (une correction de règle ne profiterait pas au fichier) et volumineux. On exporte le brouillon du joueur ; le domaine recalcule à l'import. Fichier ≈ 1,5 Ko.
-
-Clés en **anglais** (c'est du code sérialisé), valeurs d'identifiants de contenu en **français** (`'nain-des-collines'`), conformément à la convention §6.
+Exporter la fiche calculée serait redondant, périssable et volumineux. On exporte les
+choix ; le domaine recalcule. Le dictionnaire `choices` du lot 1 **raccourcit** mon
+schéma : plus de champ par catégorie à sérialiser, à valider et à faire évoluer.
 
 ```ts
-// src/domain/export/CharacterFile.ts
+// src/domain/export/characterFile.ts
+import type { CharacterDraft } from '../draft';
+
 export const FILE_FORMAT = 'aventurine.personnage';
 export const FILE_VERSION = 1;
 
 export interface CharacterFile {
-  format: typeof FILE_FORMAT;
-  version: number;          // entier, incrémenté à toute rupture
-  exportedAt: string;       // ISO 8601
-  character: CharacterDraft; // le brouillon de l'assistant, tel quel
+  readonly format: typeof FILE_FORMAT;
+  readonly version: number;      // entier, incrémenté à toute rupture
+  readonly exportedAt: string;   // ISO 8601, information, jamais relue
+  readonly character: CharacterDraft;
 }
 
-// Attendu du LOT 3, dans src/domain/Character.ts
-export interface CharacterDraft {
-  name: string;
-  raceId: string | null;
-  subraceId: string | null;
-  classId: string | null;
-  backgroundId: string | null;
-  alignmentId: string | null;
-  abilityMethod: 'tableau-standard' | 'achat-de-points' | 'jets';
-  baseAbilityScores: Partial<Record<AbilityId, number>>; // avant bonus raciaux
-  skillChoices: string[];
-  languageChoices: string[];
-  toolChoices: string[];
-  featureChoices: Record<string, string>;   // ex. { 'style-de-combat': 'defense' }
-  equipmentChoices: Record<string, string>; // groupe d'options -> option retenue
-  spellChoices: { cantrips: string[]; spells: string[] };
-  personality: { traits: string[]; ideal: string | null;
-                 bond: string | null; flaw: string | null };
-}
-
-// src/domain/export/parseCharacterFile.ts
 export type ImportError =
-  | { kind: 'file-too-large' }
-  | { kind: 'invalid-json' }
-  | { kind: 'not-our-format' }
-  | { kind: 'version-too-recent'; found: number }
-  | { kind: 'invalid-structure'; field: string };
+  | { readonly kind: 'file-too-large' }
+  | { readonly kind: 'invalid-json' }
+  | { readonly kind: 'not-our-format' }
+  | { readonly kind: 'version-too-recent'; readonly found: number }
+  | { readonly kind: 'invalid-structure'; readonly field: string };
 
 export type ImportWarning =
-  | { kind: 'unknown-id'; field: string; value: string }
-  | { kind: 'value-truncated'; field: string };
+  | { readonly kind: 'unknown-id'; readonly field: string; readonly value: string }
+  | { readonly kind: 'unknown-slot'; readonly slotId: string }
+  | { readonly kind: 'value-truncated'; readonly field: string };
 
 export type ImportResult =
-  | { ok: true; character: CharacterDraft; warnings: ImportWarning[] }
-  | { ok: false; error: ImportError };
+  | { readonly ok: true; readonly draft: CharacterDraft;
+      readonly warnings: readonly ImportWarning[] }
+  | { readonly ok: false; readonly error: ImportError };
+```
 
-export function parseCharacterFile(text: string): ImportResult;
+Rappel de doctrine : `ImportError` et `ImportWarning` ne portent **aucune phrase**
+(§A5, charte §6). `ui/format/importMessage.ts` les met en français.
+Clés en anglais (c'est du code sérialisé), valeurs d'identifiants en français
+(`'nain-des-collines'`, `'class:roublard:skills'`), comme le veut la charte §6.
+
+Exemple de fichier réel, tel qu'un humain le lit :
+
+```json
+{
+  "format": "aventurine.personnage",
+  "version": 1,
+  "exportedAt": "2026-08-29T14:03:00.000Z",
+  "character": {
+    "name": "Alric",
+    "raceId": "nain", "subraceId": "nain-des-collines",
+    "classId": "guerrier", "backgroundId": "soldat-personnalise",
+    "alignmentId": "loyal-bon",
+    "abilities": { "method": "point-buy",
+      "base": { "force": 15, "dexterite": 13, "constitution": 14,
+                "intelligence": 8, "sagesse": 12, "charisme": 10 } },
+    "choices": {
+      "class:guerrier:skills": ["athletisme", "perception"],
+      "class:guerrier:fighting-style": ["defense"],
+      "background:personnalise:tools": ["outils-de-forgeron"]
+    },
+    "personality": { "trait": "…", "ideal": "…", "bond": "…", "flaw": "…" }
+  }
+}
 ```
 
 ### Téléchargement
 
-`downloadJson.ts` (couche `ui/`, ~15 lignes) : `JSON.stringify(file, null, 2)` → `new Blob([json], { type: 'application/json' })` → `URL.createObjectURL` → `<a download>` créé, cliqué, retiré → `URL.revokeObjectURL` au tick suivant. Indentation 2 espaces : lisible et diffable pour 300 octets de plus.
+`ui/io/downloadJson.ts`, une quinzaine de lignes : `JSON.stringify(file, null, 2)` →
+`new Blob([json], { type: 'application/json' })` → `URL.createObjectURL` → `<a download>`
+créé, cliqué, retiré → `URL.revokeObjectURL` au tick suivant. Indentation à 2 espaces :
+lisible et comparable pour 300 octets. Sur iOS le fichier arrive dans
+Fichiers ▸ Téléchargements ; un texte d'aide le dit.
 
-Nom proposé : `fiche-alric-guerrier.json`. Règle (`fileName.ts`, testée) : minuscules, accents retirés via `normalize('NFD')`, tout caractère non alphanumérique → `-`, tirets compressés, 40 caractères max. Sans nom : `fiche-personnage.json`. Sans classe : `fiche-alric.json`.
+**Nom du fichier**, `domain/export/fileName.ts` : `fiche-alric-guerrier.json`.
+Il ne compose aucune phrase — il assemble le nom saisi et l'identifiant de classe,
+donc il reste légitimement dans le domaine. Règle : minuscules, accents retirés par
+`normalize('NFD')`, tout caractère non alphanumérique en tiret, tirets compressés,
+40 caractères maximum. Sans nom : `fiche-personnage.json`.
 
-Sur iOS le fichier atterrit dans Fichiers ▸ Téléchargements ; un texte d'aide le dit.
+### Import — validation défensive, neuf étapes
 
-### Import
-
-`<input type="file" accept="application/json,.json">` visuellement masqué, déclenché par un `<label>` stylé en bouton de 44 px (le `<label>` reste focusable au clavier).
-
-Pipeline défensif, dans cet ordre, chaque étape sortant proprement :
-
-1. **Taille** : `file.size > 1_000_000` → `file-too-large`. On ne lit pas un fichier de 300 Mo pour découvrir qu'il est mauvais.
+1. **Taille** : `file.size > 1_000_000` → `file-too-large`. On ne lit pas 300 Mo pour
+   découvrir que le fichier est mauvais.
 2. **Lecture** : `await file.text()`.
-3. **`JSON.parse` dans un `try/catch`** → `invalid-json`. Aucune exception ne remonte jusqu'à React.
-4. **Signature** : `format !== 'aventurine.personnage'` → `not-our-format`. C'est le filet pour « un fichier qui n'est pas de nous » : une fiche exportée d'un autre outil est refusée immédiatement, avec un message qui ne culpabilise pas.
-5. **Version** : `version > FILE_VERSION` → `version-too-recent` (message dédié : « Ce fichier a été créé avec une version plus récente. Mets l'application à jour. »). `version < 1` ou non entier → `not-our-format`. Aucune fonction de migration aujourd'hui : il n'y a qu'une version (YAGNI). La politique est écrite ici pour le jour où il y en aura deux.
-6. **Structure, champ par champ** : ~80 lignes de gardes manuelles (`isString`, `isIntBetween`, `asStringArray`). Justification du refus de zod/valibot : un seul schéma, un seul point d'entrée, 80 lignes testées contre 12 Ko de dépendance.
-7. **Reconstruction explicite** : l'objet est rebâti champ par champ, jamais par `spread` ni `Object.assign`. Conséquence directe : les **champs inconnus sont ignorés silencieusement** et une clé `__proto__` malveillante n'atteint jamais l'état.
-8. **Bornes** : nom tronqué à 60 caractères (avertissement), tableaux plafonnés à 30 entrées, scores contraints à 1–20. Un fichier hostile ne fait pas exploser le rendu.
-9. **Identifiants inconnus** : une race, une classe ou un sort absent de `data/` **n'invalide pas le fichier**. La valeur est mise à `null` (ou retirée du tableau) et un `ImportWarning` remonte : « La race “dragonborn” est inconnue : il faudra la rechoisir. » L'assistant rouvre à l'étape concernée. C'est cohérent avec la règle « on avance avec des choix incomplets ».
+3. **`JSON.parse` sous `try/catch`** → `invalid-json`. Aucune exception ne remonte
+   jusqu'à React.
+4. **Signature** : `format !== 'aventurine.personnage'` → `not-our-format`. C'est le
+   filet pour « un fichier qui n'est pas de nous », avec un message qui ne culpabilise
+   pas.
+5. **Version** : `> FILE_VERSION` → `version-too-recent` (message dédié) ; non entier ou
+   `< 1` → `not-our-format`. Aucune fonction de migration aujourd'hui : il n'existe
+   qu'une version, et rien n'a jamais été publié (§A18) — la politique est écrite ici
+   pour le jour où il y en aura deux, le code viendra ce jour-là.
+6. **Structure, champ par champ** : environ 80 lignes de gardes manuelles
+   (`isString`, `isIntBetween`, `asStringArray`). Refus argumenté de zod/valibot : un
+   seul schéma, un seul point d'entrée, 80 lignes testées contre 12 Ko de dépendance.
+7. **Reconstruction explicite** : l'objet est rebâti champ par champ, jamais par
+   `spread` ni `Object.assign`. Conséquences directes : les champs inconnus sont
+   **ignorés silencieusement**, et une clé `__proto__` n'atteint jamais l'état.
+8. **Bornes** — ce que le dictionnaire de créneaux coûte réellement à l'entrée. Un
+   `Record<string, string[]>` a des **clés non bornées**, là où des tableaux par
+   catégorie l'étaient par construction. On borne donc explicitement :
+   au plus 64 clés ; clé de 64 caractères au plus, conforme à
+   `^(race|class|background):[a-z0-9-]+:[a-z-]+$` (sinon `unknown-slot`, ignorée) ;
+   au plus 12 valeurs par créneau ; nom tronqué à 60 caractères ; textes de
+   personnalité à 300 ; scores contraints à 1–20. Coût réel : environ dix lignes.
+9. **Identifiants inconnus** : une race, une classe, un sort ou un créneau absent du
+   catalogue **n'invalide pas le fichier**. La valeur est mise à `null` ou retirée, un
+   `ImportWarning` remonte, et l'assistant rouvre à l'écran concerné — le manque
+   apparaît dans `listMissingChoices` sans une ligne de code supplémentaire. C'est
+   cohérent avec « on avance avec des choix incomplets ».
+
+Le résultat part dans une action du lot 2 (`REPLACE_DRAFT`), seule autorisée à écrire
+le brouillon. `ui/io/` ne touche jamais `localStorage`.
 
 ### Écrasement du personnage en cours
 
-Une seule sauvegarde locale. Si un brouillon non vide existe, l'import affiche une confirmation en français nommant le contenu du fichier : « Ce fichier contient Alric, nain des collines, guerrier. Il remplacera ton personnage en cours. » → `Remplacer` / `Annuler`. Sinon, import direct.
+Une seule sauvegarde locale (`aventurine:draft:v1`). Si un brouillon non vide existe,
+l'import demande confirmation en nommant le contenu du fichier : « Ce fichier contient
+Alric, nain des collines, guerrier. Il remplacera ton personnage en cours. »
+Ce n'est pas contradictoire avec §B4, qui écarte la confirmation pour un geste
+**annulable dans le parcours** : ici la donnée écrasée n'est récupérable par aucun
+retour arrière, et il n'y a pas d'historique. La confirmation est rendue **en place**
+avec deux boutons de 44 px, pas en modal : le lot 3 n'a pas de composant de dialogue et
+n'en aura pas.
 
-Points d'entrée de l'import : le bloc Actions de la fiche, **et** l'écran d'accueil de l'assistant (« J'ai déjà un fichier ») — ce dernier appartient au LOT 3, qui rend notre composant `ImportButton`.
+Points d'entrée : le bloc Actions de la fiche, et l'écran d'accueil du lot 3
+(« J'ai déjà un fichier »), qui rend mon `ImportButton`.
 
 ---
 
 ## Partage
 
-### Tranché : le partage **texte** entre, le partage de **fichier** reste dehors
+### Tranché : le texte entre, le fichier reste dehors
 
-La charte §1 ne liste pas « partage » dans le périmètre. J'applique donc le rasoir, avec une exception argumentée :
+La charte ne liste pas « partage » dans le périmètre. J'applique le rasoir, avec une
+exception argumentée :
 
-- **« Copier le résumé » : dans le périmètre.** C'est la sortie de secours universelle (Discord, WhatsApp, SMS, note), elle fonctionne partout, et son moteur est une fonction pure de 40 lignes dans `domain/sheet/formatSheetAsText.ts`, entièrement testable. Elle coûte moins cher qu'une capture d'écran ratée. `navigator.clipboard.writeText`, avec repli sur un `<textarea>` présélectionné affiché sur place si l'API est absente ou refusée (contexte non sécurisé).
-- **`navigator.share({ title, text })` : dans le périmètre, en amélioration progressive.** Dix lignes, le bouton « Partager » n'est **rendu que si** `navigator.share` existe. Pas de repli bancal : quand l'API manque, le bouton n'existe pas et « Copier le résumé » reste là.
-- **Partage du fichier JSON via `navigator.canShare({ files })` : hors périmètre.** Support inégal (absent de Firefox), et sans intérêt : le destinataire n'a pas notre application. Le JSON sert à *soi-même*, le texte sert *aux autres*.
-
-Résumé texte, gabarit exact (≤ 20 lignes, pensé pour un message de messagerie) :
+- **« Copier le résumé » : dans le périmètre.** C'est la sortie de secours
+  universelle (messagerie, notes) et son moteur est une fonction pure d'une quarantaine
+  de lignes, testable, dans `ui/format/summaryText.ts` — pas dans le domaine, puisqu'elle
+  rédige du français. `navigator.clipboard.writeText`, avec repli sur un `<textarea>`
+  présélectionné affiché sur place si l'API est absente ou refusée (contexte non
+  sécurisé). Elle coûte moins qu'une capture d'écran ratée.
+- **`navigator.share({ title, text })` : amélioration progressive.** Dix lignes ; le
+  bouton « Partager » **n'est rendu que si** `navigator.share` existe. Pas de repli
+  bancal : quand l'API manque, le bouton n'existe pas et « Copier le résumé » reste.
+- **Partage du fichier JSON (`canShare({ files })`) : hors périmètre.** Support inégal,
+  et sans intérêt : le destinataire n'a pas l'application. Le JSON sert à soi-même, le
+  texte sert aux autres.
 
 ```
 ALRIC — Nain des collines, guerrier niveau 1
 Historique : Soldat · Loyal bon
 
 CA 18 · Initiative +2 · PV 12 · Vitesse 7,50 m
-Dés de vie 1d10 · Maîtrise +2
+Dés de vie 1d10 · Bonus de maîtrise +2
 
 FOR 16 (+3)*  DEX 14 (+2)   CON 15 (+2)*
 INT 8 (-1)    SAG 12 (+1)   CHA 10 (+0)
@@ -442,95 +655,159 @@ Créé avec Aventurine — SRD 5.1, CC BY 4.0
 
 ## Contrats attendus des autres lots
 
-### LOT 1 — domaine et règles
+### Lot 1 — domaine et données
 
-Primitives pures consommées par `buildCharacterSheet` (aucune chaîne d'interface, aucun import React) :
+**Ce que je consomme sans le déclarer :** `CharacterDraft`, `Catalogue`, `ChoiceSlot`,
+`ChoiceSlotId`, `ChoiceKind`, `IssueTarget`, `openChoices`, `buildCharacter`.
 
-| Fonction | Renvoie |
-|---|---|
-| `abilityModifier(score)` | `number` |
-| `proficiencyBonus(level)` | `number` |
-| `finalAbilityScores(draft)` | `Record<AbilityId, number>` |
-| `savingThrows(draft)` | `{ abilityId, bonus, proficient }[]` |
-| `skillLines(draft)` | `{ skillId, abilityId, bonus, proficiency: 'aucune'\|'simple'\|'double' }[]` |
-| `armorClass(draft)` | `{ total, parts: { label, value }[] } \| null` |
-| `speed(draft)` | `{ meters, reducedByArmor: boolean } \| null` |
-| `hitPoints(draft)` | `{ max, parts } \| null` · `hitDice(draft)` |
-| `weaponAttacks(draft)` | `{ name, attackBonus, damageDice, damageBonus, damageType, properties, range }[]` |
-| `spellcasting(draft)` | `Spellcasting \| null` (DD, bonus d'attaque, emplacements, sorts) |
-| `features(draft)` | `{ source: 'race'\|'class'\|'background', name, description }[]` |
-| `proficiencies(draft)` | `{ armors, weapons, tools, languages }` |
-| `equipment(draft)` | `{ items: { name, quantity }[], gold }` |
-| `listMissingChoices(draft)` | `{ kind, remaining, stepId }[]` |
+**Ce que je spécifie** (déclaré par le lot 1, je suis son seul consommateur) :
 
-Deux points à trancher avec le LOT 1 :
-- Les distances sont stockées **en mètres** dans `data/` (pas de couche de conversion : KISS).
-- Si `listMissingChoices` n'est pas livré, LOT 4 l'implémente dans `domain/completeness.ts` (test d'abord) : le récapitulatif ne peut pas exister sans lui.
+```ts
+// src/domain/sheet.ts — forme demandée par le lot 4
+export interface BreakdownPart {
+  readonly source: 'base' | 'ability' | 'armor' | 'shield' | 'feature';
+  readonly id: string | null;   // identifiant de contenu, résolu par ui/ dans data/
+  readonly value: number;
+}
+export interface ValueBreakdown {
+  readonly total: number;
+  readonly parts: readonly BreakdownPart[];
+}
 
-Le type `CharacterSheet` et son assembleur appartiennent au LOT 4 (`domain/sheet/`) : c'est une composition des primitives, pas une règle.
+export interface SkillLine {
+  readonly skillId: string; readonly abilityId: AbilityId;
+  readonly bonus: number; readonly proficiency: 'none' | 'simple' | 'double';
+}
+export interface Attack {
+  readonly weaponId: string; readonly attackBonus: number;
+  readonly damageDice: string; readonly damageBonus: number;
+  readonly damageTypeId: string; readonly rangeMeters: readonly [number, number] | null;
+}
+export interface Spellcasting {
+  readonly abilityId: AbilityId; readonly saveDc: number; readonly attackBonus: number;
+  readonly level1Slots: number; readonly preparedCount: number | null;
+  readonly cantripIds: readonly string[]; readonly spellIds: readonly string[];
+}
+export interface CharacterSheet {
+  readonly abilities: Readonly<Record<AbilityId, { score: number; modifier: number }>>;
+  readonly saves: readonly { abilityId: AbilityId; bonus: number; proficient: boolean }[];
+  readonly skills: readonly SkillLine[];
+  readonly proficiencyBonus: number;
+  readonly armorClass: ValueBreakdown | null;
+  readonly initiative: number;
+  readonly speedMeters: number | null;
+  readonly hitPoints: ValueBreakdown | null;
+  readonly hitDice: { count: number; die: number } | null;
+  readonly attacks: readonly Attack[];
+  readonly spellcasting: Spellcasting | null;
+  readonly featureIds: readonly { source: ChoiceSource; id: string }[];
+  readonly proficiencies: { armors: readonly string[]; weapons: readonly string[];
+                            tools: readonly string[]; languages: readonly string[] };
+  readonly equipment: { itemIds: readonly string[]; gold: number };
+}
+```
 
-### LOT 2 — système de design
+Quatre exigences :
 
-Réutilisés tels quels : `Button` (variantes primaire/secondaire/discrète), `Card`, `Chip`, `Callout`, `Stack`, jetons d'espacement, de typographie et de couleur.
-Composants que je déclare et que je code dans `ui/sheet/` faute d'équivalent — à reprendre par le LOT 2 s'il préfère : `StatTile` (étiquette + grande valeur + détail), `DataRow` (étiquette · valeur alignée à droite), `SheetJumpMenu`.
-Aucun jeton nouveau. Un seul ajout demandé : l'attribut convenu `data-print="hide" | "only"` sur les composants qui encadrent la navigation.
+1. **Aucun libellé français.** Les `BreakdownPart` portent un identifiant ; `ui/` va
+   chercher le nom dans `data/` (autorisé §A6). C'est ce qui permet d'afficher
+   « 16 (cotte de mailles) + 2 (écu) » sans que le domaine ne rédige.
+2. **`buildCharacter` tolère l'incomplet** et rend `null` là où le socle manque
+   (CA, PV, dés de vie, vitesse, magie), jamais une exception ni un zéro trompeur.
+3. **Distances en mètres**, dans les données comme dans la fiche.
+4. **`validateDraft` enveloppe `listMissingChoices`** au lieu de recalculer.
 
-### LOT 3 — assistant et état
+### Lot 2 — assistant et état
 
-- `CharacterDraft` exporté depuis `domain/Character.ts` (le type est partagé, il ne peut pas vivre dans `state/`).
-- Actions : `GO_TO_STEP(stepId, { returnToSummary })`, `REPLACE_CHARACTER(draft)`, `RESET`.
-- Identifiants d'étapes stables, alignés sur `MissingChoice.stepId`.
-- Barre basse « Revenir au récapitulatif » quand `returnToSummary` est vrai.
-- Phase applicative : `'wizard' | 'summary' | 'sheet'` dans l'état (pas de routage, conforme au tableau de la stack).
-- L'écran d'accueil rend `<ImportButton />`.
+- `useCharacterSheet(): CharacterSheet`, `useIssues(): readonly LocatedIssue[]`
+  (déjà rattachées à un `screenId` : c'est exactement ce dont ma liste a besoin),
+  `useWizard().goTo(screenId)`, `useWizardDispatch()`.
+- Deux écrans dans le parcours, `'summary'` et `'sheet'`, que `App.tsx` confie à mes
+  composants ; `goBack()` depuis le récapitulatif revient à l'écran d'où l'on venait.
+- Une action `REPLACE_DRAFT(draft)` pour l'import, et `RESET` pour « Recommencer ».
+- **Je ne demande aucun drapeau `returnToSummary`** : « Ma fiche » dans
+  `ProgressBanner` suffit au retour.
+
+### Lot 3 — interface et design
+
+- Je réutilise `AppShell`, `ProgressBanner`, `ActionBar`, `Notice`, `Explainer`, et les
+  jetons de `tokens.css` (noms anglais). **Je n'invente aucun jeton.**
+- Je déclare et j'écris `SheetBlock`, `StatTile`, `DataRow`, `SheetJumpMenu` dans
+  `ui/sheet/` : trois usages réels manquent pour en faire des composants partagés, et
+  le lot 3 a raison de ne pas les exporter à l'avance (§A7).
+- **Demande unique, déjà acceptée** : attributs `data-print` stables —
+  `data-print="frame"` sur la racine d'`AppShell`, `data-print="hide"` sur
+  `ProgressBanner` et `ActionBar`. Sans eux, la grille `100dvh; overflow:hidden` coupe
+  l'impression à la première page, et les classes CSS Modules hachées ne peuvent pas
+  être ciblées depuis une feuille globale.
+- Le libellé du bouton d'en-tête reste « **Ma fiche** » sur tous les écrans : c'est le
+  chemin de retour du récapitulatif.
+
+### Lot 5 — outillage
+
+Aucune dépendance ajoutée. Aucune URL commençant par `/`. Mes tests vivent à côté du
+code ; `domain/completeness.ts` et `domain/export/` sont soumis au seuil de couverture
+du domaine, ce qui est voulu : ce sont les deux endroits où un bug est silencieux.
 
 ---
 
 ## Tests prévus
 
-### Domaine (Vitest, test d'abord)
+### Domaine — test d'abord, catalogue miniature
 
 - `it('signale « 1 compétence » quand une seule compétence manque')`
 - `it('signale « 2 compétences » au pluriel')`
 - `it('ne signale aucun manque pour un personnage complet')`
-- `it('renvoie une classe d\'armure nulle quand la classe n\'est pas choisie')`
-- `it('détaille la classe d\'armure en 16 (cotte de mailles) + 2 (écu)')`
-- `it('compte deux fois le bonus de maîtrise pour une compétence à maîtrise double')`
-- `it('calcule +5 à l\'attaque pour un guerrier de Force 16 avec une épée longue')`
-- `it('utilise la Dextérité pour une arme de finesse quand elle est meilleure')`
-- `it('n\'expose aucune magie pour un guerrier')`
-- `it('exporte un fichier de format aventurine.personnage en version 1')`
+- `it('place le créneau d\'expertise en dernier dans la liste des manques')`
+- `it('signale l\'absence de nom comme un manque de champ, pas de créneau')`
+- `it('exporte un fichier au format aventurine.personnage en version 1')`
+- `it('n\'écrit aucun indicateur de complétude dans le fichier exporté')`
+- `it('retrouve un brouillon identique après un aller-retour export puis import')`
 - `it('refuse un fichier dont le format n\'est pas le nôtre')`
 - `it('refuse un JSON corrompu sans lever d\'exception')`
 - `it('refuse un fichier de version 2 avec une erreur dédiée')`
-- `it('refuse un fichier de plus d\'un méga-octet')`
+- `it('refuse un fichier de plus d\'un méga-octet sans le lire')`
 - `it('ignore une race inconnue et prévient qu\'il faut la rechoisir')`
+- `it('ignore un créneau dont l\'identifiant ne respecte pas source:parent:sujet')`
 - `it('ignore les champs inconnus d\'un fichier importé')`
 - `it('ignore une clé __proto__ présente dans le fichier')`
-- `it('tronque un nom de plus de 60 caractères')`
+- `it('refuse un fichier contenant plus de soixante-quatre créneaux')`
+- `it('tronque un nom de plus de soixante caractères et le signale')`
 - `it('propose le nom de fichier fiche-alric-guerrier.json')`
-- `it('retire les accents du nom de fichier')`
-- `it('produit un résumé texte de moins de 20 lignes')`
+- `it('retire les accents et les espaces du nom de fichier')`
+
+### Mise en français (`ui/format/`, pures, sans React)
+
+- `it('écrit « 16 (cotte de mailles) + 2 (écu) » à partir du détail de la classe d\'armure')`
+- `it('écrit « Il te reste 1 tour de magie à choisir »')`
+- `it('produit un résumé texte de moins de vingt lignes')`
+- `it('termine le résumé par « Créé avec Aventurine »')`
 
 ### Interface (Testing Library)
 
 - `it('affiche « Il te reste 1 compétence à choisir » sur le récapitulatif')`
-- `it('emmène à l\'étape des compétences quand on touche la ligne manquante')`
+- `it('emmène à l\'écran des compétences quand on touche la ligne manquante')`
 - `it('laisse le bouton « Voir ma fiche » actif malgré un choix manquant')`
 - `it('affiche « À choisir » à la place d\'une valeur manquante')`
+- `it('affiche « Choisis ta classe » à la place des points de vie sans classe')`
 - `it('place le bloc En combat avant le bloc Compétences dans l\'ordre du document')`
+- `it('affiche les dix-huit compétences, maîtrisées ou non')`
+- `it('marque une compétence d\'expertise comme maîtrise double')`
 - `it('n\'affiche pas le bloc Magie pour un guerrier')`
-- `it('affiche les 18 compétences, maîtrisées ou non')`
+- `it('n\'affiche pas « Texte complet » quand le sort n\'a pas de texte long')`
+- `it('affiche les traits saisis librement d\'un historique personnalisé')`
 - `it('affiche le bouton Partager seulement si le navigateur sait partager')`
-- `it('copie le résumé dans le presse-papiers')`
 - `it('propose un champ de texte sélectionnable si le presse-papiers est refusé')`
 - `it('demande confirmation avant de remplacer le personnage en cours')`
 - `it('appelle l\'impression du navigateur quand on touche Imprimer')`
 - `it('renomme le document avant l\'impression puis restaure le titre')`
 
-### Vérification manuelle de l'impression (non automatisable)
+### Vérification manuelle de l'impression
 
-Liste à cocher, exécutée sur Chrome bureau, Firefox, Chrome Android, Safari iOS : format A4 respecté ou signalé, navigation absente, aucun aplat de couleur, aucun bloc coupé en deux, sorts sur une page dédiée, attribution SRD présente, tenue en 2 pages maximum.
+Liste à cocher sur Chrome bureau, Firefox, Chrome Android, Safari iOS : A4 respecté ou
+signalé, navigation absente, **fiche non coupée à la première page**, aucun aplat,
+aucun bloc scindé, magie sur une page dédiée, mention Aventurine et SRD présentes,
+deux pages au maximum.
 
 ---
 
@@ -539,26 +816,44 @@ Liste à cocher, exécutée sur Chrome bureau, Firefox, Chrome Android, Safari i
 | Écarté | Raison |
 |---|---|
 | Fiche éditable après création | Charte §1 ; la modification passe par l'assistant |
-| Suivi des PV, sorts dépensés, inspiration en partie | Hors périmètre ; **seule exception** : des cases vides sur la fiche **imprimée**, car c'est la raison même de l'impression (~12 lignes, coupables en revue) |
-| Gestion d'inventaire (ajout, quantités, poids) | Hors périmètre |
-| Montée de niveau, multiclassage | Charte §1 |
-| Plusieurs personnages sauvegardés / bibliothèque | Non listé au périmètre ; une seule sauvegarde, d'où la confirmation à l'import |
-| Lien de partage contenant le personnage (`#…`) | Imposerait une lecture d'URL, c'est-à-dire du routage — interdit par la stack |
-| QR code, portrait, image | YAGNI |
-| Export PDF côté client par bibliothèque | Justification en section Impression |
-| Export vers d'autres formats (D&D Beyond, Roll20) | YAGNI, et rien à rétro-concevoir |
+| Suivi des PV, des sorts dépensés, de l'inspiration | Hors périmètre. **Seule exception** : les cases vides de la fiche **imprimée**, retenues à l'arbitrage — c'est la raison même pour laquelle on imprime |
+| Gestion d'inventaire (ajout, quantités, poids) | Hors périmètre : l'équipement est une liste en lecture seule |
+| Montée de niveau, multiclassage, dons | Charte §1 |
+| Plusieurs personnages sauvegardés | Une seule sauvegarde, d'où la confirmation à l'import |
+| Lien de partage contenant le personnage | Imposerait de lire l'URL, c'est-à-dire du routage, exclu par la charte |
+| Partage du fichier par la feuille de partage | Support inégal, sans intérêt pour le destinataire |
+| QR code, portrait, illustration | YAGNI, et charte §9 pour l'habillage |
+| Bibliothèque PDF côté client | Argumenté en section Impression |
+| Migration de format d'import | Il n'existe qu'une version et rien n'a été publié (§A18) |
 
-**Exception argumentée retenue** : le bouton « Modifier mon personnage » sur la fiche. Ce n'est pas une fiche éditable — c'est un retour à l'assistant sur le brouillon déjà en mémoire. Sans lui, la seule façon de corriger une faute de frappe serait de tout recommencer. Coût : une action déjà fournie par le LOT 3.
+**Exception argumentée conservée** : le bouton « Modifier mon personnage » sur la
+fiche. Ce n'est pas une fiche éditable, c'est un retour à l'assistant sur le brouillon
+déjà en mémoire. Sans lui, corriger une faute de frappe imposerait de tout recommencer.
+Coût : un appel à `goTo`, déjà fourni par le lot 2.
 
 ---
 
 ## Risques
 
-1. **Le rendu papier n'est pas testable automatiquement.** Vitest et jsdom ignorent `@media print`. Atténuation : liste de vérification manuelle, structure DOM linéaire (donc prévisible sur papier), aucun aplat de couleur.
-2. **Le contrat du domaine peut arriver tard.** Atténuation : le type `CharacterSheet` et trois jeux d'essai (`alric-guerrier`, `lyra-magicienne`, `perso-incomplet`) sont écrits en premier ; la fiche se développe et se teste contre eux, le branchement sur le LOT 1 est mécanique.
-3. **La fiche est le miroir de tous les autres lots.** Chaque bug de règle, de contenu ou d'état s'y voit. Atténuation : les jeux d'essai deviennent la base de tests de non-régression commune.
-4. **Barre collante et Safari iOS** : la barre d'adresse dynamique décale `position: sticky`. Atténuation : barre de 48 px seulement, `scroll-margin-top` sur les ancres, vérification au doigt sur écran de 360 px avant de considérer le lot fini.
-5. **Presse-papiers en contexte non sécurisé** (`file://`, http) : `navigator.clipboard` échoue. Atténuation : repli `<textarea>` prévu et testé.
-6. **Impression depuis un navigateur intégré** (Instagram, Facebook) : `window.print()` peut ne rien faire. Atténuation : texte d'aide sous le bouton.
-7. **Densité du DOM** : 18 compétences + 6 caractéristiques + aptitudes ≈ 250 nœuds. Aucun risque de performance réel ; **aucune virtualisation** ne sera introduite (YAGNI), c'est écrit ici pour couper court à la tentation.
-8. **Dérive de périmètre vers la fiche de jeu.** La fiche consultable attire naturellement « juste un compteur de PV ». Le tableau Hors périmètre est le garde-fou ; toute exception passe par une justification écrite comme celle des cases papier.
+1. **Le cadre `100dvh; overflow: hidden` du lot 3 coupe l'impression.** Risque le plus
+   concret du lot, et invisible tant qu'on n'imprime pas. Parade : la remise à plat est
+   la **première** règle de `print.css`, et la vérification manuelle la teste en premier.
+2. **Le papier n'est pas testable automatiquement.** Vitest et jsdom ignorent
+   `@media print`. Parade : liste manuelle, structure DOM linéaire, aucun aplat.
+3. **`CharacterSheet` arrive tard.** Parade : trois jeux d'essai écrits d'abord ; la
+   fiche se développe et se teste contre eux, le branchement est mécanique.
+4. **Le dictionnaire de créneaux couple les clés au contenu.** `class:roublard:skills`
+   contient un identifiant de classe : le renommer dans `data/` invalide silencieusement
+   tous les fichiers déjà exportés. Parade : les identifiants de créneau inconnus sont
+   des **avertissements**, jamais des erreurs, et le joueur est renvoyé à l'écran
+   concerné. Les identifiants de contenu sont traités comme un contrat public.
+5. **La fiche est le miroir des quatre autres lots.** Chaque erreur de règle, de contenu
+   ou d'état s'y voit en premier. Parade : les jeux d'essai deviennent la base de
+   non-régression commune.
+6. **Barre collante et Safari iOS** : la barre d'adresse dynamique décale
+   `position: sticky`. Parade : 48 px seulement, `scroll-margin-top` sur les ancres,
+   essai au doigt sur 360 px avant de déclarer le lot fini.
+7. **Presse-papiers en contexte non sécurisé** : repli `<textarea>` prévu et testé.
+8. **Dérive de périmètre.** Une fiche consultable attire « juste un compteur de PV ».
+   Le tableau Hors périmètre est le garde-fou ; toute exception passe par une
+   justification écrite, comme celle des cases papier.
