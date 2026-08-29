@@ -255,6 +255,71 @@ recopier de confiance : si une majeure ne s'installe pas ou casse, on descend
 d'une version et on le note. Le plan a raison sur un point qui compte plus que
 les numéros : `package-lock.json` versionné et `npm ci` partout.
 
+### A15. L'expertise doit être différée en fin d'étape 5 — le lot 2 a raison
+
+Le lot 2 a relevé une erreur bloquante dans §A9 : j'y laissais les créneaux
+`expertise` accrochés à l'ancre de classe, en étape 2.
+
+**Il a raison, et c'est bloquant.** Les options d'une expertise sont les
+compétences que le personnage **possède déjà**. Placée en étape 2, avant que le
+joueur ait choisi la moindre compétence, la liste serait vide : le roublard est
+cassé dès le premier parcours.
+
+**Tranché :** `expertise` est différée comme `skill`/`language`/`tool`, et placée
+**en dernier dans l'étape 5**, après tous les choix de maîtrises.
+
+Conséquence pour le lot 1 : `openChoices` doit calculer les options d'un créneau
+d'expertise à partir des compétences effectivement acquises par le brouillon
+courant, **dotations fixes comprises** (race, historique), pas seulement des
+compétences choisies.
+
+### A16. `useAbilities()` doit exposer des lignes dérivées — le lot 3 a raison
+
+Le lot 3 a relevé que `useAbilities()`, tel que le lot 2 le publie, expose
+`input` et `pointsLeft` mais ni `canIncrease`, ni `increaseCost`, ni la raison
+d'un blocage. L'écran de répartition devrait alors connaître la table de coûts
+d'achat de points pour décider si `+` est actif.
+
+**Il a raison, et c'est bloquant** : ce serait un calcul de règle dans un
+composant, c'est-à-dire un bug de conception au sens de la charte.
+
+**Tranché :** `useAbilities()` rend en plus `rows: readonly AbilityRow[]`, dans
+la forme proposée par le lot 3 — `score`, `racialBonus`, `bonusSource`, `total`,
+`modifier`, `canIncrease`, `canDecrease`, `increaseCost`, et un `blockedBy`
+**structuré** (`not-enough-points` / `max-score` / `min-score`), jamais rédigé.
+
+Cette forme est volontairement identique à `UnavailableReason` (§A4) : trois
+mécanismes de blocage identiques valent mieux que deux plus une exception.
+
+### A17. Objection du lot 3 sur `Issue.message` — déjà résolue
+
+Le lot 3 signale que le lot 2 conserve `Issue.message: string` rédigé en
+français dans `domain/`, en contradiction avec §A5. **Le grief portait sur la
+version 1 du plan du lot 2** ; sa version 2 a corrigé le point : `Issue` porte
+désormais un `IssueReason` structuré et `ui/format/issue.ts` compose la phrase.
+Rien à trancher, la cohérence est faite.
+
+### A18. Nom du produit — tranché
+
+« D&D Beyond Franché » reprenait le nom d'un service de Wizards of the Coast, ce
+que la licence CC BY du SRD ne couvre pas (elle porte sur le contenu, pas sur les
+marques).
+
+**Le produit s'appelle « Aventurine ».** C'est un mot français existant — un
+quartz — qui contient « aventure », ne reprend aucune marque et se retient.
+
+- Le **dépôt GitHub garde son nom actuel** : le renommer casserait l'URL de
+  publication. `base: '/D-DBeyondFranche/'` reste donc inchangé dans la
+  configuration Vite (lot 5), et c'est le seul endroit où l'ancien nom subsiste.
+- Le nom affiché, le `<title>`, le README, l'écran d'accueil et le pied de fiche
+  disent « Aventurine ».
+- La référence « D&D 5e » reste employée pour **décrire** la compatibilité, ce
+  qui est un usage licite ; elle est toujours accompagnée de la mention « non
+  affilié à Wizards of the Coast ».
+- Fichier exporté et clé de stockage : `ddbf` devient `aventurine`
+  (`aventurine:draft:v1`, format `aventurine.personnage`,
+  `fiche-alric-guerrier.json` inchangé). Aucune migration : rien n'est publié.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)
@@ -333,9 +398,6 @@ annulation d'un geste est un mauvais échange.
 
 ## C. Points ouverts, remontés à l'utilisateur
 
-1. **Nom du projet.** « D&D Beyond Franché » reprend le nom d'un service de
-   Wizards of the Coast. La licence CC BY couvre le contenu du SRD, **pas les
-   marques**. Sans incidence tant que le projet reste privé ; à trancher avant
-   toute publication. Une mention « non affilié » visible est ajoutée d'office.
+1. **Nom du projet : tranché, voir §A18.** Le produit s'appelle « Aventurine ».
 2. **Jets de dés (B1)** et **prose longue des sorts (B2)** : reportés, pas
    abandonnés. À rouvrir quand la v1 tourne.

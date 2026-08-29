@@ -1,6 +1,6 @@
-# CLAUDE.md — D&D Beyond Franché
+# CLAUDE.md — Aventurine
 
-Créateur de personnage D&D 5e, **entièrement en français**. Site web
+**Aventurine** — créateur de personnage D&D 5e, **entièrement en français**. Site web
 statique, sans backend, **pensé pour le téléphone d'abord**.
 
 > Ce fichier est la source de vérité pour tout agent (humain ou IA) qui
@@ -205,8 +205,10 @@ Contenu dérivé du **SRD 5.1**, publié par Wizards of the Coast sous licence
 depuis l'anglais, jamais reprise d'une traduction commerciale ou communautaire,
 qui sont protégées séparément.
 
-Attribution obligatoire dans l'interface, et mention **« non affilié à Wizards
-of the Coast ni à D&D Beyond »**. Aucun logo, illustration, police ou élément
+Le produit s'appelle **Aventurine** : aucun nom de marque tierce dans le nom du
+produit. « D&D 5e » n'est employé que pour **décrire** la compatibilité.
+Attribution SRD obligatoire dans l'interface, et mention **« non affilié à
+Wizards of the Coast »**. Aucun logo, illustration, police ou élément
 d'habillage n'est copié.
 
 Aucun contenu hors SRD, à une exception près, assumée et signalée dans

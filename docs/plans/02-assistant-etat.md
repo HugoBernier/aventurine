@@ -1,40 +1,45 @@
 # LOT 2 — Assistant de création & État (`src/state/`)
 
+> Ce plan est subordonné à `docs/plans/00-arbitrage.md`, qui fait autorité, et à
+> `CLAUDE.md` (§ Architecture, § Conventions, amendés). Version 2 : intègre les
+> arbitrages A1 à A13 et les réductions de périmètre B1 et B4.
+
 ## Objectif
 
-Piloter le parcours de création d'un personnage de niveau 1 : quel écran s'affiche,
-ce que le joueur a choisi, ce qui manque, ce qui est sauvegardé. Ce lot ne connaît
-aucune règle D&D (il les demande à `domain/`) et ne dessine rien (il expose des hooks).
+Piloter le parcours de création d'un personnage de niveau 1 : quel écran s'affiche, ce
+que le joueur a choisi, ce qui manque, ce qui est sauvegardé. Ce lot ne connaît aucune
+règle D&D (il les demande à `domain/`), ne rédige aucune phrase française (il rend des
+raisons structurées, `ui/format/` les compose) et ne dessine rien (il expose des hooks).
 
-Trois décisions structurantes, prises une fois pour tout le lot :
+Trois décisions structurantes :
 
 1. **Le parcours est dérivé, jamais stocké.** L'état retient l'identifiant de l'écran
    courant ; la liste des écrans est recalculée à partir du brouillon.
-2. **Un choix appartient à la décision qui l'a ouvert.** Cette propriété, encodée dans
-   l'identifiant du créneau de choix, suffit à produire toute l'invalidation en cascade.
+2. **Un choix appartient à la décision qui l'a ouvert**, propriété portée par
+   l'identifiant de créneau `source:parentId:subject` (arbitrage A3). Cela suffit à
+   produire toute l'invalidation en cascade, sans une ligne par catégorie.
 3. **Un point de passage unique** (`commit`) traverse chaque modification du brouillon :
-   purge, avis au joueur, recalcul du parcours, réancrage de l'écran. Impossible d'oublier
-   une cascade puisqu'il n'existe qu'un chemin.
+   purge, avis, recalcul du parcours, réancrage de l'écran. Impossible d'oublier une
+   cascade puisqu'il n'existe qu'un chemin.
 
-Fichiers prévus (aucun n'est écrit ici) :
+Fichiers prévus :
 
 ```
 src/state/
   types.ts                        WizardState, WizardAction, Screen, Notice
-  flow.ts                         STEPS, buildFlow, locate, screenIdForSlot
-  prune.ts                        pruneChoices, describeImpact
+  flow.ts                         STEPS, buildFlow, locate
+  prune.ts                        pruneChoices
   reducer.ts                      createWizardReducer(catalogue)
   WizardProvider.tsx              deux contextes, init paresseuse, effet de sauvegarde
   hooks.ts                        hooks exposés à l'UI
   persistence/DraftStorage.ts     interface + types de résultat
   persistence/localStorageDraftStorage.ts
   persistence/memoryDraftStorage.ts
-  persistence/parseSession.ts     garde de forme écrite à la main (pas de dépendance)
+  persistence/parseSession.ts     garde de forme écrite à la main
 ```
 
-Convention de nommage retenue, conforme à la charte §6 : **le code est en anglais**,
-**les identifiants de contenu SRD restent en français**. Un identifiant de créneau
-mélange donc légitimement les deux : `'class:roublard:skills'`.
+Pas de `src/state/index.ts` : baril de couche interdit (charte § Architecture, A11).
+`state/` n'importe **jamais** `data/` — le catalogue est injecté par `App.tsx`.
 
 ---
 
@@ -42,64 +47,86 @@ mélange donc légitimement les deux : `'class:roublard:skills'`.
 
 ### Le modèle : deux niveaux, une seule liste
 
-- **Étape (`Step`)** : un chapitre de la création. Sert uniquement au repère
-  « étape 3 sur 8 » et au regroupement dans le récapitulatif. Il y en a 8, fixes.
-- **Écran (`Screen`)** : **une décision, une seule**. C'est l'unité de navigation.
-  Leur nombre varie (14 à 22 selon la classe et la race).
+- **Étape (`StepId`)** : un chapitre. Sert au repère « Étape 3 sur 8 » et au
+  regroupement du récapitulatif. Huit, fixes, ordre imposé par A9.
+- **Écran (`Screen`)** : **une décision, une seule**. Unité de navigation. 14 à 22 selon
+  la classe et la race.
 
-Pas de sous-machine par étape, pas de reducer imbriqué : une liste plate d'écrans
-et un identifiant courant. Le repère affiché est l'étape (stable, rassurant) ;
-la barre de progression fine se calcule sur les écrans.
+Pas de sous-machine par étape, pas de reducer imbriqué : une liste plate d'écrans et un
+identifiant courant.
 
-### Les 8 étapes, dans l'ordre
+### Les 8 étapes (A9)
 
-| # | Étape | Pourquoi ici |
+| # | Étape | Écrans |
 |---|---|---|
-| 1 | Ta race | Concret, familier, ne dépend de rien. Entrée en douceur. |
-| 2 | Ta classe | La décision la plus structurante ; ouvre compétences, sorts, équipement. |
-| 3 | Tes caractéristiques | Après la classe : on peut conseiller « priorise la Dextérité ». |
-| 4 | Ton historique | Dernière source de maîtrises ; voit tout ce qui précède. |
-| 5 | Tes sorts | Dépend de la classe **et** des caractéristiques (nombre de sorts préparés). |
-| 6 | Ton équipement | Dépend de classe + historique, sans réciproque. Peu engageant → tard. |
-| 7 | Ton identité | Nom, alignement, personnalité : on se nomme quand on sait qui on est. |
-| 8 | Récapitulatif | Ce qui manque, ce qu'on a, accès direct à chaque écran. |
+| 1 | Ta race | race, sous-race *(si applicable)*, créneaux de race hors maîtrises |
+| 2 | Ta classe | classe, créneaux de classe hors maîtrises et hors expertise |
+| 3 | Tes caractéristiques | méthode, répartition |
+| 4 | Ton historique | historique, créneaux d'historique hors maîtrises |
+| 5 | Ce que tu sais faire | tous les créneaux `skill`/`language`/`tool`, puis `expertise` |
+| 6 | Tes sorts | tours de magie, sorts *(classes lanceuses seulement)* |
+| 7 | Ton équipement | options de départ |
+| 8 | Ton identité | nom, alignement, personnalité |
+| — | Récapitulatif | hors numérotation ; la fiche appartient au lot 4 |
 
-Le fil directeur est un ordre de dépendances : chaque étape ne consomme que les
-précédentes. La seule inversion réelle (l'historique donne des compétences fixes
-alors que la classe a déjà fait choisir les siennes) est traitée par la règle de
-cascade — voir plus bas ; elle ne justifie pas de tordre l'ordre pédagogique.
+L'ordre suit les dépendances : chaque étape ne consomme que les précédentes.
+Le regroupement de l'étape 5 est **accepté** : il rend le conflit « Perception donnée
+deux fois » inatteignable en marche avant, puisque toutes les dotations fixes (race
+étape 1, historique étape 4) sont posées avant le premier choix de maîtrise. Coût réel
+dans `buildFlow` : une partition et un tri, six lignes. Le mécanisme de disponibilité
+reste indispensable (un retour en arrière le déclenche encore) et ses tests de
+convergence restent obligatoires.
+
+**Correction demandée à A9** : `expertise` doit être différé au même titre que
+`skill`/`language`/`tool`, et placé **en dernier dans l'étape 5**. Les options d'une
+expertise sont les compétences que le personnage possède : accrochée derrière l'ancre de
+classe (étape 2), elle proposerait une liste vide. Sans ce déplacement, le roublard est
+cassé dès le premier parcours.
 
 ### Comment un écran naît
 
-Deux familles seulement :
+Deux familles :
 
-- Les **écrans d'ancrage** : un par décision structurante, codés en dur dans `flow.ts`.
-  `race`, `class`, `abilities-method`, `abilities-assign`, `background`, `equipment`,
-  `identity-name`, `identity-alignment`, `personality`, `summary`.
-- Les **écrans de créneau** : générés, un par `ChoiceSlot` ouvert que le domaine déclare
-  pour le brouillon courant. Identifiant : `'choice:' + slotId`.
+- **Écrans d'ancrage**, codés dans `flow.ts` : `race`, `subrace`, `class`,
+  `ability-method`, `ability-assign`, `background`, `equipment`, `name`, `alignment`,
+  `personality`, `summary`.
+- **Écrans de créneau**, générés : un par `ChoiceSlot` rendu par
+  `openChoices(draft, catalogue)`. Identifiant `'choice:' + slotId`.
 
-`buildFlow(draft, catalogue)` = les ancres, avec les créneaux de chaque source insérés
-juste après l'ancre correspondante. Une trentaine de lignes, pure, testée.
+```
+buildFlow(draft, catalogue):
+  slots = openChoices(draft, catalogue)
+  deferred = slots où kind ∈ {skill, language, tool, expertise}
+  attached = slots restants
+  → ancres de l'étape 1..4, chaque ancre suivie de ses `attached`
+  → étape 5 : deferred triés par (rang de source: race < background < class,
+                                 expertise en dernier, puis ordre de openChoices)
+  → étapes 6..8 : ancres + `attached` de sorts et d'équipement
+  → summary
+```
 
-Conséquence directe et voulue (charte §5, SOLID/O) : **ajouter une race à sous-races
-n'ajoute aucun code de navigation**, seulement une entrée de données qui déclare ses
-créneaux. Aucun `switch` sur `'haut-elfe'` dans `state/`.
+Le tri de l'étape 5 **reproduit exactement la priorité d'exclusion du domaine**
+(dotations fixes > race > historique > classe). C'est ce qui garantit que l'écran vu en
+premier est aussi celui qui l'emporte : jamais de « pourquoi cette option est-elle
+grisée alors que je n'ai encore rien choisi ? ».
 
-Exemple de parcours réel, haut-elfe magicien :
+Conséquence voulue (SOLID/O) : ajouter une race à sous-races n'ajoute **aucun** code de
+navigation, seulement une entrée de données déclarant ses créneaux. Aucun `switch` sur
+`'haut-elfe'` dans `state/`.
+
+Exemple, haut-elfe roublard, 18 écrans :
 
 ```
 race → choice:race:haut-elfe:ability → choice:race:haut-elfe:cantrip
-     → choice:race:haut-elfe:language
-class → choice:class:magicien:skills
-abilities-method → abilities-assign
-background → choice:background:sage:languages
-choice:class:magicien:cantrips → choice:class:magicien:spells
-equipment → choice:class:magicien:equipment
-identity-name → identity-alignment → personality → summary
+class
+ability-method → ability-assign
+background
+choice:race:haut-elfe:language → choice:background:acolyte:languages
+  → choice:class:roublard:skills → choice:class:roublard:expertise
+choice:race:haut-elfe:cantrip est en étape 1 (kind 'cantrip', non différé)
+equipment → choice:class:roublard:equipment
+name → alignment → personality → summary
 ```
-
-Soit 17 écrans, un doigt, un choix à la fois.
 
 ---
 
@@ -107,30 +134,27 @@ Soit 17 écrans, un doigt, un choix à la fois.
 
 ### Ce que le brouillon a le droit de contenir
 
-Règle stricte : **le brouillon ne contient que ce que le joueur a tapé ou touché.**
-Tout ce qui se recalcule (score final, modificateur, points de vie, classe d'armure,
-initiative, vitesse, bonus de maîtrise, jets de sauvegarde, nombre de sorts préparés)
-est absent, et le sera de façon vérifiée (voir « Comment on le garantit »).
+**Le brouillon ne contient que ce que le joueur a tapé ou touché.** Tout ce qui se
+recalcule (score final, modificateur, points de vie, classe d'armure, initiative,
+vitesse, bonus de maîtrise, jets de sauvegarde, sorts préparés) en est absent, de façon
+vérifiée.
 
-`CharacterDraft` est **défini dans `domain/`**, pas ici : c'est l'entrée de
-`buildCharacter`, le domaine ne peut donc pas ignorer ce type, et la règle de
-dépendance `state → domain` reste à sens unique. Je le spécifie ci-dessous parce que
-j'en suis le principal producteur ; c'est la pièce maîtresse du contrat.
+`CharacterDraft` est **défini dans `src/domain/draft.ts`** (arbitrage A1) et importé par
+`state/`, `data/` et les tests. Une seule déclaration dans le dépôt. Je le reproduis ici
+parce que j'en suis le principal producteur — le lot 1 en est propriétaire.
 
 ```ts
-// domain/draft.ts — possédé par le lot domaine, forme demandée par le lot état
+// src/domain/draft.ts — propriété du lot 1
 export type AbilityId =
   | 'force' | 'dexterite' | 'constitution'
   | 'intelligence' | 'sagesse' | 'charisme';
 
-export type AbilityMethod = 'standard-array' | 'point-buy' | 'dice';
+export type AbilityMethod = 'point-buy' | 'standard-array';   // B1 : plus de 'dice'
 
 export interface AbilityInput {
   readonly method: AbilityMethod;
-  /** Scores AVANT bonus raciaux. Choix du joueur. Incomplet tant qu'il n'a pas fini. */
+  /** Scores AVANT bonus raciaux. Choix du joueur. Partiel tant qu'il n'a pas fini. */
   readonly base: Partial<Record<AbilityId, number>>;
-  /** Uniquement en méthode 'dice' : les 6 tirages. Entrée non reproductible → stockée. */
-  readonly rolled: readonly number[] | null;
 }
 
 export interface Personality {
@@ -140,8 +164,6 @@ export interface Personality {
   readonly flaw: string;
 }
 
-export type ChoiceSlotId = string; // 'class:roublard:skills', 'race:haut-elfe:cantrip'
-
 export interface CharacterDraft {
   readonly name: string;
   readonly raceId: string | null;
@@ -150,7 +172,7 @@ export interface CharacterDraft {
   readonly backgroundId: string | null;
   readonly alignmentId: string | null;
   readonly abilities: AbilityInput;
-  /** Choix multiples par créneau ouvert. Clé absente = créneau jamais touché. */
+  /** Un dictionnaire unique. Clé absente = créneau jamais touché. */
   readonly choices: Readonly<Record<ChoiceSlotId, readonly string[]>>;
   readonly personality: Personality;
 }
@@ -158,75 +180,80 @@ export interface CharacterDraft {
 export function emptyDraft(): CharacterDraft;
 ```
 
-`rolled` mérite une justification : un tirage de dés n'est pas dérivable, c'est une
-entrée du monde extérieur au même titre qu'une frappe clavier. Il est donc stocké.
-Le `base` reste séparé : le joueur assigne ses tirages aux caractéristiques.
-
 ### L'état de l'assistant
 
 ```ts
 // src/state/types.ts
-import type { CharacterDraft, ChoiceSlotId } from '../domain';
+import type { CharacterDraft, ChoiceSlotId, ChoiceSource, ChoiceKind,
+              AbilityMethod } from '../domain/draft';
 
 export type StepId =
   | 'race' | 'class' | 'abilities' | 'background'
-  | 'spells' | 'equipment' | 'identity' | 'summary';
+  | 'proficiencies' | 'spells' | 'equipment' | 'identity';
+
+export type AnchorId =
+  | 'race' | 'subrace' | 'class' | 'ability-method' | 'ability-assign'
+  | 'background' | 'equipment' | 'name' | 'alignment' | 'personality' | 'summary';
 
 export type ScreenId = string;
 
-export interface Screen {
-  readonly id: ScreenId;
-  readonly step: StepId;
-  readonly title: string;        // français, affiché tel quel
-  readonly slotId?: ChoiceSlotId; // présent sur les écrans de créneau
-}
+export type Screen =
+  | { readonly id: ScreenId; readonly step: StepId;
+      readonly kind: 'anchor'; readonly anchor: AnchorId }
+  | { readonly id: ScreenId; readonly step: StepId;
+      readonly kind: 'choice'; readonly slotId: ChoiceSlotId };
+
+/** Aucune phrase ici : `ui/format/formatNotice` compose le français. */
+export type NoticeReason =
+  | { readonly kind: 'slot-closed'; readonly source: ChoiceSource;
+      readonly parentId: string; readonly slotKind: ChoiceKind;
+      readonly lost: number }
+  | { readonly kind: 'options-withdrawn'; readonly slotId: ChoiceSlotId;
+      readonly optionIds: readonly string[]; readonly remaining: number }
+  | { readonly kind: 'abilities-reset'; readonly method: AbilityMethod };
 
 export interface Notice {
   readonly id: string;
-  readonly message: string;   // français
-  readonly screenId: ScreenId; // où le joueur va réparer
+  readonly reason: NoticeReason;
+  readonly screenId: ScreenId;   // où réparer
 }
 
 export type StorageStatus = 'ok' | 'memory' | 'quota' | 'unavailable';
 
 export interface WizardState {
-  /** Les choix du joueur. Seule partie persistée avec currentScreenId. */
   readonly draft: CharacterDraft;
-  /** Identifiant, jamais un index : le parcours change de longueur. */
-  readonly currentScreenId: ScreenId;
-  /** Ce qu'une cascade vient de supprimer. Historique, donc non dérivable. */
+  readonly currentScreenId: ScreenId;   // un identifiant, jamais un index
   readonly notices: readonly Notice[];
   readonly storage: StorageStatus;
 }
 ```
 
-Quatre champs. Notez trois absences volontaires :
+Quatre champs, et trois absences volontaires :
 
-- **Pas de `flow`** : dérivé de `draft` (`useMemo`).
-- **Pas d'`issues`** : dérivé de `draft` par `domain.validateDraft`.
+- **Pas de `flow`** : dérivé de `draft`.
+- **Pas d'`issues`** : dérivé par `validateDraft`.
 - **Pas de `visitedScreenIds`** : le parcours ne contient jamais un écran dont les
-  prérequis manquent (pas d'écran « sorts » sans classe). « Déjà vu » n'apporte donc
-  aucune information : **tout écran présent dans le parcours est atteignable**. C'est
-  un champ que YAGNI supprime, pas un raccourci.
+  prérequis manquent, donc « déjà vu » n'apporte rien. Tout écran du parcours est
+  atteignable. Champ supprimé par YAGNI, pas par raccourci.
 
-`notices` est bien de l'état légitime : « tu as perdu Discrétion parce que tu as changé
-de classe » est un événement passé, indéductible de l'état courant.
+`notices` est de l'état légitime : « tu as perdu Discrétion parce que tu as changé de
+classe » est un événement passé, indéductible de l'état courant.
+
+`Screen` ne porte **aucun libellé** : `ui/` titre les ancres, et le titre d'un écran de
+créneau vient de `ChoiceSlot.title`, prose de contenu venue de `data/` (A5).
 
 ### Comment on garantit l'absence de valeur dérivée
 
-1. **Par la forme du type** : aucun champ numérique hors `abilities` ; aucun champ
-   nommé d'après une valeur de fiche.
-2. **Par le point d'entrée unique** : `domain.buildCharacter(draft, catalogue)` est le
-   seul producteur de valeurs de fiche, appelé depuis un `useMemo` dans `useCharacterSheet`.
-   `state/` n'affecte jamais son résultat à une variable de `WizardState`.
-3. **Par un test de liste noire** : `it('ne stocke aucune valeur dérivable dans le brouillon')`
-   parcourt récursivement un brouillon complet et échoue si une clé contient
-   `pv|ca|modifier|bonus|total|initiative|speed|proficiencyBonus`.
+1. **Par la forme du type** : aucun champ numérique hors `abilities.base`.
+2. **Par le producteur unique** : `buildCharacter(draft, catalogue)` est le seul
+   producteur de valeurs de fiche, appelé dans un `useMemo` ; son résultat n'est jamais
+   affecté à un champ de `WizardState`.
+3. **Par un test de liste noire** : `it('ne stocke aucune valeur dérivable dans le
+   brouillon')` parcourt récursivement un brouillon complet et échoue sur une clé
+   contenant `hp|ac|modifier|bonus|total|initiative|speed|proficiencyBonus`.
 4. **Par un test d'aller-retour** : `buildCharacter(parse(serialize(draft)))` est
-   profondément égal à `buildCharacter(draft)` — si une valeur dérivée s'était glissée
-   dans le brouillon, elle serait devenue une deuxième source de vérité détectable.
-5. **Par la revue** : question ajoutée à la liste de la charte §10 — « ce champ
-   pourrait-il être recalculé ? Alors il sort. »
+   profondément égal à `buildCharacter(draft)`.
+5. **Par la revue** : « ce champ pourrait-il être recalculé ? Alors il sort. »
 
 ---
 
@@ -235,85 +262,69 @@ de classe » est un événement passé, indéductible de l'état courant.
 ```ts
 // src/state/types.ts
 export type WizardAction =
-  // --- Décisions structurantes ---
   | { readonly type: 'SELECT_RACE';       readonly raceId: string }
   | { readonly type: 'SELECT_SUBRACE';    readonly subraceId: string }
   | { readonly type: 'SELECT_CLASS';      readonly classId: string }
   | { readonly type: 'SELECT_BACKGROUND'; readonly backgroundId: string }
   | { readonly type: 'SELECT_ALIGNMENT';  readonly alignmentId: string }
-  // --- Caractéristiques ---
   | { readonly type: 'SET_ABILITY_METHOD'; readonly method: AbilityMethod }
   | { readonly type: 'ASSIGN_ABILITY';     readonly ability: AbilityId;
                                            readonly score: number | null }
-  | { readonly type: 'SET_ROLLED_SCORES';  readonly scores: readonly number[] }
-  // --- Créneaux de choix (compétences, langues, sorts, dons de race, équipement) ---
   | { readonly type: 'TOGGLE_CHOICE'; readonly slotId: ChoiceSlotId;
                                       readonly optionId: string }
-  // --- Texte libre ---
   | { readonly type: 'SET_NAME';        readonly name: string }
   | { readonly type: 'SET_PERSONALITY'; readonly field: keyof Personality;
                                         readonly text: string }
-  // --- Navigation ---
   | { readonly type: 'GO_NEXT' }
   | { readonly type: 'GO_BACK' }
   | { readonly type: 'GO_TO'; readonly screenId: ScreenId }
-  // --- Divers ---
   | { readonly type: 'DISMISS_NOTICE'; readonly noticeId: string }
   | { readonly type: 'RESET' }
   | { readonly type: 'SET_STORAGE_STATUS'; readonly status: StorageStatus };
 ```
 
-Dix-sept actions, `switch` exhaustif clos par un `const _: never = action`.
+Seize actions (`SET_ROLLED_SCORES` supprimée, B1). `switch` exhaustif clos par
+`const _: never = action`.
 
 | Action | Comportement |
 |---|---|
-| `SELECT_RACE` | Si `raceId` identique → **retourne `state`** (identité conservée). Sinon pose la race, met `subraceId` à `null`, puis `commit`. |
-| `SELECT_SUBRACE` | Idempotent. Ignorée si la sous-race n'appartient pas à la race courante (état illégal non représentable). Puis `commit`. |
-| `SELECT_CLASS` | Idempotent. Pose la classe, puis `commit` — c'est là que la cascade de la section suivante se produit. |
-| `SELECT_BACKGROUND` | Idempotent, puis `commit`. Ses dotations fixes peuvent évincer un choix de classe. |
-| `SELECT_ALIGNMENT` | Pose l'alignement. Aucun créneau n'en dépend : `commit` est un passage à vide. |
-| `SET_ABILITY_METHOD` | Méthode identique → no-op. Sinon **vide `base` et `rolled`** : les valeurs d'une méthode n'ont pas de sens dans une autre. C'est la seule remise à zéro codée en dur, et elle est annoncée par un avis. |
-| `ASSIGN_ABILITY` | `score: null` désassigne. En `standard-array` : si la valeur est déjà portée par une autre caractéristique, **les deux valeurs s'échangent** (règle prévisible, un seul geste). En `point-buy` : refusée si elle sort de 8–15 ou dépasse le budget de 27 points — l'invalide n'est jamais atteignable par un geste. En `dice` : refusée si la valeur n'est pas un tirage disponible. |
-| `SET_ROLLED_SCORES` | Enregistre 6 tirages (le tirage lui-même vit dans l'UI via une frontière `random` du domaine). Vide `base` : les anciennes assignations ne correspondent plus. |
-| `TOGGLE_CHOICE` | Option déjà cochée → décochée. Sinon cochée, sauf si l'option est marquée indisponible ou si le créneau est plein (`pick` atteint) : **ignorée silencieusement**, l'UI ayant désactivé la case avec la raison. Si `pick === 1`, la sélection remplace l'ancienne. Puis `commit` (cocher une compétence peut fermer une option ailleurs). |
-| `SET_NAME` | Écrit le nom, coupé à 60 caractères. Pas de `commit` : rien n'en dépend. |
-| `SET_PERSONALITY` | Idem, 300 caractères par champ. |
-| `GO_NEXT` | Écran suivant du parcours. **Jamais bloquée par un choix incomplet.** No-op sur le récapitulatif. |
+| `SELECT_RACE` | Identifiant identique → **`state` retourné tel quel**. Sinon pose la race, remet `subraceId` à `null`, puis `commit`. |
+| `SELECT_SUBRACE` | Idempotente. Ignorée si la sous-race n'appartient pas à la race courante. Puis `commit`. |
+| `SELECT_CLASS` | Idempotente. Puis `commit` : c'est là que se produit la cascade. |
+| `SELECT_BACKGROUND` | Idempotente, puis `commit`. |
+| `SELECT_ALIGNMENT` | Aucun créneau n'en dépend ; `commit` est un passage à vide. |
+| `SET_ABILITY_METHOD` | Méthode identique → no-op. Sinon **vide `base`** : une valeur de tableau standard n'a pas de sens en répartition de points. Seule remise à zéro hors purge ; produit un avis `abilities-reset`. |
+| `ASSIGN_ABILITY` | `null` désassigne. En `standard-array`, assigner une valeur déjà portée **échange les deux** (un seul geste, résultat prévisible). En `point-buy`, refusée hors de 8–15 ou au-delà du budget : l'invalide n'est jamais atteignable par un geste. |
+| `TOGGLE_CHOICE` | Option cochée → décochée. Sinon cochée, sauf si `unavailable !== null` ou créneau plein : **ignorée**, l'UI ayant désactivé la case et affiché la raison. Si `pick === 1`, remplace. Puis `commit`. |
+| `SET_NAME` | Écrit, coupé à 60 caractères. Pas de `commit`. |
+| `SET_PERSONALITY` | Idem, 300 caractères. |
+| `GO_NEXT` | Écran suivant. **Jamais bloquée par un choix incomplet.** No-op sur `summary`. |
 | `GO_BACK` | Écran précédent. No-op sur le premier. |
-| `GO_TO` | Saute à n'importe quel écran **présent dans le parcours courant**. Ignorée sinon. Sert au récapitulatif (« Corriger ») et au sélecteur d'étapes. |
-| `DISMISS_NOTICE` | Retire un avis. Les avis expirent aussi d'eux-mêmes après 3 actions modifiantes. |
-| `RESET` | Repart d'`emptyDraft()`, écran `race`, avis vidés. La confirmation est à l'UI. |
-| `SET_STORAGE_STATUS` | Émise par l'effet de sauvegarde quand `localStorage` refuse. Ne touche pas au brouillon. |
+| `GO_TO` | Saute à tout écran **présent dans le parcours courant**. Ignorée sinon. |
+| `DISMISS_NOTICE` | Retire un avis ; les avis expirent aussi après 3 actions modifiantes. |
+| `RESET` | `emptyDraft()`, écran `race`, avis vidés. Confirmation à l'UI. |
+| `SET_STORAGE_STATUS` | Émise par l'effet de sauvegarde. Ne touche pas au brouillon. |
 
-Le reducer est produit par une fabrique : `createWizardReducer(catalogue)`, mémoïsée au
-niveau module. Ainsi `state/` **n'importe pas `data/`** — c'est `App.tsx` qui injecte le
-catalogue dans le `WizardProvider` —, et les tests utilisent un catalogue miniature de
-deux races et deux classes.
+Le reducer vient d'une fabrique `createWizardReducer(catalogue)`, mémoïsée au niveau
+module. `state/` n'importe donc pas `data/` (règle de dépendance amendée : `state → domain`
+seulement) et les tests utilisent un catalogue miniature.
 
 ---
 
 ## Invalidation en cascade
 
-### Le problème
-
-Le joueur choisit roublard, coche Discrétion et Perception, revient en arrière, prend
-clerc. Discrétion n'est pas une compétence de clerc. Et si son historique lui donnait
-déjà Perception, la cocher une seconde fois est interdit.
-
 ### La règle générale, en une phrase
 
 > **Un choix ne survit que si le créneau qui l'a ouvert est encore ouvert à l'identique
-> et que l'option est encore proposée. Sinon il est supprimé, en entier, sans
-> rattrapage.**
+> et si l'option est encore proposée. Sinon il est supprimé, en entier, sans rattrapage.**
 
-Deux mécanismes suffisent à l'appliquer, et ils sont tous les deux déjà nécessaires :
+Deux mécanismes, tous deux déjà nécessaires par ailleurs :
 
-**1. L'identité du créneau porte la décision parente.** Le domaine nomme ses créneaux
-`'class:roublard:skills'`, pas `'class:skills'`. Passer à clerc n'ouvre pas le même
-créneau mais `'class:clerc:skills'` : l'ancien disparaît, et avec lui *tous* ses choix.
-Aucune ligne de code spécifique aux compétences, aux sorts ou au domaine de clerc.
+**1. L'identifiant porte la décision parente** (A3) : `class:roublard:skills`. Passer à
+clerc n'ouvre pas le même créneau mais `class:clerc:skills` ; l'ancien disparaît, et avec
+lui tous ses choix. Zéro ligne par catégorie.
 
-**2. Une purge, à chaque `commit`, à point fixe.**
+**2. Une purge à point fixe, à chaque `commit`.**
 
 ```ts
 // src/state/prune.ts
@@ -329,87 +340,82 @@ export interface PruneResult {
 export function pruneChoices(draft: CharacterDraft, catalogue: Catalogue): PruneResult;
 ```
 
-La purge : pour chaque entrée de `draft.choices`, si son `slotId` n'est plus dans
-`openChoices(draft, catalogue)` → supprimée (`slot-closed`) ; sinon, chaque option
-sélectionnée absente des options du créneau ou marquée `unavailable` → retirée
-(`option-withdrawn`). On recommence tant que quelque chose bouge, avec un plafond de
-3 passes. Une suppression ne fait qu'élargir la disponibilité ailleurs (les exclusions
-sont monotones), donc une seconde passe ne supprime jamais rien de nouveau : le plafond
-est une ceinture, testée par `it('la purge se stabilise dès la deuxième passe')`.
+Pour chaque entrée de `draft.choices` : `slotId` absent de `openChoices(draft, catalogue)`
+→ supprimée (`slot-closed`) ; sinon toute option sélectionnée absente des `options` ou
+dont `unavailable !== null` → retirée (`option-withdrawn`). On répète tant que quelque
+chose bouge, plafond 3 passes. Une suppression ne fait qu'élargir la disponibilité
+ailleurs : la deuxième passe ne supprime jamais rien de nouveau. Le plafond est une
+ceinture, testée.
 
-### Réponse aux deux cas de l'énoncé
+### Les deux cas de l'énoncé
 
-**Roublard → clerc.** `'class:roublard:skills'` n'existe plus : Discrétion et Perception
-partent ensemble, y compris Perception qui aurait pu être légale ailleurs. Le joueur
-arrive sur l'écran « Choisis 2 compétences de clerc » vierge, avec l'avis :
-« Tu as changé de classe : tes compétences de roublard ont été remises à zéro. »
+**Roublard → clerc.** `class:roublard:skills` n'existe plus : Discrétion et Perception
+partent ensemble, y compris une compétence qui aurait été légale chez le clerc. Avis
+`{ kind: 'slot-closed', source: 'class', parentId: 'roublard', slotKind: 'skill', lost: 2 }`,
+que `ui/format/` rend en « Tu as changé de classe : tes 2 compétences de roublard ont été
+remises à zéro. » L'expertise du roublard tombe dans la même passe.
 
-Pourquoi ne pas conserver ce qui reste légal ? Parce que « j'avais coché 2 cases, il en
-reste 1 cochée que je n'ai pas choisie en tant que clerc » est plus déroutant qu'une
-ardoise propre, et parce que la règle « ça repart de zéro quand tu changes d'avis »
-s'explique en une phrase à quelqu'un qui n'a jamais joué. KISS gagne sur l'économie de
-deux tapes.
+Pourquoi ne pas garder ce qui reste légal ? « Il reste une case cochée que je n'ai jamais
+choisie en tant que clerc » est plus déroutant qu'une ardoise propre, et « ça repart de
+zéro quand tu changes d'avis » s'explique en une phrase à quelqu'un qui n'a jamais joué.
+KISS gagne sur l'économie de deux tapes.
 
 **Doublon avec l'historique.** Le domaine ne propose jamais deux fois la même compétence :
-`openChoices` marque `unavailable: "Déjà obtenue grâce à ton historique"` sur les options
-déjà acquises. Deux ordres possibles, un seul état final :
+il marque `unavailable: { kind: 'already-granted', source: 'background' }`.
 
-- *Historique avant classe* : Perception arrive désactivée sur l'écran des compétences
-  de clerc, avec sa raison affichée. Aucun avis, rien n'a été perdu.
-- *Classe avant historique* : Perception était cochée, l'historique la rend indisponible,
-  la purge la retire. Créneau à 1/2, avis : « Perception t'est déjà donnée par ton
-  historique ; il te reste 1 compétence de clerc à choisir. »
+- *Marche avant* (étape 5 après l'étape 4, A9) : Perception arrive désactivée sur l'écran
+  des compétences de classe, avec sa raison. Rien n'est perdu, aucun avis. **C'est le seul
+  chemin qu'un joueur emprunte s'il ne revient pas en arrière.**
+- *Retour en arrière* (l'historique est changé après coup) : Perception était cochée, elle
+  devient indisponible, la purge la retire, le créneau passe à 1/2, avis
+  `options-withdrawn` avec `remaining: 1`.
 
-Pour que cette convergence soit garantie, l'exclusion a une **priorité déterministe** :
-les dotations fixes l'emportent toujours sur les choix, et entre deux créneaux, celui
-qui apparaît le plus tôt dans l'ordre de `openChoices` l'emporte. Le domaine doit rendre
-cet ordre stable — c'est une clause du contrat.
+Les deux chemins aboutissent au **même état final** : c'est la propriété de convergence,
+testée. Elle est garantie par une **priorité d'exclusion déterministe** exigée du domaine :
+dotations fixes d'abord, puis race, puis historique, puis classe ; à égalité, l'ordre de
+`openChoices`. Le tri de l'étape 5 reproduit cette priorité, donc l'ordre visible et
+l'ordre logique coïncident.
 
 ### Cas limites
 
 | Cas | Comportement |
 |---|---|
-| Re-sélection de la même classe | `state` retourné à l'identique. Rien n'est purgé. Test dédié : c'est le bug le plus coûteux du lot. |
-| Changement de sous-race seulement | Seuls les créneaux `race:<sous-race>:*` tombent. Compétences de classe intactes. |
-| Écran courant supprimé par la cascade | On recule dans l'ancien parcours jusqu'au premier écran encore présent ; à défaut, premier écran du parcours. |
-| Créneau devenu plus petit (`pick` 4 → 2) | Le créneau change d'identité côté domaine si sa taille dépend de la décision parente ; sinon les options excédentaires ne sont **pas** tronquées automatiquement — la validation signale « tu as 3 compétences pour 2 places ». Cas non atteignable par un geste, seulement par une sauvegarde ancienne. |
-| Changement de méthode de caractéristiques | Seule remise à zéro hors purge ; annoncée. |
-| Catalogue modifié entre deux versions | Un `raceId` inconnu est remis à `null` à la lecture (réparation), puis la purge fait le reste. La sauvegarde n'est jamais jetée pour un identifiant inconnu. |
-| Deux sources voudraient la même option | Impossible par construction (exclusion à priorité). Un test le vérifie plutôt qu'un garde-fou à l'exécution. |
-| Cascade en chaîne (race → sorts raciaux → langues) | Traitée par le point fixe, sans code spécifique. |
+| Re-sélection de la même classe | `state` retourné à l'identique, rien n'est purgé. Test dédié : c'est le bug le plus coûteux du lot. |
+| Changement de sous-race seul | Seuls les créneaux `race:<sous-race>:*` tombent. |
+| Expertise portant sur une compétence abandonnée | L'option n'est plus dans `options` → retirée par `option-withdrawn`, sans code spécifique. Cascade à deux niveaux, testée. |
+| Écran courant supprimé | On recule dans l'ancien parcours jusqu'au premier écran encore présent ; à défaut, premier écran du nouveau parcours. |
+| Créneau rétréci (`pick` 4 → 2) | Non atteignable par un geste (l'identifiant change avec le parent). Depuis une sauvegarde ancienne : la validation signale `too-many-choices`, on ne tranche pas à la place du joueur. |
+| Changement de méthode de caractéristiques | Vidage annoncé par `abilities-reset`. |
+| Contenu retiré du catalogue | Identifiant inconnu remis à `null` à la lecture, puis purge. La sauvegarde n'est jamais jetée pour ça. |
+| Deux sources réclamant la même option | Impossible par construction ; vérifié par test plutôt que gardé à l'exécution. |
+| Cascade en chaîne (race → sorts raciaux → langues) | Traitée par le point fixe. |
 
-### Prévenir plutôt que consoler
+### Pas de confirmation préalable (B4)
 
-`describeImpact(draft, action, catalogue): readonly string[]` rejoue la purge sur le
-brouillon hypothétique et rend la liste, en français, de ce qui serait perdu. L'UI
-n'affiche une confirmation que si la liste n'est pas vide : changer de classe sans rien
-avoir coché ne déclenche aucune boîte de dialogue. Une fonction pure, dix lignes,
-réutilisant la purge existante.
+`describeImpact` et la boîte de confirmation sont retirés du périmètre. Le dispositif
+restant suffit : avis a posteriori formaté par `ui/format/`, plus un retour arrière à un
+doigt. Ajouter un dialogue — que le lot 3 n'a pas et refuse à raison — pour éviter
+l'annulation d'un geste serait un mauvais échange.
 
 ---
 
 ## Navigation
 
-- **Avancer** : `GO_NEXT`, écran suivant du parcours. Le bouton « Suivant » n'est
-  **jamais désactivé** (charte §4 : progression linéaire sans blocage). Avancer avec un
-  choix incomplet est un usage normal, pas une erreur : on peut découvrir tout
-  l'assistant avant de décider. Le récapitulatif final liste ce qui manque, chaque ligne
-  étant un lien direct vers l'écran concerné.
-- **Reculer** : `GO_BACK`. `canGoBack` est faux sur le premier écran. Le geste « retour »
-  du navigateur n'est pas géré (charte : aucun routeur) ; le bouton « Précédent » est en
-  bas d'écran, atteignable au pouce.
-- **Sauter** : `GO_TO(screenId)`, autorisé vers tout écran du parcours courant. Comme le
-  parcours ne contient jamais un écran dont les prérequis manquent, aucune garde
-  supplémentaire n'est nécessaire — le sélecteur d'étapes et le récapitulatif s'appuient
-  dessus.
-- **Reprendre** : le brouillon *et* `currentScreenId` sont relus au démarrage dans
-  l'initialiseur paresseux de `useReducer`, donc de façon synchrone, sans écran de
-  chargement ni clignotement. Si l'écran mémorisé n'existe plus, on retombe sur le
-  premier écran encore valide. La reprise est silencieuse ; « Recommencer » (`RESET`)
-  reste accessible depuis le récapitulatif et le menu.
-- **Repère de progression** : `useWizard().progress` rend `{ stepIndex, stepCount: 8,
-  stepLabel, screenIndex, screenCount }`. On affiche « Étape 2 sur 8 » (stable) et une
-  barre fine sur les écrans (précise). Annoncer « écran 7 sur 19 » découragerait.
+- **Avancer** : `GO_NEXT`. Le bouton « Suivant » n'est **jamais désactivé** (charte :
+  progression linéaire sans blocage). Avancer avec un choix incomplet est un usage normal :
+  on peut parcourir tout l'assistant avant de décider. Le récapitulatif liste ce qui
+  manque, chaque ligne pointant vers son écran.
+- **Reculer** : `GO_BACK` ; `canGoBack` faux sur le premier écran. Le geste « retour » du
+  navigateur n'est pas géré (aucun routeur).
+- **Sauter** : `GO_TO` vers tout écran du parcours courant. Aucune garde supplémentaire :
+  le parcours ne contient jamais un écran dont les prérequis manquent.
+- **Reprendre** : brouillon **et** `currentScreenId` relus dans l'initialiseur paresseux
+  de `useReducer`, donc de façon synchrone, sans écran de chargement. Écran mémorisé
+  disparu → premier écran encore valide. Reprise silencieuse ; « Recommencer » (`RESET`)
+  reste accessible.
+- **Repère** : `useWizard().progress` rend `{ stepIndex, stepCount: 8, step, screenIndex,
+  screenCount }`. L'UI affiche « Étape 3 sur 8 » (stable) et une barre fine sur les écrans.
+  Annoncer « écran 7 sur 19 » découragerait.
 
 ---
 
@@ -419,68 +425,68 @@ réutilisant la purge existante.
 
 | Rôle | Lieu | Forme |
 |---|---|---|
-| Empêcher l'illégal | `state/reducer.ts` | Actions refusées : dépassement de `pick`, score hors bornes, budget d'achat de points, option indisponible. |
-| Nettoyer le caduc | `state/prune.ts` | Suppression sans interprétation. |
+| Empêcher l'illégal | `state/reducer.ts` | actions refusées (dépassement de `pick`, bornes, budget, option indisponible) |
+| Nettoyer le caduc | `state/prune.ts` | suppression sans interprétation |
 | Dire ce qui manque ou cloche | `domain/validate.ts` | `validateDraft(draft, catalogue): readonly Issue[]` |
-| Situer et présenter | `state/hooks.ts` | Rattache chaque anomalie à un écran. |
-
-La frontière entre purge et validation, énoncée une fois pour toutes :
+| Situer | `state/flow.ts` | rattache chaque anomalie à un écran |
+| Rédiger | `ui/format/formatIssue.ts` | compose la phrase française (A5) |
 
 > **La purge supprime ce qui est objectivement caduc. La validation signale ce qu'on ne
-> peut pas corriger sans choisir à la place du joueur.**
+> peut pas corriger sans décider à la place du joueur.**
 
-### Quand elle s'exécute
+### Quand
 
-À chaque changement de brouillon, dans un `useMemo`. Il n'y a pas de « soumission » :
-rien à valider au clic. Le résultat n'est jamais stocké dans `WizardState` — ce serait
-une valeur dérivée.
+À chaque changement de brouillon, dans un `useMemo`. Il n'y a pas de soumission : rien à
+valider au clic. Le résultat n'est jamais stocké.
 
-### Incomplet contre invalide
+### Incomplet contre invalide, sans une phrase dans le domaine
 
 ```ts
-// domain/validate.ts
+// src/domain/validate.ts — propriété du lot 1, forme demandée par le lot 2
 export type IssueSeverity = 'incomplete' | 'invalid';
+
 export type IssueTarget =
   | { readonly kind: 'slot';  readonly slotId: ChoiceSlotId }
   | { readonly kind: 'field'; readonly field: keyof CharacterDraft };
 
+export type IssueReason =
+  | { readonly kind: 'missing-field' }
+  | { readonly kind: 'missing-choices'; readonly missing: number }
+  | { readonly kind: 'abilities-incomplete'; readonly missing: readonly AbilityId[] }
+  | { readonly kind: 'not-enough-points'; readonly required: number;
+      readonly remaining: number }
+  | { readonly kind: 'over-budget'; readonly spent: number; readonly budget: number }
+  | { readonly kind: 'score-out-of-range'; readonly ability: AbilityId;
+      readonly score: number }
+  | { readonly kind: 'too-many-choices'; readonly extra: number };
+
 export interface Issue {
   readonly severity: IssueSeverity;
   readonly target: IssueTarget;
-  readonly message: string; // français, prêt à afficher
+  readonly reason: IssueReason;
 }
 ```
 
-- **`incomplete`** : une décision n'a pas été prise ou pas jusqu'au bout.
-  « Il te reste 1 compétence de clerc à choisir. » « Tu n'as pas encore de nom. »
-  Attendu, non bloquant, ton neutre, gris. Compté dans le badge du récapitulatif.
-- **`invalid`** : l'état viole une règle et le joueur doit trancher.
-  « Tes caractéristiques dépassent le budget de 27 points. » Alerte, à corriger.
+- **`incomplete`** : décision non prise ou pas terminée (`missing-choices`,
+  `missing-field`, `abilities-incomplete`). Attendu, non bloquant, ton neutre, compté
+  dans le badge du récapitulatif.
+- **`invalid`** : l'état viole une règle et seul le joueur peut trancher (`over-budget`,
+  `too-many-choices`, `score-out-of-range`). Alerte.
 
 Comme le reducer refuse les gestes illégaux et que la purge nettoie le caduc, `invalid`
-n'est atteignable qu'à la relecture d'une sauvegarde ancienne ou modifiée à la main.
-C'est voulu : **on préfère rendre l'invalide irreprésentable plutôt que le détecter**.
-Le niveau existe quand même parce qu'une sauvegarde est une entrée non fiable, et parce
-qu'un message adapté vaut mieux qu'une correction arbitraire.
+n'est atteignable qu'en relisant une sauvegarde ancienne ou modifiée à la main. C'est
+voulu : **on préfère rendre l'invalide irreprésentable plutôt que le détecter.** Le
+niveau existe parce qu'une sauvegarde est une entrée non fiable.
 
-### Remontée à l'UI
-
-Les messages sont écrits **en français dans `domain/`**. C'est assumé : l'application
-n'a qu'une langue, et une table code → message dans `state/` serait exactement
-l'indirection spéculative que YAGNI proscrit. En revanche le domaine **ne connaît pas
-les écrans** : il désigne une cible (`slot` ou `field`), et `state/flow.ts` la traduit en
-`screenId`. La dépendance reste `state → domain`.
-
-L'UI consomme `useScreenIssues(screenId)` (bandeau discret sur l'écran courant) et
-`useIssues()` (récapitulatif groupé par étape, chaque ligne cliquable).
+`state/` ajoute la localisation (`LocatedIssue = Issue & { screenId }`) ; `ui/format/`
+compose la phrase. Le domaine ne concatène jamais.
 
 ---
 
 ## Persistance
 
-C'est la seule interface du lot, et elle est justifiée par la charte elle-même
-(§3, YAGNI : « sauf frontière réelle — persistance »). Elle a **deux implémentations**,
-pas une.
+Seule interface du lot, justifiée par la charte (frontière réelle), avec **deux**
+implémentations.
 
 ```ts
 // src/state/persistence/DraftStorage.ts
@@ -498,8 +504,7 @@ export type LoadResult =
   | { readonly kind: 'unavailable' };
 
 export type SaveResult =
-  | { readonly kind: 'ok' }
-  | { readonly kind: 'quota' }
+  | { readonly kind: 'ok' } | { readonly kind: 'quota' }
   | { readonly kind: 'unavailable' };
 
 export interface DraftStorage {
@@ -509,32 +514,28 @@ export interface DraftStorage {
 }
 
 export function localStorageDraftStorage(): DraftStorage;
-export function memoryDraftStorage(): DraftStorage; // tests + navigation privée
+export function memoryDraftStorage(): DraftStorage;   // tests + navigation privée
 ```
 
-- **Clé** : `'ddbf:draft:v1'`. Le numéro de version est **dans la clé et dans la charge
-  utile**. La clé isole les générations ; le champ `version` est la vérification qui
-  fait autorité (3 lignes, défensif contre une charge éditée à la main).
-- **Quand on écrit** : anti-rebond de 400 ms après toute action qui change
-  `draft` ou `currentScreenId` (comparaison par référence — le reducer ne crée un nouvel
-  objet que s'il a réellement changé, ce qui rend le test `it('n'écrit rien quand rien
-  n'a changé')` trivial). Écriture immédiate et synchrone sur `pagehide` et sur
-  `visibilitychange` en `hidden` : sur mobile, l'onglet est tué sans `beforeunload`.
-- **Quand on lit** : une fois, dans l'initialiseur paresseux de `useReducer`.
-- **Migration** : aucune aujourd'hui, il n'existe qu'une version (YAGNI). La politique
-  d'un futur changement est fixée dès maintenant : version inconnue ou supérieure →
-  **abandon propre**, on repart d'un brouillon vide et on le dit
-  (« Ta sauvegarde vient d'une autre version de l'application ; on repart de zéro. »).
-  Une clé versionnée d'une génération antérieure est supprimée par la version suivante.
+- **Clé** : `'ddbf:draft:v1'`. Version dans la clé **et** dans la charge utile ; le champ
+  `version` fait autorité (défense contre une charge éditée à la main).
+- **Écriture** : anti-rebond 400 ms après toute action changeant `draft` ou
+  `currentScreenId` (comparaison par référence : le reducer ne crée un objet que s'il a
+  réellement changé). Écriture immédiate sur `pagehide` et sur `visibilitychange` en
+  `hidden` — sur mobile l'onglet est tué sans `beforeunload`.
+- **Lecture** : une seule fois, dans l'initialiseur paresseux.
+- **Migration** : aucune aujourd'hui (une seule version). Politique fixée d'avance :
+  version inconnue ou supérieure → **abandon propre**, brouillon vierge, message. Une
+  clé d'une génération antérieure est supprimée par la version qui la remplace.
 
 | Incident | Détection | Réaction |
 |---|---|---|
-| `localStorage` inaccessible (navigation privée verrouillée, cookies bloqués, iframe) | accès à `window.localStorage` **et** écriture sonde, tous deux dans un `try/catch` | bascule sur `memoryDraftStorage`, statut `unavailable`, bandeau unique : « Ta progression ne sera pas conservée si tu fermes cet onglet. » |
-| Quota dépassé | `SaveResult.kind === 'quota'` | statut `quota`, bandeau, **arrêt des tentatives** jusqu'au prochain changement d'écran (pas de nouvel essai à chaque frappe). On ne supprime jamais la sauvegarde existante pour faire de la place. |
-| JSON illisible | `JSON.parse` dans un `try/catch` | clé supprimée, brouillon vierge, message. Conserver un blob corrompu consomme du quota et bloque le joueur. |
-| Forme invalide (JSON valide mais objet inattendu) | `parseSession(unknown): PersistedSession \| null`, garde de forme écrite à la main, ~40 lignes, aucune dépendance | même traitement que JSON illisible. |
-| Identifiant inconnu du catalogue (contenu retiré) | comparaison aux entrées du catalogue à la lecture | **réparation champ par champ** : l'identifiant passe à `null`, la purge enchaîne. La sauvegarde n'est jamais jetée pour ça. |
-| Données effacées par le système (iOS, 7 jours d'inactivité) | `load()` rend `empty` | démarrage normal. Rien à faire, mais la limite est documentée dans l'UI (« sauvegarde sur cet appareil uniquement »). |
+| Stockage inaccessible (navigation privée verrouillée, cookies bloqués, iframe) | accès à `window.localStorage` **et** écriture sonde, tous deux sous `try/catch` | bascule sur `memoryDraftStorage`, statut `unavailable`, bandeau unique |
+| Quota dépassé | `SaveResult` `quota` | statut `quota`, bandeau, **arrêt des tentatives** jusqu'au prochain changement d'écran ; on ne supprime jamais la sauvegarde pour faire de la place |
+| JSON illisible | `JSON.parse` sous `try/catch` | clé supprimée, brouillon vierge, message |
+| Forme invalide | `parseSession(unknown)`, garde écrite à la main (~40 lignes, aucune dépendance — cohérent avec le validateur d'import du lot 4) | idem |
+| Identifiant inconnu du catalogue | comparaison au catalogue à la lecture | **réparation champ par champ** puis purge ; la sauvegarde n'est jamais jetée |
+| Données effacées par le système (iOS) | `load()` rend `empty` | démarrage normal ; limite annoncée dans l'UI |
 
 Le brouillon pèse moins de 4 Ko : le quota est un cas de robustesse, pas de conception.
 
@@ -549,8 +550,7 @@ export function useWizard(): {
   readonly canGoBack: boolean;
   readonly canGoNext: boolean;
   readonly progress: {
-    readonly stepIndex: number; readonly stepCount: number;
-    readonly stepLabel: string;
+    readonly step: StepId; readonly stepIndex: number; readonly stepCount: number;
     readonly screenIndex: number; readonly screenCount: number;
   };
   readonly goNext: () => void;
@@ -561,7 +561,7 @@ export function useWizard(): {
 export function useChoiceSlot(slotId: ChoiceSlotId): {
   readonly slot: ChoiceSlot;
   readonly selected: readonly string[];
-  readonly remaining: number;   // dérivé : slot.pick - selected.length
+  readonly remaining: number;                 // dérivé : slot.pick - selected.length
   readonly toggle: (optionId: string) => void;
 };
 
@@ -574,15 +574,14 @@ export function useSelection(): {
 
 export function useAbilities(): {
   readonly input: AbilityInput;
-  readonly pool: readonly number[];      // dérivé du domaine
-  readonly pointsLeft: number | null;    // dérivé, null hors achat de points
+  readonly pool: readonly number[];           // dérivé (tableau standard)
+  readonly pointsLeft: number | null;         // dérivé, null hors répartition
   readonly setMethod: (method: AbilityMethod) => void;
   readonly assign: (ability: AbilityId, score: number | null) => void;
-  readonly setRolled: (scores: readonly number[]) => void;
 };
 
-export function useCharacterSheet(): CharacterSheet;               // 100 % dérivé
-export function useIssues(): readonly LocatedIssue[];              // tout le brouillon
+export function useCharacterSheet(): CharacterSheet;             // 100 % dérivé
+export function useIssues(): readonly LocatedIssue[];
 export function useScreenIssues(screenId: ScreenId): readonly LocatedIssue[];
 export function useNotices(): { readonly notices: readonly Notice[];
                                 readonly dismiss: (id: string) => void };
@@ -591,116 +590,94 @@ export function useDraftText(field: 'name' | keyof Personality): {
   readonly initial: string;
   readonly commit: (text: string) => void;
 };
+export function useWizardDispatch(): React.Dispatch<WizardAction>;
 ```
 
-### Pourquoi ce découpage ne re-rend pas tout à chaque frappe
+Ces hooks rendent des **données structurées**. La mise en français (titres d'ancres,
+avis, anomalies) appartient à `ui/format/`. `ui/` lit directement le contenu de `data/`
+(glossaire, descriptions) sans passer par `state/` : la règle de dépendance amendée
+l'autorise, et un faux hook de transit serait un contournement.
+
+### Pourquoi ça ne re-rend pas tout à chaque frappe
 
 Trois raisons, de la plus décisive à la moins :
 
 1. **Un seul écran est monté.** L'assistant affiche une décision à la fois : le rayon
-   d'action d'un re-rendu, c'est une dizaine de nœuds. Toute optimisation plus poussée
-   serait de la complexité gratuite — je l'écris explicitement pour que personne
-   n'introduise plus tard un sélecteur mémoïsé « au cas où ».
+   d'un re-rendu, c'est une dizaine de nœuds. Je l'écris pour que personne n'introduise
+   plus tard un sélecteur mémoïsé « au cas où ».
 2. **Le texte libre ne passe pas par le reducer à chaque touche.** `useDraftText` rend
-   une valeur initiale et un `commit` : le champ garde sa frappe en `useState` local et
-   ne remonte qu'au `blur` (et par sécurité toutes les 500 ms d'inactivité). Une frappe
-   ne déclenche donc ni purge, ni validation, ni sauvegarde. C'est la seule optimisation
-   réellement nécessaire, et elle est aussi la plus simple.
+   une valeur initiale et un `commit` ; le champ garde sa frappe en `useState` local et
+   ne remonte qu'au `blur` (et par sécurité après 500 ms d'inactivité). Une frappe ne
+   déclenche ni purge, ni validation, ni sauvegarde. Seule optimisation réellement
+   nécessaire, et la plus simple.
 3. **Deux contextes, pas un.** `WizardStateContext` (change à chaque action) et
-   `WizardDispatchContext` (référence stable pour toute la vie de l'application). Les
-   barres d'action, boutons « Suivant/Précédent » et cartes cliquables ne consomment que
-   le dispatch : ils ne se re-rendent jamais. Gratuit, deux `createContext` au lieu d'un.
+   `WizardDispatchContext` (référence stable à vie). Barres d'actions et cartes
+   cliquables ne consomment que le dispatch : elles ne se re-rendent jamais. Gratuit.
 
-`useCharacterSheet` mémoïse sur l'identité de `draft` : le panneau « ce que ça change sur
-ta fiche » se recalcule une fois par choix, pas une fois par rendu.
+`useCharacterSheet` mémoïse sur l'identité de `draft` : l'aperçu « ce que ça change sur ta
+fiche » se recalcule une fois par choix, pas une fois par rendu.
 
 ---
 
 ## Contrat attendu du domaine
 
-Ce que `src/state/` importe de `src/domain/`, et rien d'autre. Toute évolution de cette
-liste se négocie entre les deux lots.
+Ce que `src/state/` importe de `src/domain/`, et rien d'autre.
 
 ```ts
-// --- Types ---
-export type AbilityId; export type AbilityMethod; export type ChoiceSlotId;
-export interface AbilityInput; export interface Personality;
-export interface CharacterDraft;      // forme donnée plus haut
-export interface CharacterSheet;      // toutes les valeurs dérivées
-export interface Catalogue;           // instancié par data/, injecté par App.tsx
+// src/domain/draft.ts   → AbilityId, AbilityMethod, AbilityInput, Personality,
+//                         CharacterDraft, emptyDraft()
+// src/domain/choice.ts  → ChoiceSlotId, ChoiceSource, ChoiceKind, UnavailableReason,
+//                         ChoiceOption, ChoiceSlot   (formes fixées en A4)
+// src/domain/validate.ts→ IssueSeverity, IssueTarget, IssueReason, Issue
+// src/domain/catalogue.ts → Catalogue
+// src/domain/sheet.ts   → CharacterSheet
 
-// --- Le créneau de choix : pièce maîtresse du contrat ---
-export type ChoiceSource = 'race' | 'class' | 'background';
-export type ChoiceKind =
-  | 'skill' | 'language' | 'tool' | 'cantrip' | 'spell'
-  | 'ability' | 'equipment' | 'subclass' | 'ancestry' | 'fighting-style';
-
-export interface ChoiceOption {
-  readonly id: string;
-  readonly label: string;        // français
-  readonly summary: string;      // une phrase d'explication, français
-  readonly unavailable?: string; // raison en français si l'option est déjà acquise
-}
-
-export interface ChoiceSlot {
-  /** DOIT contenir l'identifiant de la décision parente :
-   *  'class:roublard:skills', 'race:haut-elfe:cantrip'. */
-  readonly id: ChoiceSlotId;
-  readonly source: ChoiceSource;
-  readonly kind: ChoiceKind;
-  readonly title: string;   // « Choisis 2 compétences de roublard »
-  readonly help: string;    // explication courte, français
-  readonly pick: number;
-  readonly options: readonly ChoiceOption[];
-}
-
-// --- Fonctions ---
-export function emptyDraft(): CharacterDraft;
-
-/** Tous les créneaux que le brouillon courant ouvre, dans un ORDRE STABLE.
- *  Exclut ou marque `unavailable` toute option déjà acquise par une dotation fixe
- *  ou par un créneau antérieur dans cet ordre. */
 export function openChoices(draft: CharacterDraft, catalogue: Catalogue)
   : readonly ChoiceSlot[];
 
 export function validateDraft(draft: CharacterDraft, catalogue: Catalogue)
   : readonly Issue[];
 
-/** Le seul producteur de valeurs dérivées : scores finaux, modificateurs, PV, CA,
- *  initiative, vitesse, maîtrises, bonus de maîtrise, jets de sauvegarde,
- *  langues, sorts préparés. Doit tolérer un brouillon incomplet. */
+/** Seul producteur de valeurs dérivées ; doit tolérer un brouillon incomplet. */
 export function buildCharacter(draft: CharacterDraft, catalogue: Catalogue)
   : CharacterSheet;
 
-// --- Caractéristiques ---
 export const STANDARD_ARRAY: readonly number[];
 export const POINT_BUY_BUDGET: number;
 export function pointBuyCost(score: number): number;
 export function pointsSpent(base: AbilityInput['base']): number;
 ```
 
-Quatre exigences non négociables pour que ce lot fonctionne :
+Cinq exigences non négociables :
 
-1. **`openChoices` est pur et déterministe** : même brouillon, même catalogue, même
-   liste, dans le même ordre. Tout le parcours et toute la cascade en dépendent.
-2. **L'identifiant de créneau porte la décision parente.** C'est ce qui rend
-   l'invalidation gratuite. Sans cela, `state/` devrait maintenir une table de
-   dépendances codée en dur — exactement ce qu'on veut éviter.
-3. **`buildCharacter` tolère l'incomplet** et rend des valeurs partielles (pas
-   d'exception, pas de `null` surprise) : la fiche est affichée en aperçu dès l'écran 1.
-4. **`openChoices` est la seule source des exclusions.** `state/` ne sait pas qu'une
-   compétence ne se prend pas deux fois ; il applique « l'option n'est plus proposée ».
+1. **`openChoices` est pure et déterministe** : même brouillon, même catalogue, même
+   liste, même ordre. Tout le parcours et toute la cascade en dépendent.
+2. **L'identifiant de créneau porte la décision parente** (A3). Sans cela, `state/`
+   devrait maintenir une table de dépendances codée en dur.
+3. **Priorité d'exclusion déclarée et stable** : dotations fixes > race > historique >
+   classe, puis ordre de déclaration. Le tri de l'étape 5 la reproduit.
+4. **Une option indisponible reste dans `options`**, avec `unavailable` renseigné : c'est
+   ce qui permet à l'UI d'expliquer « déjà obtenue grâce à ton historique » et à la purge
+   de la retirer sans perdre son libellé.
+5. **`buildCharacter` tolère l'incomplet** : valeurs partielles, ni exception ni `null`
+   surprise ; la fiche est affichée en aperçu dès le premier écran.
+
+Demande complémentaire au lot 1, issue de la relecture d'A9 : les créneaux de kind
+`'expertise'` doivent voir dans leurs `options` les compétences effectivement acquises par
+le brouillon courant, dotations fixes comprises.
 
 ---
 
 ## Tests prévus
 
 Vitest, dans `src/state/__tests__/`, sur un catalogue miniature (2 races dont une à
-sous-races, 2 classes dont une lanceuse de sorts, 2 historiques).
+sous-races, 2 classes dont une lanceuse, 2 historiques).
 
 **Parcours**
 - `it('n'affiche l'écran de sous-race que pour les races qui en ont')`
-- `it('insère les écrans de sorts seulement pour une classe qui lance des sorts')`
+- `it('regroupe les compétences de toutes les sources dans l'étape « Ce que tu sais faire »')`
+- `it('place le choix d'expertise après tous les choix de compétences')`
+- `it('n'insère les écrans de sorts que pour une classe qui lance des sorts')`
 - `it('garde le même écran courant quand le parcours s'allonge')`
 - `it('recule jusqu'au dernier écran encore valide quand l'écran courant disparaît')`
 
@@ -708,11 +685,12 @@ sous-races, 2 classes dont une lanceuse de sorts, 2 historiques).
 - `it('oublie les compétences de roublard quand on passe à clerc')`
 - `it('ne touche à rien quand on re-sélectionne la même classe')`
 - `it('conserve les compétences de classe quand on change seulement de sous-race')`
-- `it('retire Perception des compétences de clerc quand l'historique la donne déjà')`
-- `it('aboutit au même état que l'historique soit choisi avant ou après la classe')`
+- `it('grise Perception dans les compétences de classe quand l'historique la donne déjà')`
+- `it('retire Perception déjà cochée quand un retour en arrière change l'historique')`
+- `it('aboutit au même état quel que soit l'ordre entre historique et classe')`
+- `it('retire une expertise portant sur une compétence abandonnée')`
 - `it('vide les caractéristiques quand on change de méthode de répartition')`
 - `it('la purge se stabilise dès la deuxième passe')`
-- `it('annonce en français ce qu'un changement de classe ferait perdre')`
 
 **Actions**
 - `it('échange les valeurs quand on assigne 15 à une caractéristique déjà prise')`
@@ -725,6 +703,8 @@ sous-races, 2 classes dont une lanceuse de sorts, 2 historiques).
 - `it('liste sur le récapitulatif tout ce qui manque, écran par écran')`
 - `it('distingue un choix incomplet d'une répartition invalide')`
 - `it('rattache chaque anomalie à l'écran qui la corrige')`
+- `it('ne rend aucune phrase française depuis le domaine ni depuis l'état')` — vérifie que
+  `Issue` et `Notice` ne portent que des raisons structurées
 
 **Persistance**
 - `it('reprend à l'écran quitté après un rechargement')`
@@ -739,28 +719,32 @@ sous-races, 2 classes dont une lanceuse de sorts, 2 historiques).
 - `it('ne stocke aucune valeur dérivable dans le brouillon')`
 - `it('reconstruit une fiche identique après un aller-retour de sauvegarde')`
 
+**Intégration (obligatoire, A13.3 — à charge conjointe des lots 2 et 3)**, dans
+`src/__tests__/parcours.test.tsx` : monte `<App />`, crée un personnage complet du premier
+écran au récapitulatif au doigt (rôles et libellés uniquement), vérifie qu'un retour en
+arrière sur la classe efface bien les compétences et affiche l'avis, puis démonte,
+remonte, et vérifie que la session reprend à l'écran quitté avec les mêmes choix. C'est la
+compensation explicite du renoncement à Playwright.
+
 ---
 
 ## Hors périmètre
 
-- **Annulation / rétablissement multi-niveaux.** Une pile d'instantanés du brouillon
-  serait la seule implémentation honnête, et elle pèse plus que le problème qu'elle
-  résout. La cascade est traitée en amont : confirmation avant un changement qui détruit
-  quelque chose (`describeImpact`), avis expliquant ce qui a été retiré, retour arrière
-  d'un doigt. Si les tests d'usage montrent de la frustration, l'incrément minimal est
-  **une** annulation d'un niveau, limitée à la dernière action destructrice (un champ
-  `lastDestructive: { label, previous }`, effacé à l'action suivante). Pas avant.
-- **Synchronisation réseau.** Hors périmètre du projet (charte §1). Rien dans ce lot ne
-  la prépare : `DraftStorage` est synchrone, et le rendre asynchrone « au cas où »
-  contaminerait tout le lot.
-- **Brouillons multiples.** Une clé, un personnage. Un second personnage passe par
-  « Recommencer ». L'import/export JSON, prévu ailleurs, couvre déjà le besoin d'archiver.
-- **Routeur, URL, historique du navigateur.** Charte §2 : aucun routage.
-- **Montée de niveau, multiclassage, homebrew.** Charte §1.
-- **Machine à états tierce.** Le parcours est une liste dérivée et un identifiant courant ;
-  une bibliothèque coûterait plus que les 40 lignes de `flow.ts`.
-- **Sélecteurs mémoïsés génériques / abonnement fin au contexte.** Un seul écran est
-  monté : le problème n'existe pas.
+- **Annulation / rétablissement multi-niveaux.** Une pile d'instantanés pèserait plus que
+  le problème. La cascade est couverte par l'avis a posteriori et le retour arrière.
+- **Confirmation avant changement destructeur et `describeImpact`** (B4) : retirés.
+- **Jets de dés 4d6, `SET_ROLLED_SCORES`, `AbilityInput.rolled`, frontière d'aléatoire**
+  (B1) : retirés. L'ajout ultérieur sera purement additif — une valeur de méthode, un
+  champ, une action.
+- **Synchronisation réseau.** Rien ne la prépare : `DraftStorage` est synchrone, et la
+  rendre asynchrone « au cas où » contaminerait tout le lot.
+- **Brouillons multiples.** Une clé, un personnage ; l'import/export du lot 4 couvre
+  l'archivage.
+- **Routeur, URL, historique du navigateur.**
+- **Montée de niveau, multiclassage, homebrew.**
+- **Machine à états tierce.** Une liste dérivée et un identifiant courant ; une
+  bibliothèque coûterait plus que les 40 lignes de `flow.ts`.
+- **Sélecteurs mémoïsés génériques.** Un seul écran monté : le problème n'existe pas.
 
 ---
 
@@ -768,10 +752,12 @@ sous-races, 2 classes dont une lanceuse de sorts, 2 historiques).
 
 | Risque | Gravité | Parade |
 |---|---|---|
-| Le domaine ne nomme pas ses créneaux avec la décision parente | élevée — toute la cascade s'écroule | Point 2 du contrat, à valider avant la première ligne de `prune.ts`. Repli : une table de dépendances explicite dans `state/`, plus verbeuse et à maintenir. |
-| Le domaine refuse de porter `CharacterDraft` | moyenne | Repli : `state/` définit le type et `buildCharacter` reçoit les champs éclatés. Coût : signature à rallonge et couplage inversé à surveiller. Option non retenue. |
-| Trop d'écrans, parcours perçu comme long | moyenne | Mesurer le nombre de tapes pour finir (cible : moins de 25). Regrouper les créneaux d'une même source de moins de 3 options si nécessaire. |
-| Suppression silencieuse mal vécue | moyenne | Avis systématique, confirmation avant destruction, tests d'usage sur écran de 360 px. |
-| `openChoices` appelé souvent (purge à point fixe, parcours, validation) | faible | Quelques dizaines d'entrées, mémoïsation sur l'identité de `draft`. À mesurer seulement si un ralentissement est observé. |
-| Sauvegarde effacée par le système sur iOS | faible, mais visible | Documenté dans l'UI ; l'export JSON du lot fiche est la vraie réponse. |
-| Dérive du brouillon vers des valeurs dérivées | moyenne, insidieuse | Test de liste noire + question ajoutée à la revue. |
+| Le lot 1 ne fait pas porter la décision parente aux identifiants de créneau | élevée — toute la cascade s'écroule | Exigence 2 du contrat, arbitrée en A3 ; à vérifier sur le premier créneau livré, avant d'écrire `prune.ts` |
+| Les options d'expertise ne voient pas les compétences acquises | élevée — le roublard est cassé | Correction demandée à A9 (expertise différée en fin d'étape 5) + test dédié |
+| `openChoices` change d'ordre entre deux versions | moyenne — la priorité d'exclusion bascule | Test de convergence + ordre déclaré dans le contrat |
+| Le tri de l'étape 5 diverge de la priorité du domaine | moyenne — options grisées inexplicables | Un seul rang de source, écrit une fois, testé |
+| Trop d'écrans, parcours perçu comme long | moyenne | Mesurer les tapes jusqu'à la fin (cible < 25) ; regrouper un créneau de moins de 3 options si nécessaire |
+| Suppression silencieuse mal vécue, sans confirmation (B4) | moyenne | Avis systématique et lisible, retour arrière à un doigt ; à réévaluer après les tests d'usage |
+| `openChoices` appelée souvent (purge, parcours, validation) | faible | Quelques dizaines d'entrées, mémoïsation sur l'identité de `draft` ; à mesurer seulement si un ralentissement est observé |
+| Sauvegarde effacée par le système sur iOS | faible mais visible | Documenté dans l'UI ; l'export JSON du lot 4 est la vraie réponse |
+| Dérive du brouillon vers des valeurs dérivées | moyenne, insidieuse | Test de liste noire + question de revue |
