@@ -73,6 +73,7 @@ export interface Tool extends Named {
 }
 
 export interface Ancestry extends Named {
+  readonly blurb: string;
   readonly damageType: DamageType;
   readonly breathWeapon: string;
 }
@@ -112,6 +113,7 @@ export interface Weapon extends Named {
 }
 
 export interface EquipmentOption extends Named {
+  readonly blurb: string;
   readonly facts: Facts;
   readonly items: readonly ItemLine[];
 }

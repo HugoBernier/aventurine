@@ -104,58 +104,70 @@ const races: readonly Race[] = [
   },
 ];
 
-const classes: readonly CharacterClass[] = [
-  {
-    id: 'roublard',
-    name: 'Roublard',
-    blurb: 'Discret, précis, opportuniste.',
-    facts: ['d8', 'Dextérité + Intelligence', 'Armures légères'],
-    hitDie: 8,
-    saves: ['dexterite', 'intelligence'],
-    proficiencies: {
-      armor: ['legere'],
-      weaponCategories: ['courantes'],
-      weapons: [],
+export const ROGUE: CharacterClass = {
+  id: 'roublard',
+  name: 'Roublard',
+  blurb: 'Discret, précis, opportuniste.',
+  facts: ['d8', 'Dextérité + Intelligence', 'Armures légères'],
+  hitDie: 8,
+  saves: ['dexterite', 'intelligence'],
+  proficiencies: {
+    armor: ['legere'],
+    weaponCategories: ['courantes'],
+    weapons: [],
+    tools: ['outils-de-voleur'],
+  },
+  unarmoredDefense: null,
+  features: [{ name: 'Attaque sournoise', text: '1d6 de dégâts en plus.' }],
+  choices: [
+    {
+      kind: 'skill',
+      subject: 'skills',
+      title: 'Tes compétences de roublard',
+      help: 'Le roublard est la classe qui en maîtrise le plus.',
+      pick: 4,
+      from: ['acrobaties', 'athletisme', 'discretion', 'perception', 'supercherie'],
+    },
+    {
+      kind: 'equipment',
+      subject: 'equipment-1',
+      title: 'Ton arme de départ',
+      help: 'Les deux sont à finesse : tu frapperas avec ta Dextérité.',
+      pick: 1,
+      from: ['rapiere', 'epee-courte', 'arme-inconnue'],
+    },
+    {
+      kind: 'expertise',
+      subject: 'expertise',
+      title: 'Tes spécialités',
+      help: 'Tu doubles ton bonus de maîtrise sur ce que tu choisis ici.',
+      pick: 2,
       tools: ['outils-de-voleur'],
     },
-    unarmoredDefense: null,
-    features: [{ name: 'Attaque sournoise', text: '1d6 de dégâts en plus.' }],
-    choices: [
-      {
-        kind: 'skill',
-        subject: 'skills',
-        title: 'Tes compétences de roublard',
-        help: 'Le roublard est la classe qui en maîtrise le plus.',
-        pick: 4,
-        from: ['acrobaties', 'athletisme', 'discretion', 'perception', 'supercherie'],
-      },
-      {
-        kind: 'expertise',
-        subject: 'expertise',
-        title: 'Tes spécialités',
-        help: 'Tu doubles ton bonus de maîtrise sur ce que tu choisis ici.',
-        pick: 2,
-        tools: ['outils-de-voleur'],
-      },
-    ],
-    equipmentOptions: [
-      {
-        id: 'rapiere',
-        name: 'Une rapière',
-        facts: ['1d8 perforant', 'Finesse', 'Corps à corps'],
-        items: [{ itemId: 'rapiere', quantity: 1 }],
-      },
-      {
-        id: 'epee-courte',
-        name: 'Une épée courte',
-        facts: ['1d6 perforant', 'Finesse, légère', 'Corps à corps'],
-        items: [{ itemId: 'epee-courte', quantity: 1 }],
-      },
-    ],
-    fixedEquipment: [{ itemId: 'outils-de-voleur', quantity: 1 }],
-    spellcasting: null,
-    subclass: null,
-  },
+  ],
+  equipmentOptions: [
+    {
+      id: 'rapiere',
+      name: 'Une rapière',
+      blurb: 'Longue, fine, rapide.',
+      facts: ['1d8 perforant', 'Finesse', 'Corps à corps'],
+      items: [{ itemId: 'rapiere', quantity: 1 }],
+    },
+    {
+      id: 'epee-courte',
+      name: 'Une épée courte',
+      blurb: 'Courte et maniable.',
+      facts: ['1d6 perforant', 'Finesse, légère', 'Corps à corps'],
+      items: [{ itemId: 'epee-courte', quantity: 1 }],
+    },
+  ],
+  fixedEquipment: [{ itemId: 'outils-de-voleur', quantity: 1 }],
+  spellcasting: null,
+  subclass: null,
+};
+
+const classes: readonly CharacterClass[] = [
+  ROGUE,
   {
     id: 'clerc',
     name: 'Clerc',
@@ -179,6 +191,20 @@ const classes: readonly CharacterClass[] = [
         help: 'Choisis ce que ton service au temple t’a appris.',
         pick: 2,
         from: ['histoire', 'medecine', 'perception', 'persuasion', 'religion'],
+      },
+      {
+        kind: 'ancestry',
+        subject: 'ancestry',
+        title: 'Ton ascendance',
+        help: 'Le sang qui coule dans tes veines.',
+        pick: 1,
+      },
+      {
+        kind: 'fighting-style',
+        subject: 'fighting-style',
+        title: 'Ta façon de te battre',
+        help: 'Une manière de combattre qui te ressemble.',
+        pick: 1,
       },
       {
         kind: 'cantrip',
@@ -395,6 +421,34 @@ export const MINI_CATALOGUE: Catalogue = {
     { id: 'epee-courte', name: 'Épée courte', weightKg: 1 },
   ],
   spells,
-  ancestries: [],
-  fightingStyles: [],
+  ancestries: [
+    {
+      id: 'or',
+      name: 'Or',
+      blurb: 'Le souffle des dragons d’or.',
+      damageType: 'feu',
+      breathWeapon: 'cône de 4,50 m',
+    },
+    {
+      id: 'argent',
+      name: 'Argent',
+      blurb: 'Le souffle des dragons d’argent.',
+      damageType: 'froid',
+      breathWeapon: 'cône de 4,50 m',
+    },
+  ],
+  fightingStyles: [
+    {
+      id: 'defense',
+      name: 'Défense',
+      text: 'Tu gagnes +1 en classe d’armure quand tu portes une armure.',
+      armorClassBonusWithArmor: 1,
+    },
+    {
+      id: 'duel',
+      name: 'Duel',
+      text: 'Tu frappes plus fort avec une seule arme en main.',
+      armorClassBonusWithArmor: 0,
+    },
+  ],
 };
