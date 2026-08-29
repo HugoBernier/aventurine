@@ -146,9 +146,14 @@ function registerFor(
   granted: Granted,
 ): Map<string, ChoiceSource> | null {
   switch (kind) {
-    case 'skill':
-    case 'expertise': {
+    case 'skill': {
       return granted.skills;
+    }
+    // L'expertise porte SUR les compétences déjà acquises : les posséder est
+    // sa condition d'entrée, pas un conflit. Elle n'a donc pas de registre
+    // d'exclusion, et ses options se construisent depuis `granted` directement.
+    case 'expertise': {
+      return null;
     }
     case 'language': {
       return granted.languages;
@@ -316,7 +321,11 @@ export function openChoices(
     const options = buildOptions(owner, draft, catalogue, granted).map(
       (entry): ChoiceOption => {
         const isChosen = picked.includes(entry.id);
-        const grantedBy = isChosen ? undefined : register?.get(entry.id);
+        // Le registre ne contient jamais les réponses de CE créneau — elles y
+        // sont versées après. Une option marquée ici l'est donc par une source
+        // antérieure, et le fait qu'on l'ait cochée n'y change rien : c'est ce
+        // qui permet à la purge de retirer un doublon apparu après coup.
+        const grantedBy = register?.get(entry.id);
         if (grantedBy !== undefined) {
           return {
             ...entry,
