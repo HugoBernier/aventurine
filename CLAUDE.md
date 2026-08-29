@@ -10,12 +10,18 @@ statique, sans backend, **pensé pour le téléphone d'abord**.
 
 ## 1. Périmètre
 
-**Dans le périmètre :** création de personnage pas-à-pas (assistant), fiche de
-personnage consultable, sauvegarde locale, import/export JSON, impression.
+**Dans le périmètre :** création de personnage **de niveau 1** pas-à-pas
+(assistant), fiche consultable, sauvegarde locale, import/export JSON,
+impression. Caractéristiques par **répartition de points ou tableau standard**.
 
 **Hors périmètre (YAGNI — ne pas anticiper) :** comptes utilisateurs, backend,
 base de données, multijoueur, gestion de campagne, compendium complet,
-boutique, montée de niveau au-delà du niveau 1, homebrew, mobile natif.
+boutique, montée de niveau au-delà du niveau 1, multiclassage, dons, homebrew,
+mobile natif, thème sombre, annulation/rétablissement, brouillons multiples,
+routage.
+
+**Reporté, pas abandonné** (à rouvrir quand la v1 tourne) : jets de dés 4d6
+garde-3, prose longue des sorts.
 
 Si une fonctionnalité n'est pas listée « dans le périmètre », **elle ne
 s'écrit pas**. Pas de « hook d'extension au cas où », pas d'abstraction
@@ -130,24 +136,40 @@ src/
   App.tsx
 ```
 
-**Règle de dépendance (à sens unique, jamais enfreinte) :**
+**Règle de dépendance (vérifiée par le lint, jamais enfreinte) :**
 
 ```
-ui  →  state  →  domain  ←  data
+ui  →  state  →  domain
+ui  →  data                (lecture de contenu uniquement)
+data  →  domain            (types uniquement)
+domain  →  rien
 ```
 
-- `domain/` n'importe **rien** de `ui/`, `state/` ni de React.
+- `domain/` n'importe **rien** : ni `ui/`, ni `state/`, ni `data/`, ni React.
+  Pas même un `import type` depuis React.
 - `data/` ne contient que des données typées par `domain/`, aucune logique.
+- `ui/` peut lire du contenu dans `data/` (libellés, glossaire), jamais une
+  règle. Faire transiter du texte par un faux hook pour « respecter la flèche »
+  est un contournement, pas une conformité.
 - Un calcul de règle dans un composant est un bug de conception.
+- Aucun fichier baril à la racine de `src/` ni d'une couche : c'est le seul
+  chemin par lequel une couche peut en atteindre une autre sans que le lint le
+  voie. Un module d'agrégation *à l'intérieur* d'une couche est autorisé.
 
 ---
 
 ## 6. Conventions
 
 - **Français partout dans l'interface** : libellés, messages, erreurs.
-- **Anglais dans le code** : noms de variables, fonctions, types, commits.
-  Exception : les identifiants de contenu D&D restent en français
-  (`'demi-orc'`, `'roublard'`).
+- **Anglais dans le code, sans exception** : variables, fonctions, types, hooks,
+  variables CSS, noms de fichiers et de dossiers, messages de commit.
+  `abilityModifier`, `useRaceChoice`, `--color-text`.
+  Seule exception : les identifiants de contenu D&D restent en français
+  (`'demi-orc'`, `'roublard'`) — ce sont des données, pas du code.
+- **Le domaine ne rédige jamais de phrase.** Une raison structurée
+  (`{ kind: 'not-enough-points', required: 3, remaining: 2 }`) remonte du domaine ;
+  la phrase française se compose dans `ui/format/`. La prose de contenu (noms,
+  descriptions) vit dans `data/`, en français.
 - Nommage : `PascalCase` composants et types, `camelCase` le reste,
   `SCREAMING_SNAKE` constantes.
 - Fichiers : un composant par fichier, nom du fichier = nom du composant.
@@ -179,9 +201,23 @@ ui  →  state  →  domain  ←  data
 ## 9. Sources et droits
 
 Contenu dérivé du **SRD 5.1**, publié par Wizards of the Coast sous licence
-**CC BY 4.0**, traduit en français pour ce projet. Attribution obligatoire
-dans l'interface. Aucun contenu hors SRD. Projet non affilié à Wizards of the
-Coast ni à D&D Beyond ; aucun élément de marque ou visuel n'est copié.
+**CC BY 4.0**, traduit en français pour ce projet — traduction écrite à neuf
+depuis l'anglais, jamais reprise d'une traduction commerciale ou communautaire,
+qui sont protégées séparément.
+
+Attribution obligatoire dans l'interface, et mention **« non affilié à Wizards
+of the Coast ni à D&D Beyond »**. Aucun logo, illustration, police ou élément
+d'habillage n'est copié.
+
+Aucun contenu hors SRD, à une exception près, assumée et signalée dans
+l'interface : le SRD 5.1 ne contient qu'un seul historique (Acolyte), ce qui
+rend un créateur de personnage inutilisable. On ajoute un historique
+**« Personnalisé »** construit uniquement sur les règles génériques
+d'historique du SRD. C'est de l'assemblage de règles SRD, pas du contenu
+inventé.
+
+Règle de revue : toute entrée de `data/` doit pouvoir être pointée à une
+section du SRD 5.1. Si on ne sait pas dire où, l'entrée ne rentre pas.
 
 ---
 
@@ -195,3 +231,10 @@ Coast ni à D&D Beyond ; aucun élément de marque ou visuel n'est copié.
 6. Est-ce compréhensible par quelqu'un qui découvre D&D ?
 
 Une réponse « non » se corrige avant de proposer, pas après.
+
+---
+
+## 11. Arbitrage des plans
+
+`docs/plans/00-arbitrage.md` tranche les conflits entre les cinq lots et fait
+autorité sur les plans individuels. Le lire avant d'implémenter.
