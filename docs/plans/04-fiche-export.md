@@ -163,19 +163,20 @@ export type MissingKind = ChoiceKind | 'name' | 'abilities' | 'personality';
 
 export interface MissingChoice {
   readonly kind: MissingKind;
-  readonly remaining: number;   // 1, 2… jamais 0
+  readonly remaining: number; // 1, 2… jamais 0
   readonly target: IssueTarget; // { kind:'slot', slotId } | { kind:'field', field }
 }
 
 export function listMissingChoices(
-  draft: CharacterDraft, catalogue: Catalogue,
+  draft: CharacterDraft,
+  catalogue: Catalogue,
 ): readonly MissingChoice[];
 ```
 
 Trois précisions :
 
 1. **Aucun texte.** Conforme à §A16 : la phrase se compose dans `ui/format/missing.ts`.
-2. **`target` plutôt que `slotId` nu.** Un manque peut viser un créneau *ou* un champ
+2. **`target` plutôt que `slotId` nu.** Un manque peut viser un créneau _ou_ un champ
    du brouillon (le nom, la répartition). Réutiliser `IssueTarget` du lot 1 donne
    **une** forme au lieu de deux plus une exception — c'est l'argument même de §A16 —
    et rend `validateDraft` capable d'envelopper mon résultat sans le transformer.
@@ -190,20 +191,20 @@ elle-même que la branche `invalid`. Une source, deux vues.
 
 ### Mise en français, dans `ui/format/missing.ts`
 
-| `kind` | 1 | N |
-|---|---|---|
-| `skill` | Il te reste 1 compétence à choisir | …N compétences… |
-| `expertise` | Il te reste 1 compétence à doubler | …N compétences… |
-| `language` | 1 langue à choisir | N langues |
-| `tool` | 1 outil à choisir | N outils |
-| `cantrip` | 1 tour de magie à choisir | N tours de magie |
-| `spell` | 1 sort à choisir | N sorts |
-| `equipment` | 1 choix d'équipement à faire | N choix d'équipement |
-| `fighting-style` / `ancestry` | 1 choix de classe à faire | — |
-| `ability` | 1 bonus de caractéristique à placer | N bonus |
-| `name` | Ton personnage n'a pas encore de nom | — |
-| `abilities` | Tes caractéristiques ne sont pas réparties | — |
-| `personality` | Tes traits de personnalité sont vides | — |
+| `kind`                        | 1                                          | N                    |
+| ----------------------------- | ------------------------------------------ | -------------------- |
+| `skill`                       | Il te reste 1 compétence à choisir         | …N compétences…      |
+| `expertise`                   | Il te reste 1 compétence à doubler         | …N compétences…      |
+| `language`                    | 1 langue à choisir                         | N langues            |
+| `tool`                        | 1 outil à choisir                          | N outils             |
+| `cantrip`                     | 1 tour de magie à choisir                  | N tours de magie     |
+| `spell`                       | 1 sort à choisir                           | N sorts              |
+| `equipment`                   | 1 choix d'équipement à faire               | N choix d'équipement |
+| `fighting-style` / `ancestry` | 1 choix de classe à faire                  | —                    |
+| `ability`                     | 1 bonus de caractéristique à placer        | N bonus              |
+| `name`                        | Ton personnage n'a pas encore de nom       | —                    |
+| `abilities`                   | Tes caractéristiques ne sont pas réparties | —                    |
+| `personality`                 | Tes traits de personnalité sont vides      | —                    |
 
 Titre du bloc : « Il te reste N choix à faire », N = nombre de lignes (plus lisible que
 la somme des unités). En français, 0 et 1 prennent le singulier ; la fonction de
@@ -234,7 +235,7 @@ les blocs en lignes pleine largeur de 48 px.
 
 ### Contre l'accordéon comme architecture
 
-- **Tout replié** : chaque consultation coûte un appui *et* le repérage du bon
+- **Tout replié** : chaque consultation coûte un appui _et_ le repérage du bon
   en-tête. On échange une seconde de défilement contre une seconde de recherche plus
   un appui : mauvaise affaire.
 - **Tout déplié** : c'est mon défilement long, avec des chevrons en plus et un risque
@@ -255,13 +256,13 @@ piloté par un état React, refermé au clic sur une ancre).
 
 Budget vertical mesuré sur 360 × 640 (≈ 600 px utiles sous la barre système) :
 
-| Élément | Hauteur |
-|---|---|
-| Barre collante (nom + Aller à…) | 48 px |
-| Identité, 2 lignes | 56 px |
-| Bloc **En combat**, 6 tuiles en 2 colonnes × 3 lignes | 232 px |
-| Titre **Attaques** + 2 cartes | 200 px |
-| **Total** | **536 px** |
+| Élément                                               | Hauteur    |
+| ----------------------------------------------------- | ---------- |
+| Barre collante (nom + Aller à…)                       | 48 px      |
+| Identité, 2 lignes                                    | 56 px      |
+| Bloc **En combat**, 6 tuiles en 2 colonnes × 3 lignes | 232 px     |
+| Titre **Attaques** + 2 cartes                         | 200 px     |
+| **Total**                                             | **536 px** |
 
 Le bonus d'attaque est visible **sans un seul appui**. C'est la réponse à l'usage réel.
 
@@ -300,7 +301,7 @@ Le bonus d'attaque est visible **sans un seul appui**. C'est la réponse à l'us
 ### Ordre des blocs, par fréquence d'usage à table
 
 1 Identité — 2 **En combat** — 3 **Attaques** — 4 Caractéristiques et sauvegardes —
-5 Compétences — 6 Magie *(si lanceur)* — 7 Aptitudes — 8 Maîtrises et langues —
+5 Compétences — 6 Magie _(si lanceur)_ — 7 Aptitudes — 8 Maîtrises et langues —
 9 Équipement — 10 Personnalité — 11 Actions et attribution.
 
 Les actions (Imprimer, Exporter, Partager, Modifier) sont **en fin de document**, pas
@@ -329,34 +330,40 @@ Provenance : **J** choix du joueur (`draft`), **D** calcul du domaine
 (`buildCharacter`), **C** contenu `data/` lu directement par `ui/` (autorisé §A6).
 
 ### 1. Identité
+
 Nom (J, défaut « Personnage sans nom »), race et sous-race, classe, historique,
 alignement (J, libellés C), niveau 1 (constante).
 
 ### 2. En combat
-| Champ | Provenance |
-|---|---|
-| Classe d'armure + détail | D — `ValueBreakdown`, meilleur candidat retenu avec sa source |
-| Initiative | D — modificateur de Dextérité |
-| Vitesse (+ note si réduite par l'armure lourde) | D + C — **en mètres** |
-| Points de vie max | D — max du dé de vie + mod. Con (+1 nain des collines) |
-| Dés de vie | D + C — « 1 d10 » |
-| Bonus de maîtrise | D — +2 |
+
+| Champ                                           | Provenance                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------- |
+| Classe d'armure + détail                        | D — `ValueBreakdown`, meilleur candidat retenu avec sa source |
+| Initiative                                      | D — modificateur de Dextérité                                 |
+| Vitesse (+ note si réduite par l'armure lourde) | D + C — **en mètres**                                         |
+| Points de vie max                               | D — max du dé de vie + mod. Con (+1 nain des collines)        |
+| Dés de vie                                      | D + C — « 1 d10 »                                             |
+| Bonus de maîtrise                               | D — +2                                                        |
 
 ### 3. Attaques
+
 Une carte par arme possédée : nom (C), bonus d'attaque (D), dés et modificateur de
 dégâts (D), type de dégâts, propriétés, portée (C). Aucune arme → « Aucune arme
 équipée », phrase composée dans `ui/`.
 
 ### 4. Caractéristiques et jets de sauvegarde
+
 Six tuiles : nom, score final (D = base J + bonus raciaux C + créneaux `ability`),
 modificateur (D), sauvegarde (D), marqueur `●` maîtrisé / `○` non, avec `aria-label`.
 
 ### 5. Compétences
+
 Les 18 compétences SRD, toujours toutes affichées, ordre alphabétique français.
 Marqueur, nom (C), caractéristique liée, total signé (D). **Maîtrise double** de
 l'expertise : marqueur `◉` et mention « maîtrise double » (§A15 ne change rien ici).
 
 ### 6. Magie — bloc rendu seulement si `sheet.spellcasting !== null`
+
 Caractéristique d'incantation, DD de sauvegarde (D : `8 + BM + mod`), bonus d'attaque
 de sort (D : `BM + mod`), emplacements de niveau 1 (D), tours de magie et sorts
 (J parmi C), nombre préparable avec sa formule expliquée (D).
@@ -365,17 +372,21 @@ de sort (D : `BM + mod`), emplacements de niveau 1 (D), tours de magie et sorts
 en v1. Le composant gère le cas dès maintenant, sans champ mort ni `TODO`.
 
 ### 7. Aptitudes
+
 Une entrée par aptitude, groupée par source (race, classe, historique), nom et
 description (C), repliée en `<details>` au-delà de trois lignes.
 
 ### 8. Maîtrises et langues
+
 Armures, armes, outils, langues : union race + classe + historique, créneaux compris (D).
 
 ### 9. Équipement
+
 Objets issus des options de départ (J parmi C), paquetage d'historique (C), pièces d'or
 (D). Liste en lecture seule.
 
 ### 10. Personnalité
+
 Trait, idéal, lien, défaut : quatre chaînes du brouillon (J).
 **§B3** : avec l'historique « Personnalisé », ce sont des textes saisis librement au
 lieu d'être tirés d'une table — la fiche affiche exactement la même chose, aucun code
@@ -384,6 +395,7 @@ Personnalisé est un assemblage des règles génériques du SRD. Si `background.
 est absent, la ligne « Aptitude d'historique » n'est pas rendue.
 
 ### 11. Pied de fiche — écran et papier
+
 « **Aventurine** — contenu dérivé du SRD 5.1 © Wizards of the Coast, licence CC BY 4.0.
 Non affilié à Wizards of the Coast ni à D&D Beyond. » (charte §9, §A18).
 
@@ -492,8 +504,8 @@ export const FILE_VERSION = 1;
 
 export interface CharacterFile {
   readonly format: typeof FILE_FORMAT;
-  readonly version: number;      // entier, incrémenté à toute rupture
-  readonly exportedAt: string;   // ISO 8601, information, jamais relue
+  readonly version: number; // entier, incrémenté à toute rupture
+  readonly exportedAt: string; // ISO 8601, information, jamais relue
   readonly character: CharacterDraft;
 }
 
@@ -510,8 +522,11 @@ export type ImportWarning =
   | { readonly kind: 'value-truncated'; readonly field: string };
 
 export type ImportResult =
-  | { readonly ok: true; readonly draft: CharacterDraft;
-      readonly warnings: readonly ImportWarning[] }
+  | {
+      readonly ok: true;
+      readonly draft: CharacterDraft;
+      readonly warnings: readonly ImportWarning[];
+    }
   | { readonly ok: false; readonly error: ImportError };
 ```
 
@@ -529,12 +544,22 @@ Exemple de fichier réel, tel qu'un humain le lit :
   "exportedAt": "2026-08-29T14:03:00.000Z",
   "character": {
     "name": "Alric",
-    "raceId": "nain", "subraceId": "nain-des-collines",
-    "classId": "guerrier", "backgroundId": "soldat-personnalise",
+    "raceId": "nain",
+    "subraceId": "nain-des-collines",
+    "classId": "guerrier",
+    "backgroundId": "soldat-personnalise",
     "alignmentId": "loyal-bon",
-    "abilities": { "method": "point-buy",
-      "base": { "force": 15, "dexterite": 13, "constitution": 14,
-                "intelligence": 8, "sagesse": 12, "charisme": 10 } },
+    "abilities": {
+      "method": "point-buy",
+      "base": {
+        "force": 15,
+        "dexterite": 13,
+        "constitution": 14,
+        "intelligence": 8,
+        "sagesse": 12,
+        "charisme": 10
+      }
+    },
     "choices": {
       "class:guerrier:skills": ["athletisme", "perception"],
       "class:guerrier:fighting-style": ["defense"],
@@ -666,7 +691,7 @@ Créé avec Aventurine — SRD 5.1, CC BY 4.0
 // src/domain/sheet.ts — forme demandée par le lot 4
 export interface BreakdownPart {
   readonly source: 'base' | 'ability' | 'armor' | 'shield' | 'feature';
-  readonly id: string | null;   // identifiant de contenu, résolu par ui/ dans data/
+  readonly id: string | null; // identifiant de contenu, résolu par ui/ dans data/
   readonly value: number;
 }
 export interface ValueBreakdown {
@@ -675,18 +700,27 @@ export interface ValueBreakdown {
 }
 
 export interface SkillLine {
-  readonly skillId: string; readonly abilityId: AbilityId;
-  readonly bonus: number; readonly proficiency: 'none' | 'simple' | 'double';
+  readonly skillId: string;
+  readonly abilityId: AbilityId;
+  readonly bonus: number;
+  readonly proficiency: 'none' | 'simple' | 'double';
 }
 export interface Attack {
-  readonly weaponId: string; readonly attackBonus: number;
-  readonly damageDice: string; readonly damageBonus: number;
-  readonly damageTypeId: string; readonly rangeMeters: readonly [number, number] | null;
+  readonly weaponId: string;
+  readonly attackBonus: number;
+  readonly damageDice: string;
+  readonly damageBonus: number;
+  readonly damageTypeId: string;
+  readonly rangeMeters: readonly [number, number] | null;
 }
 export interface Spellcasting {
-  readonly abilityId: AbilityId; readonly saveDc: number; readonly attackBonus: number;
-  readonly level1Slots: number; readonly preparedCount: number | null;
-  readonly cantripIds: readonly string[]; readonly spellIds: readonly string[];
+  readonly abilityId: AbilityId;
+  readonly saveDc: number;
+  readonly attackBonus: number;
+  readonly level1Slots: number;
+  readonly preparedCount: number | null;
+  readonly cantripIds: readonly string[];
+  readonly spellIds: readonly string[];
 }
 export interface CharacterSheet {
   readonly abilities: Readonly<Record<AbilityId, { score: number; modifier: number }>>;
@@ -701,8 +735,12 @@ export interface CharacterSheet {
   readonly attacks: readonly Attack[];
   readonly spellcasting: Spellcasting | null;
   readonly featureIds: readonly { source: ChoiceSource; id: string }[];
-  readonly proficiencies: { armors: readonly string[]; weapons: readonly string[];
-                            tools: readonly string[]; languages: readonly string[] };
+  readonly proficiencies: {
+    armors: readonly string[];
+    weapons: readonly string[];
+    tools: readonly string[];
+    languages: readonly string[];
+  };
   readonly equipment: { itemIds: readonly string[]; gold: number };
 }
 ```
@@ -813,18 +851,18 @@ deux pages au maximum.
 
 ## Hors périmètre
 
-| Écarté | Raison |
-|---|---|
-| Fiche éditable après création | Charte §1 ; la modification passe par l'assistant |
+| Écarté                                             | Raison                                                                                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fiche éditable après création                      | Charte §1 ; la modification passe par l'assistant                                                                                                      |
 | Suivi des PV, des sorts dépensés, de l'inspiration | Hors périmètre. **Seule exception** : les cases vides de la fiche **imprimée**, retenues à l'arbitrage — c'est la raison même pour laquelle on imprime |
-| Gestion d'inventaire (ajout, quantités, poids) | Hors périmètre : l'équipement est une liste en lecture seule |
-| Montée de niveau, multiclassage, dons | Charte §1 |
-| Plusieurs personnages sauvegardés | Une seule sauvegarde, d'où la confirmation à l'import |
-| Lien de partage contenant le personnage | Imposerait de lire l'URL, c'est-à-dire du routage, exclu par la charte |
-| Partage du fichier par la feuille de partage | Support inégal, sans intérêt pour le destinataire |
-| QR code, portrait, illustration | YAGNI, et charte §9 pour l'habillage |
-| Bibliothèque PDF côté client | Argumenté en section Impression |
-| Migration de format d'import | Il n'existe qu'une version et rien n'a été publié (§A18) |
+| Gestion d'inventaire (ajout, quantités, poids)     | Hors périmètre : l'équipement est une liste en lecture seule                                                                                           |
+| Montée de niveau, multiclassage, dons              | Charte §1                                                                                                                                              |
+| Plusieurs personnages sauvegardés                  | Une seule sauvegarde, d'où la confirmation à l'import                                                                                                  |
+| Lien de partage contenant le personnage            | Imposerait de lire l'URL, c'est-à-dire du routage, exclu par la charte                                                                                 |
+| Partage du fichier par la feuille de partage       | Support inégal, sans intérêt pour le destinataire                                                                                                      |
+| QR code, portrait, illustration                    | YAGNI, et charte §9 pour l'habillage                                                                                                                   |
+| Bibliothèque PDF côté client                       | Argumenté en section Impression                                                                                                                        |
+| Migration de format d'import                       | Il n'existe qu'une version et rien n'a été publié (§A18)                                                                                               |
 
 **Exception argumentée conservée** : le bouton « Modifier mon personnage » sur la
 fiche. Ce n'est pas une fiche éditable, c'est un retour à l'assistant sur le brouillon

@@ -1,0 +1,36 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px));
+  padding-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+}
+
+.intro {
+  align-self: center;
+  padding-block: var(--space-6);
+}
+
+.title {
+  font-size: var(--font-size-400);
+}
+
+.lead {
+  color: var(--color-text-muted);
+  margin-block: var(--space-4) 0;
+}
+
+.attribution {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-100);
+  margin-block-start: var(--space-6);
+}
+
+@media (min-width: 600px) {
+  .intro {
+    max-width: var(--content-max);
+    margin-inline: auto;
+  }
+}

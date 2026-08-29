@@ -25,29 +25,29 @@ Aucun composant, aucun reducer, aucune persistance : lots 2 et 3.
 
 Pas de baril à la racine d'une couche (charte §5) : **ni `src/domain/index.ts`, ni
 `src/data/index.ts`**. Chaque module s'importe par son chemin. `src/data/catalogue.ts`
-et `src/data/classes/index.ts` sont des modules d'agrégation *à l'intérieur* d'une
+et `src/data/classes/index.ts` sont des modules d'agrégation _à l'intérieur_ d'une
 couche : autorisés par §A11.
 
 ### `src/domain/` — 16 fichiers, ~1 200 lignes
 
-| Fichier | Contenu | ~l. |
-|---|---|---|
-| `abilities.ts` | 6 caractéristiques, `abilityModifier`, `AbilityScores` | 55 |
-| `skills.ts` | 18 compétences, table compétence → caractéristique | 50 |
-| `point-buy.ts` | budget, coûts, `standardArray`, `abilityRows` (§A16) | 110 |
-| `choice.ts` | `ChoiceSlot`, `ChoiceOption`, `UnavailableReason` (forme §A4) | 45 |
-| `choice-spec.ts` | `ChoiceSpec` (forme auteur) + `slotId()` | 95 |
-| `race.ts` | `Race`, `Subrace`, `Feature`, `Proficiencies` | 70 |
+| Fichier              | Contenu                                                          | ~l. |
+| -------------------- | ---------------------------------------------------------------- | --- |
+| `abilities.ts`       | 6 caractéristiques, `abilityModifier`, `AbilityScores`           | 55  |
+| `skills.ts`          | 18 compétences, table compétence → caractéristique               | 50  |
+| `point-buy.ts`       | budget, coûts, `standardArray`, `abilityRows` (§A16)             | 110 |
+| `choice.ts`          | `ChoiceSlot`, `ChoiceOption`, `UnavailableReason` (forme §A4)    | 45  |
+| `choice-spec.ts`     | `ChoiceSpec` (forme auteur) + `slotId()`                         | 95  |
+| `race.ts`            | `Race`, `Subrace`, `Feature`, `Proficiencies`                    | 70  |
 | `character-class.ts` | `CharacterClass`, `Subclass`, `Spellcasting`, `UnarmoredDefense` | 115 |
-| `background.ts` | `Background`, `SuggestedTraits` | 45 |
-| `spell.ts` | `Spell`, `MagicSchool`, `spellsForClass` | 60 |
-| `equipment.ts` | `Weapon`, `Armor`, `Item`, `ItemLine`, `EquipmentOption` | 85 |
-| `catalogue.ts` | `Catalogue` + `findRace`/`findClass`/… | 70 |
-| `draft.ts` | `CharacterDraft`, `emptyDraft()` | 60 |
-| `granted.ts` | `grantedProficiencies(draft, catalogue)` — socle partagé | 90 |
-| `open-choices.ts` | `openChoices(draft, catalogue)` + `optionsFor` | 140 |
-| `sheet.ts` | `buildSheet(draft, catalogue)` + calculs dérivés | 180 |
-| `issues.ts` | `draftIssues(draft, catalogue)`, `DraftIssue` | 80 |
+| `background.ts`      | `Background`, `SuggestedTraits`                                  | 45  |
+| `spell.ts`           | `Spell`, `MagicSchool`, `spellsForClass`                         | 60  |
+| `equipment.ts`       | `Weapon`, `Armor`, `Item`, `ItemLine`, `EquipmentOption`         | 85  |
+| `catalogue.ts`       | `Catalogue` + `findRace`/`findClass`/…                           | 70  |
+| `draft.ts`           | `CharacterDraft`, `emptyDraft()`                                 | 60  |
+| `granted.ts`         | `grantedProficiencies(draft, catalogue)` — socle partagé         | 90  |
+| `open-choices.ts`    | `openChoices(draft, catalogue)` + `optionsFor`                   | 140 |
+| `sheet.ts`           | `buildSheet(draft, catalogue)` + calculs dérivés                 | 180 |
+| `issues.ts`          | `draftIssues(draft, catalogue)`, `DraftIssue`                    | 80  |
 
 Tests à côté : `abilities.test.ts`, `point-buy.test.ts`, `open-choices.test.ts`,
 `sheet.test.ts`, `issues.test.ts`, `draft.test.ts`.
@@ -98,7 +98,12 @@ dérivé : pas de cast, pas de métaprogrammation.
 ```ts
 // src/domain/abilities.ts
 export const ABILITIES = [
-  'force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme',
+  'force',
+  'dexterite',
+  'constitution',
+  'intelligence',
+  'sagesse',
+  'charisme',
 ] as const;
 
 export type AbilityId = (typeof ABILITIES)[number];
@@ -112,12 +117,24 @@ export function abilityModifier(score: number): number {
 ```ts
 // src/domain/skills.ts
 export const SKILL_ABILITY = {
-  acrobaties: 'dexterite',    arcanes: 'intelligence',    athletisme: 'force',
-  discretion: 'dexterite',    dressage: 'sagesse',        escamotage: 'dexterite',
-  histoire: 'intelligence',   intimidation: 'charisme',   investigation: 'intelligence',
-  medecine: 'sagesse',        nature: 'intelligence',     perception: 'sagesse',
-  perspicacite: 'sagesse',    persuasion: 'charisme',     religion: 'intelligence',
-  representation: 'charisme', supercherie: 'charisme',    survie: 'sagesse',
+  acrobaties: 'dexterite',
+  arcanes: 'intelligence',
+  athletisme: 'force',
+  discretion: 'dexterite',
+  dressage: 'sagesse',
+  escamotage: 'dexterite',
+  histoire: 'intelligence',
+  intimidation: 'charisme',
+  investigation: 'intelligence',
+  medecine: 'sagesse',
+  nature: 'intelligence',
+  perception: 'sagesse',
+  perspicacite: 'sagesse',
+  persuasion: 'charisme',
+  religion: 'intelligence',
+  representation: 'charisme',
+  supercherie: 'charisme',
+  survie: 'sagesse',
 } as const satisfies Record<string, AbilityId>;
 
 export type SkillId = keyof typeof SKILL_ABILITY;
@@ -134,11 +151,19 @@ Les identifiants de **contenu** (`RaceId`, `ClassId`, `SpellId`, `LanguageId`,
 
 ```ts
 // src/domain/choice.ts
-export type ChoiceSlotId = string;            // 'class:roublard:skills'
+export type ChoiceSlotId = string; // 'class:roublard:skills'
 export type ChoiceSource = 'race' | 'class' | 'background';
 export type ChoiceKind =
-  | 'skill' | 'language' | 'tool' | 'cantrip' | 'spell'
-  | 'ability' | 'equipment' | 'ancestry' | 'fighting-style' | 'expertise';
+  | 'skill'
+  | 'language'
+  | 'tool'
+  | 'cantrip'
+  | 'spell'
+  | 'ability'
+  | 'equipment'
+  | 'ancestry'
+  | 'fighting-style'
+  | 'expertise';
 
 export type UnavailableReason =
   | { readonly kind: 'already-granted'; readonly source: ChoiceSource }
@@ -146,9 +171,9 @@ export type UnavailableReason =
 
 export interface ChoiceOption {
   readonly id: string;
-  readonly label: string;                             // « Discrétion »
-  readonly blurb: string;                             // une phrase, vocabulaire de joueur
-  readonly facts: readonly [string, string, string];  // repères ALIGNÉS
+  readonly label: string; // « Discrétion »
+  readonly blurb: string; // une phrase, vocabulaire de joueur
+  readonly facts: readonly [string, string, string]; // repères ALIGNÉS
   readonly details: readonly { title: string; body: string }[];
   readonly unavailable: UnavailableReason | null;
 }
@@ -186,15 +211,15 @@ concrètes, testées :
 classe, historique, option d'équipement, ascendance, style de combat) et **recopié
 par pur transport** pour les autres, depuis des champs déjà français :
 
-| `kind` | `facts` |
-|---|---|
-| `skill` | `[nom de la caractéristique, phrase d'usage courte, '—']` (les deux depuis `data/`) |
-| `language` | `[type ('Standard'/'Exotique'), écriture, '—']` |
-| `tool` | `[catégorie, prix, '—']` |
-| `cantrip`, `spell` | `[castingTime, range, duration]` — trois champs déjà rédigés |
-| `equipment` | authored sur `EquipmentOption` |
-| `ability` | `[nom de la caractéristique, phrase d'usage, '—']` |
-| tous les autres | authored sur l'entité |
+| `kind`             | `facts`                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `skill`            | `[nom de la caractéristique, phrase d'usage courte, '—']` (les deux depuis `data/`) |
+| `language`         | `[type ('Standard'/'Exotique'), écriture, '—']`                                     |
+| `tool`             | `[catégorie, prix, '—']`                                                            |
+| `cantrip`, `spell` | `[castingTime, range, duration]` — trois champs déjà rédigés                        |
+| `equipment`        | authored sur `EquipmentOption`                                                      |
+| `ability`          | `[nom de la caractéristique, phrase d'usage, '—']`                                  |
+| tous les autres    | authored sur l'entité                                                               |
 
 Aucune de ces cases n'est une concaténation : c'est un choix de champ. Le `switch
 (kind)` correspondant est un branchement sur un **genre de règle** (ensemble fermé
@@ -211,21 +236,37 @@ seul composant de choix.
 
 ```ts
 // src/domain/choice-spec.ts
-export type ChoiceSubject = string;   // 'skills', 'languages', 'equipment-1'
+export type ChoiceSubject = string; // 'skills', 'languages', 'equipment-1'
 
 interface BaseSpec {
   readonly subject: ChoiceSubject;
-  readonly title: string;   // prose française, rédigée dans data/, sans le nombre
-  readonly help: string;    // prose française, rédigée dans data/
+  readonly title: string; // prose française, rédigée dans data/, sans le nombre
+  readonly help: string; // prose française, rédigée dans data/
   readonly pick: number;
 }
 
-export interface SkillSpec         extends BaseSpec { readonly kind: 'skill';    readonly from: readonly SkillId[]; }
-export interface LanguageSpec      extends BaseSpec { readonly kind: 'language'; readonly from: readonly LanguageId[]; }
-export interface ToolSpec          extends BaseSpec { readonly kind: 'tool';     readonly from: readonly ToolId[]; }
-export interface EquipmentSpec     extends BaseSpec { readonly kind: 'equipment'; readonly from: readonly EquipmentOptionId[]; }
-export interface AncestrySpec      extends BaseSpec { readonly kind: 'ancestry'; }
-export interface FightingStyleSpec extends BaseSpec { readonly kind: 'fighting-style'; }
+export interface SkillSpec extends BaseSpec {
+  readonly kind: 'skill';
+  readonly from: readonly SkillId[];
+}
+export interface LanguageSpec extends BaseSpec {
+  readonly kind: 'language';
+  readonly from: readonly LanguageId[];
+}
+export interface ToolSpec extends BaseSpec {
+  readonly kind: 'tool';
+  readonly from: readonly ToolId[];
+}
+export interface EquipmentSpec extends BaseSpec {
+  readonly kind: 'equipment';
+  readonly from: readonly EquipmentOptionId[];
+}
+export interface AncestrySpec extends BaseSpec {
+  readonly kind: 'ancestry';
+}
+export interface FightingStyleSpec extends BaseSpec {
+  readonly kind: 'fighting-style';
+}
 
 /** Demi-elfe : +1 à deux caractéristiques autres que le Charisme. */
 export interface AbilitySpec extends BaseSpec {
@@ -237,21 +278,30 @@ export interface AbilitySpec extends BaseSpec {
 /** La liste de sorts n'est jamais recopiée : on référence celle d'une classe. */
 export interface SpellSpec extends BaseSpec {
   readonly kind: 'cantrip' | 'spell';
-  readonly listFrom: ClassId;         // 'magicien' pour le haut-elfe
+  readonly listFrom: ClassId; // 'magicien' pour le haut-elfe
 }
 
 /** Roublard : options calculées à l'exécution, jamais authored (§A15). */
 export interface ExpertiseSpec extends BaseSpec {
   readonly kind: 'expertise';
-  readonly tools: readonly ToolId[];  // ['outils-de-voleur']
+  readonly tools: readonly ToolId[]; // ['outils-de-voleur']
 }
 
 export type ChoiceSpec =
-  | SkillSpec | LanguageSpec | ToolSpec | EquipmentSpec | AncestrySpec
-  | FightingStyleSpec | AbilitySpec | SpellSpec | ExpertiseSpec;
+  | SkillSpec
+  | LanguageSpec
+  | ToolSpec
+  | EquipmentSpec
+  | AncestrySpec
+  | FightingStyleSpec
+  | AbilitySpec
+  | SpellSpec
+  | ExpertiseSpec;
 
 export function slotId(
-  source: ChoiceSource, parentId: string, subject: ChoiceSubject,
+  source: ChoiceSource,
+  parentId: string,
+  subject: ChoiceSubject,
 ): ChoiceSlotId {
   return `${source}:${parentId}:${subject}`;
 }
@@ -266,18 +316,18 @@ Une `ChoiceSpec` **n'écrit jamais son identifiant complet** : elle ne porte que
 **Règle : `parentId` est toujours l'identifiant que le joueur a choisi lui-même**,
 jamais celui d'une entité dérivée. C'est ce qui rend la cascade du lot 2 gratuite.
 
-| Créneau | Identifiant | Parent qui le ferme |
-|---|---|---|
-| Compétences de roublard | `class:roublard:skills` | changement de classe |
-| Expertise du roublard | `class:roublard:expertise` | changement de classe |
-| Style de combat du guerrier | `class:guerrier:fighting-style` | changement de classe |
-| Grimoire du magicien | `class:magicien:spells` | changement de classe |
-| Ascendance de l'ensorceleur draconique | `class:ensorceleur:ancestry` | changement de classe, **pas** la sous-classe |
-| Ascendance du drakéide | `race:drakeide:ancestry` | changement de race |
-| Tour de magie du haut-elfe | `race:haut-elfe:cantrip` | changement de **sous-race** |
-| +1 ×2 du demi-elfe | `race:demi-elfe:ability` | changement de race |
-| Langues de l'acolyte | `background:acolyte:languages` | changement d'historique |
-| 1re option d'équipement du guerrier | `class:guerrier:equipment-1` | changement de classe |
+| Créneau                                | Identifiant                     | Parent qui le ferme                          |
+| -------------------------------------- | ------------------------------- | -------------------------------------------- |
+| Compétences de roublard                | `class:roublard:skills`         | changement de classe                         |
+| Expertise du roublard                  | `class:roublard:expertise`      | changement de classe                         |
+| Style de combat du guerrier            | `class:guerrier:fighting-style` | changement de classe                         |
+| Grimoire du magicien                   | `class:magicien:spells`         | changement de classe                         |
+| Ascendance de l'ensorceleur draconique | `class:ensorceleur:ancestry`    | changement de classe, **pas** la sous-classe |
+| Ascendance du drakéide                 | `race:drakeide:ancestry`        | changement de race                           |
+| Tour de magie du haut-elfe             | `race:haut-elfe:cantrip`        | changement de **sous-race**                  |
+| +1 ×2 du demi-elfe                     | `race:demi-elfe:ability`        | changement de race                           |
+| Langues de l'acolyte                   | `background:acolyte:languages`  | changement d'historique                      |
+| 1re option d'équipement du guerrier    | `class:guerrier:equipment-1`    | changement de classe                         |
 
 La sous-classe du SRD étant unique par classe et acquise d'office (voir plus bas),
 ses créneaux portent l'identifiant de la **classe** : changer de classe les ferme,
@@ -294,7 +344,7 @@ ligne de sérialisation.
 
 ```ts
 // src/domain/draft.ts
-export type AbilityMethod = 'point-buy' | 'standard-array';   // §B1 : plus de 'dice'
+export type AbilityMethod = 'point-buy' | 'standard-array'; // §B1 : plus de 'dice'
 
 export interface PersonalTraits {
   readonly trait: string;
@@ -326,7 +376,7 @@ le maximum du dé de vie + mod. de Con, jamais un jet), classe d'armure, bonus d
 maîtrise, caractéristiques finales, langues, maîtrises, équipement obtenu, DD de
 sauvegarde. Si une valeur est calculable, elle n'est pas stockée.
 
-Le tableau standard ne demande aucun champ supplémentaire : l'affectation *est*
+Le tableau standard ne demande aucun champ supplémentaire : l'affectation _est_
 `baseAbilities`, et `draftIssues` vérifie que c'est une permutation de
 `[15, 14, 13, 12, 10, 8]`.
 
@@ -334,10 +384,13 @@ Le tableau standard ne demande aucun champ supplémentaire : l'affectation *est*
 
 ```ts
 // src/domain/race.ts
-export interface Feature { readonly name: string; readonly text: string; }  // FR, depuis data/
+export interface Feature {
+  readonly name: string;
+  readonly text: string;
+} // FR, depuis data/
 
 export interface Proficiencies {
-  readonly armor: readonly ArmorCategory[];            // 'legere' | 'intermediaire' | 'lourde' | 'bouclier'
+  readonly armor: readonly ArmorCategory[]; // 'legere' | 'intermediaire' | 'lourde' | 'bouclier'
   readonly weaponCategories: readonly WeaponCategory[]; // 'courantes' | 'de-guerre'
   readonly weapons: readonly WeaponId[];
   readonly tools: readonly ToolId[];
@@ -347,18 +400,18 @@ export interface Race {
   readonly id: RaceId;
   readonly name: string;
   readonly blurb: string;
-  readonly facts: readonly [string, string, string];   // « +2 For, +1 Con » / « 9 m » / « Endurance implacable »
+  readonly facts: readonly [string, string, string]; // « +2 For, +1 Con » / « 9 m » / « Endurance implacable »
   readonly abilityBonuses: Partial<AbilityScores>;
   readonly size: CreatureSize;
-  readonly speed: number;          // mètres : 9 ou 7.5
-  readonly darkvision: number;     // mètres : 0 ou 18
+  readonly speed: number; // mètres : 9 ou 7.5
+  readonly darkvision: number; // mètres : 0 ou 18
   readonly languages: readonly LanguageId[];
   readonly skills: readonly SkillId[];
   readonly proficiencies: Proficiencies;
   readonly resistances: readonly DamageType[];
-  readonly features: readonly Feature[];               // affichées, jamais calculées
+  readonly features: readonly Feature[]; // affichées, jamais calculées
   readonly choices: readonly ChoiceSpec[];
-  readonly subraces: readonly Subrace[];               // imbriquées
+  readonly subraces: readonly Subrace[]; // imbriquées
 }
 
 export interface Subrace {
@@ -370,7 +423,7 @@ export interface Subrace {
   readonly skills: readonly SkillId[];
   readonly proficiencies: Proficiencies;
   readonly features: readonly Feature[];
-  readonly bonusHitPointsPerLevel: number;             // nain des collines : 1
+  readonly bonusHitPointsPerLevel: number; // nain des collines : 1
   readonly choices: readonly ChoiceSpec[];
 }
 ```
@@ -378,16 +431,16 @@ export interface Subrace {
 ```ts
 // src/domain/character-class.ts
 export interface UnarmoredDefense {
-  readonly base: number;                          // 10 (barbare, moine), 13 (draconique)
-  readonly addedAbilities: readonly AbilityId[];  // ['dexterite', 'constitution']
-  readonly shieldAllowed: boolean;                // barbare oui, moine non
+  readonly base: number; // 10 (barbare, moine), 13 (draconique)
+  readonly addedAbilities: readonly AbilityId[]; // ['dexterite', 'constitution']
+  readonly shieldAllowed: boolean; // barbare oui, moine non
 }
 
 export type PreparationMode = 'known' | 'prepared' | 'spellbook';
 
 export interface Spellcasting {
   readonly ability: AbilityId;
-  readonly level1Slots: number;                   // 2, 1 (occultiste), 0 (paladin, rôdeur)
+  readonly level1Slots: number; // 2, 1 (occultiste), 0 (paladin, rôdeur)
   readonly preparation: PreparationMode;
   readonly ritual: boolean;
 }
@@ -397,28 +450,28 @@ export interface Spellcasting {
  *  ce n'est donc pas un choix et il n'y a pas de `ChoiceKind` pour elle. */
 export interface Subclass {
   readonly id: SubclassId;
-  readonly name: string;                          // « Domaine de la Vie »
+  readonly name: string; // « Domaine de la Vie »
   readonly blurb: string;
   readonly features: readonly Feature[];
-  readonly proficiencies: Proficiencies | null;   // clerc de la Vie : armures lourdes
+  readonly proficiencies: Proficiencies | null; // clerc de la Vie : armures lourdes
   readonly alwaysPreparedSpells: readonly SpellId[];
   readonly unarmoredDefense: UnarmoredDefense | null;
-  readonly bonusHitPointsPerLevel: number;        // ensorceleur draconique : 1
-  readonly choices: readonly ChoiceSpec[];        // ascendance draconique
+  readonly bonusHitPointsPerLevel: number; // ensorceleur draconique : 1
+  readonly choices: readonly ChoiceSpec[]; // ascendance draconique
 }
 
 export interface CharacterClass {
   readonly id: ClassId;
   readonly name: string;
   readonly blurb: string;
-  readonly facts: readonly [string, string, string];   // « d10 » / « For + Con » / « Armures lourdes »
+  readonly facts: readonly [string, string, string]; // « d10 » / « For + Con » / « Armures lourdes »
   readonly hitDie: 6 | 8 | 10 | 12;
   readonly saves: readonly [AbilityId, AbilityId];
   readonly proficiencies: Proficiencies;
   readonly unarmoredDefense: UnarmoredDefense | null;
   readonly features: readonly Feature[];
   readonly choices: readonly ChoiceSpec[];
-  readonly equipmentOptions: readonly EquipmentOption[];  // table locale, référencée par id
+  readonly equipmentOptions: readonly EquipmentOption[]; // table locale, référencée par id
   readonly fixedEquipment: readonly ItemLine[];
   readonly spellcasting: Spellcasting | null;
   readonly subclass: Subclass | null;
@@ -432,18 +485,18 @@ export interface Spell {
   readonly name: string;
   readonly level: 0 | 1;
   readonly school: MagicSchool;
-  readonly castingTime: string;   // « 1 action », « 1 action bonus »
-  readonly range: string;         // « 18 mètres », « Personnelle », « Contact »
+  readonly castingTime: string; // « 1 action », « 1 action bonus »
+  readonly range: string; // « 18 mètres », « Personnelle », « Contact »
   readonly components: {
     readonly verbal: boolean;
     readonly somatic: boolean;
     readonly material: string | null;
   };
-  readonly duration: string;      // « Instantanée », « Concentration, jusqu'à 1 minute »
+  readonly duration: string; // « Instantanée », « Concentration, jusqu'à 1 minute »
   readonly concentration: boolean;
   readonly ritual: boolean;
-  readonly summary: string;       // 1 à 3 phrases, obligatoire
-  readonly classes: readonly ClassId[];   // seule source de vérité des listes de sorts
+  readonly summary: string; // 1 à 3 phrases, obligatoire
+  readonly classes: readonly ClassId[]; // seule source de vérité des listes de sorts
 }
 ```
 
@@ -470,7 +523,7 @@ export interface Background {
   readonly choices: readonly ChoiceSpec[];
   readonly equipment: readonly ItemLine[];
   readonly feature: Feature;
-  readonly suggestedTraits: SuggestedTraits;   // listes vides pour « Personnalisé »
+  readonly suggestedTraits: SuggestedTraits; // listes vides pour « Personnalisé »
 }
 ```
 
@@ -479,7 +532,7 @@ export interface Background {
 ```ts
 // src/domain/catalogue.ts
 export interface Catalogue {
-  readonly abilities: readonly AbilityEntry[];   // noms français des 6 caractéristiques
+  readonly abilities: readonly AbilityEntry[]; // noms français des 6 caractéristiques
   readonly skills: readonly Skill[];
   readonly races: readonly Race[];
   readonly classes: readonly CharacterClass[];
@@ -512,31 +565,46 @@ entrées ; c'est ce qui rend `domain/` testable sans jamais charger 85 sorts.
 export const POINT_BUY_BUDGET = 27;
 export const POINT_BUY_MIN = 8;
 export const POINT_BUY_MAX = 15;
-export const POINT_BUY_COST: Readonly<Record<number, number>> =
-  { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
+export const POINT_BUY_COST: Readonly<Record<number, number>> = {
+  8: 0,
+  9: 1,
+  10: 2,
+  11: 3,
+  12: 4,
+  13: 5,
+  14: 7,
+  15: 9,
+};
 export const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8] as const;
 
 /** Même forme que `UnavailableReason` (§A4) : jamais rédigé, toujours structuré. */
 export type BlockedReason =
-  | { readonly kind: 'not-enough-points'; readonly required: number; readonly remaining: number }
+  | {
+      readonly kind: 'not-enough-points';
+      readonly required: number;
+      readonly remaining: number;
+    }
   | { readonly kind: 'max-score'; readonly max: number }
   | { readonly kind: 'min-score'; readonly min: number };
 
 export interface AbilityRow {
   readonly id: AbilityId;
-  readonly score: number;                 // valeur de base, avant bonus
+  readonly score: number; // valeur de base, avant bonus
   readonly racialBonus: number;
-  readonly bonusSource: readonly string[];   // ids : ['nain', 'nain-des-collines', 'race:demi-elfe:ability']
+  readonly bonusSource: readonly string[]; // ids : ['nain', 'nain-des-collines', 'race:demi-elfe:ability']
   readonly total: number;
   readonly modifier: number;
   readonly canIncrease: boolean;
   readonly canDecrease: boolean;
-  readonly increaseCost: number | null;   // null si l'augmentation est impossible
+  readonly increaseCost: number | null; // null si l'augmentation est impossible
   readonly blockedBy: BlockedReason | null;
 }
 
 export function pointsRemaining(scores: AbilityScores): number;
-export function abilityRows(draft: CharacterDraft, catalogue: Catalogue): readonly AbilityRow[];
+export function abilityRows(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): readonly AbilityRow[];
 ```
 
 `abilityRows` est le seul point d'entrée dont `state/` a besoin pour l'écran de
@@ -588,7 +656,7 @@ export interface CharacterSheet {
   readonly backgroundId: BackgroundId | null;
   readonly alignmentId: AlignmentId | null;
   readonly level: 1;
-  readonly abilities: AbilityScores;      // finales, bonus inclus
+  readonly abilities: AbilityScores; // finales, bonus inclus
   readonly modifiers: AbilityScores;
   readonly proficiencyBonus: 2;
   readonly maxHitPoints: number | null;
@@ -596,14 +664,14 @@ export interface CharacterSheet {
   readonly armorClass: ArmorClassResult | null;
   readonly initiative: number;
   readonly speed: number | null;
-  readonly saves: readonly RollLine[];    // 6 lignes
-  readonly skills: readonly RollLine[];   // 18 lignes
+  readonly saves: readonly RollLine[]; // 6 lignes
+  readonly skills: readonly RollLine[]; // 18 lignes
   readonly attacks: readonly Attack[];
   readonly spellcasting: SpellcastingSheet | null;
   readonly proficiencies: Proficiencies;
   readonly languages: readonly LanguageId[];
   readonly equipment: readonly ItemLine[];
-  readonly features: readonly Feature[];  // prose transportée depuis data/
+  readonly features: readonly Feature[]; // prose transportée depuis data/
   readonly personalTraits: PersonalTraits;
 }
 
@@ -620,14 +688,25 @@ tels quels depuis `data/` et que rien ne les dérive.
 ```ts
 // src/domain/issues.ts
 export type DraftIssue =
-  | { readonly kind: 'missing'; readonly what: 'name' | 'race' | 'class' | 'background' | 'alignment' }
+  | {
+      readonly kind: 'missing';
+      readonly what: 'name' | 'race' | 'class' | 'background' | 'alignment';
+    }
   | { readonly kind: 'missing-subrace'; readonly raceId: RaceId }
   | { readonly kind: 'points-unspent'; readonly remaining: number }
   | { readonly kind: 'invalid-standard-array' }
-  | { readonly kind: 'slot-incomplete'; readonly slotId: ChoiceSlotId; readonly picked: number; readonly pick: number }
+  | {
+      readonly kind: 'slot-incomplete';
+      readonly slotId: ChoiceSlotId;
+      readonly picked: number;
+      readonly pick: number;
+    }
   | { readonly kind: 'personal-trait-empty'; readonly field: keyof PersonalTraits };
 
-export function draftIssues(draft: CharacterDraft, catalogue: Catalogue): readonly DraftIssue[];
+export function draftIssues(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): readonly DraftIssue[];
 ```
 
 Jamais d'exception, jamais de blocage : l'assistant reste linéaire, l'écran final
@@ -640,9 +719,10 @@ préfixe de `slotId`.
 ## Règles et formules
 
 **Caractéristiques**
+
 - `abilityModifier(score) = Math.floor((score - 10) / 2)`.
 - Répartition : budget **27**, valeurs 8 à 15, coûts `{8:0, 9:1, 10:2, 11:3, 12:4,
-  13:5, 14:7, 15:9}`. `increaseCost = COST[score + 1] − COST[score]`.
+13:5, 14:7, 15:9}`. `increaseCost = COST[score + 1] − COST[score]`.
 - Tableau standard : `[15, 14, 13, 12, 10, 8]`, chaque valeur affectée une fois.
 - **Aucun jet de dés** (§B1) : ni `rolled`, ni frontière d'aléatoire injectée, ni
   méthode `'dice'`.
@@ -650,6 +730,7 @@ préfixe de `slotId`.
   `ability`. Aucun plafond n'est atteignable au niveau 1 (15 + 2 + 1 = 18).
 
 **Valeurs dérivées**
+
 - Bonus de maîtrise : **+2** (`PROFICIENCY_BONUS_LEVEL_1`, pas de table).
 - PV max = `hitDie` + mod. Con + `subrace.bonusHitPointsPerLevel` +
   `subclass.bonusHitPointsPerLevel`. Aucun jet au niveau 1.
@@ -692,21 +773,21 @@ usages, testée une fois.
 Un `switch` sur un identifiant de contenu (`case 'barbare':`) est interdit. Il est
 remplacé, cas par cas, par un champ de données :
 
-| Règle particulière | Champ qui la porte | Exemple SRD |
-|---|---|---|
-| CA sans armure | `CharacterClass.unarmoredDefense` | barbare `10 + Dex + Con`, moine `10 + Dex + Sag` |
-| CA sans armure (sous-classe) | `Subclass.unarmoredDefense` | ensorceleur draconique `13 + Dex` |
-| PV supplémentaires par niveau | `bonusHitPointsPerLevel` | nain des collines +1, ensorceleur draconique +1 |
-| Vitesse réduite | `Race.speed` | nain, halfelin, gnome : 7,50 m |
-| Maîtrises supplémentaires | `Subclass.proficiencies` | clerc de la Vie : armures lourdes |
-| Sorts toujours préparés | `Subclass.alwaysPreparedSpells` | domaine de la Vie : bénédiction, soin des blessures |
-| Compétence offerte | `Race.skills` | elfe : Perception ; demi-orc : Intimidation |
-| Bonus de CA conditionnel | `FightingStyle.armorClassBonusWithArmor` | guerrier, style Défense : +1 |
-| Apport de Dex selon l'armure | `Armor.dexBonus` | légère / intermédiaire / lourde |
-| Décisions à poser | `choices: ChoiceSpec[]` | toutes |
+| Règle particulière            | Champ qui la porte                       | Exemple SRD                                         |
+| ----------------------------- | ---------------------------------------- | --------------------------------------------------- |
+| CA sans armure                | `CharacterClass.unarmoredDefense`        | barbare `10 + Dex + Con`, moine `10 + Dex + Sag`    |
+| CA sans armure (sous-classe)  | `Subclass.unarmoredDefense`              | ensorceleur draconique `13 + Dex`                   |
+| PV supplémentaires par niveau | `bonusHitPointsPerLevel`                 | nain des collines +1, ensorceleur draconique +1     |
+| Vitesse réduite               | `Race.speed`                             | nain, halfelin, gnome : 7,50 m                      |
+| Maîtrises supplémentaires     | `Subclass.proficiencies`                 | clerc de la Vie : armures lourdes                   |
+| Sorts toujours préparés       | `Subclass.alwaysPreparedSpells`          | domaine de la Vie : bénédiction, soin des blessures |
+| Compétence offerte            | `Race.skills`                            | elfe : Perception ; demi-orc : Intimidation         |
+| Bonus de CA conditionnel      | `FightingStyle.armorClassBonusWithArmor` | guerrier, style Défense : +1                        |
+| Apport de Dex selon l'armure  | `Armor.dexBonus`                         | légère / intermédiaire / lourde                     |
+| Décisions à poser             | `choices: ChoiceSpec[]`                  | toutes                                              |
 
 **Ce qui reste un `switch`, et pourquoi c'est légitime.** Le domaine branche sur des
-*genres de règle*, dont l'ensemble est fermé par les règles du jeu et ne grossit
+_genres de règle_, dont l'ensemble est fermé par les règles du jeu et ne grossit
 jamais quand on ajoute du contenu : `ChoiceKind` (10), `armor.dexBonus` (3),
 `PreparationMode` (3), `AbilityMethod` (2). La ligne est nette : **brancher sur un
 genre de règle, oui ; brancher sur un identifiant de contenu, jamais.**
@@ -743,14 +824,14 @@ Ajouter une classe = créer `src/data/classes/nouvelle.ts` et l'ajouter à
 
 `summary` au lieu de la prose longue (§B2) change complètement le calcul.
 
-| Bloc | Source TS | JS émis | gzip |
-|---|---|---|---|
-| Sorts (~85 entrées, résumé de 1 à 3 phrases) | ~47 Ko | ~40 Ko | **~11 Ko** |
-| Classes (12) | ~70 Ko | ~55 Ko | ~11 Ko |
-| Races, tables, historiques | ~55 Ko | ~42 Ko | ~9 Ko |
-| Domaine (règles) | ~35 Ko | ~22 Ko | ~6 Ko |
-| **Total LOT 1** | **~207 Ko** | **~159 Ko** | **~37 Ko** |
-| + React 18 + ReactDOM | — | ~140 Ko | ~45 Ko |
+| Bloc                                         | Source TS   | JS émis     | gzip       |
+| -------------------------------------------- | ----------- | ----------- | ---------- |
+| Sorts (~85 entrées, résumé de 1 à 3 phrases) | ~47 Ko      | ~40 Ko      | **~11 Ko** |
+| Classes (12)                                 | ~70 Ko      | ~55 Ko      | ~11 Ko     |
+| Races, tables, historiques                   | ~55 Ko      | ~42 Ko      | ~9 Ko      |
+| Domaine (règles)                             | ~35 Ko      | ~22 Ko      | ~6 Ko      |
+| **Total LOT 1**                              | **~207 Ko** | **~159 Ko** | **~37 Ko** |
+| + React 18 + ReactDOM                        | —           | ~140 Ko     | ~45 Ko     |
 
 Le chiffre à retenir : ce n'est pas 200 sorts, c'est **~85** (25 tours de magie et
 ~60 sorts de niveau 1 dans le SRD). L'ensemble tient sous **~82 Ko gzip** avec React,
@@ -759,7 +840,7 @@ soit ~1,7 s sur une 3G lente à 400 kbit/s utiles.
 **Décision : aucun découpage dynamique en v1** (§B5). Découper maintenant, c'est
 ajouter de l'asynchrone à `state/` et des états de chargement à l'UI pour économiser
 11 Ko. **Seuil écrit d'avance** : si le premier écran dépasse **150 Ko gzip** à la
-fin du lot 3, on ajoute *un seul* `import('../data/spells')` dynamique, **dans
+fin du lot 3, on ajoute _un seul_ `import('../data/spells')` dynamique, **dans
 `state/`**, jamais ailleurs — 6 des 12 classes n'ont aucun sort au niveau 1
 (barbare, guerrier, moine, roublard, paladin, rôdeur). `src/data/` reste sans
 logique et `domain/` n'apprend rien.
@@ -802,7 +883,7 @@ C'est le vrai coût du projet, et §B2 le divise par deux et demi : ~85 résumé
   d'une traduction commerciale ou communautaire : elles sont protégées séparément et
   ne sont pas couvertes par la CC BY du SRD. Les termes techniques (« jet de
   sauvegarde », « bonus de maîtrise ») sont du vocabulaire non appropriable ; les
-  *phrases* sont rédigées à neuf.
+  _phrases_ sont rédigées à neuf.
 - Aucun contenu hors SRD, à l'exception assumée et signalée de l'historique
   « Personnalisé » (§B3, charte §9), construit uniquement sur les règles génériques
   d'historique du SRD : 2 compétences au choix parmi les 18, 2 outils ou langues, un
@@ -818,11 +899,13 @@ Un test = un comportement, nommé en français (charte §7). ~50 cas. Seuil de
 couverture sur `src/domain/` uniquement (§A13).
 
 **`abilities.test.ts`**
+
 - `it('donne un modificateur de -1 pour une valeur de 8')`
 - `it('donne un modificateur de +4 pour une valeur de 18')`
 - `it('donne un modificateur de 0 pour 10 comme pour 11')`
 
 **`point-buy.test.ts`**
+
 - `it('coûte 27 points pour 15/15/15/8/8/8')`
 - `it('facture 2 points le passage de 13 à 14')`
 - `it('refuse de monter au-delà de 15 et dit pourquoi')`
@@ -834,12 +917,14 @@ couverture sur `src/domain/` uniquement (§A13).
 - `it('propose 15, 14, 13, 12, 10 et 8 dans le tableau standard')`
 
 **`sheet.test.ts` — bonus raciaux**
+
 - `it('ajoute +2 en Constitution à un nain')`
 - `it('ajoute +1 en Sagesse à un nain des collines, en plus du +2 de Constitution')`
 - `it('ajoute +1 partout à un humain')`
 - `it('applique le +1 aux deux caractéristiques choisies par un demi-elfe')`
 
 **`sheet.test.ts` — valeurs dérivées**
+
 - `it('donne un bonus de maîtrise de +2 au niveau 1')`
 - `it('donne 12 points de vie à un guerrier avec 14 en Constitution')`
 - `it('ajoute 1 point de vie à un nain des collines')`
@@ -866,6 +951,7 @@ couverture sur `src/domain/` uniquement (§A13).
 - `it('rend des identifiants et jamais des noms affichables')`
 
 **`open-choices.test.ts`**
+
 - `it('demande 4 compétences à un roublard')`
 - `it('nomme le créneau de compétences du roublard class:roublard:skills')`
 - `it('rattache le tour de magie du haut-elfe à la sous-race et non à la race')`
@@ -883,6 +969,7 @@ couverture sur `src/domain/` uniquement (§A13).
 - `it('ne porte ni réponse ni état d\'avancement dans le créneau')`
 
 **`issues.test.ts`**
+
 - `it('signale l\'absence de race sans lever d\'exception')`
 - `it('signale les points de répartition non dépensés avec leur nombre')`
 - `it('signale un tableau standard mal affecté')`
@@ -890,10 +977,12 @@ couverture sur `src/domain/` uniquement (§A13).
 - `it('ne signale rien pour un personnage entièrement rempli')`
 
 **`draft.test.ts`**
+
 - `it('produit un brouillon identique après passage par JSON')`
 - `it('conserve les réponses devenues invalides après un changement de classe')`
 
 **`catalogue.test.ts` (données)**
+
 - `it('n\'a aucun identifiant en double dans une même table')`
 - `it('n\'a aucun identifiant de créneau en double dans tout le catalogue')`
 - `it('forme tous les identifiants de créneau en source:parent:sujet')`
@@ -929,7 +1018,7 @@ couverture sur `src/domain/` uniquement (§A13).
    inspiration.
 10. **Objets magiques**, achat d'équipement, or de départ alternatif (on prend le
     paquetage), encombrement, pièces au détail.
-11. **Familiers et compagnons** — *Trouver un familier* reste un sort affichable,
+11. **Familiers et compagnons** — _Trouver un familier_ reste un sort affichable,
     sans fiche de créature.
 12. **Monstres, PNJ, compendium, règles du MJ.**
 13. **Toute autre langue que le français**, toute autre source que le SRD 5.1.

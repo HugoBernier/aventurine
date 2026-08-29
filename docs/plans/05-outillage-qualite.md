@@ -163,17 +163,17 @@ le risque se traite en revue et se voit à l'exécution.
 
 Au-delà de `strict`, coût et bénéfice, honnêtement :
 
-| Option | Bénéfice réel ici | Coût réel | Verdict |
-|---|---|---|---|
-| `noUncheckedIndexedAccess` | Le domaine est une application de **tables** : races, classes, historiques, créneaux de choix indexés par identifiant (`'class:roublard:skills'`, arbitrage §A3). `CLASSES['roublard']` devient `Class \| undefined` : le type dit enfin la vérité sur une clé absente ou mal orthographiée, et une faute de frappe dans un identifiant de contenu français cesse d'être un `undefined` silencieux à l'exécution. | Bruit sur `tableau[i]` dans les boucles ; tentation du `!`. | **Activé.** La parade est un accesseur écrit une fois (`findClass(id): Class \| undefined`), plus `@typescript-eslint/no-non-null-assertion` en erreur pour fermer l'échappatoire du `!`. |
-| `exactOptionalPropertyTypes` | Distingue « propriété absente » de « propriété présente valant `undefined` ». | Le `CharacterDraft` (arbitrage §A1) est **par nature** un objet partiellement rempli, et « effacer un choix » s'écrit naturellement `{ ...draft, subrace: undefined }`. Cette option transforme cette ligne banale en gymnastique (`delete`, `Omit`, types auxiliaires). | **Non activé.** Zéro bug évité ici, friction quotidienne garantie sur la structure centrale de trois lots. À reconsidérer seulement si le lot 2 modélise un jour les choix en `T \| null` obligatoire — l'option deviendrait alors gratuite. |
-| `noFallthroughCasesInSwitch` | Le reducer de l'assistant est un `switch` sur les actions. Un `break` oublié y est un bug silencieux. | Nul. | **Activé.** |
-| `noImplicitReturns` | Attrape la fonction qui rend une valeur sur un chemin et rien sur un autre. | Quasi nul. | **Activé.** |
-| `verbatimModuleSyntax` | Force `import type` explicite. Vite transpile fichier par fichier : l'ambiguïté « ce symbole est-il un type ? » disparaît. C'est aussi le défaut des modèles Vite : personne n'est surpris. | Il faut écrire `import type`. | **Activé.** |
-| `noUnusedLocals` / `noUnusedParameters` | Code mort. | **Doublon** de `@typescript-eslint/no-unused-vars`, qui fait la même chose en mieux (motif `^_` configurable). Deux outils qui crient la même chose, c'est un outil de trop. | **Non activé.** `tsc` s'occupe des types, ESLint du code mort. |
-| `noPropertyAccessFromIndexSignature` | Marginal. | Bruyant. | **Non activé.** |
-| `noImplicitOverride` | Zéro classe dans ce projet. | — | **Non activé (YAGNI).** |
-| `skipLibCheck` | Évite des erreurs non corrigeables dans les `.d.ts` tiers. | Masque de vraies erreurs de types tiers. | **Activé** — c'est le compromis standard et le seul tenable. |
+| Option                                  | Bénéfice réel ici                                                                                                                                                                                                                                                                                                                                                                                                 | Coût réel                                                                                                                                                                                                                                                                | Verdict                                                                                                                                                                                                                                      |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `noUncheckedIndexedAccess`              | Le domaine est une application de **tables** : races, classes, historiques, créneaux de choix indexés par identifiant (`'class:roublard:skills'`, arbitrage §A3). `CLASSES['roublard']` devient `Class \| undefined` : le type dit enfin la vérité sur une clé absente ou mal orthographiée, et une faute de frappe dans un identifiant de contenu français cesse d'être un `undefined` silencieux à l'exécution. | Bruit sur `tableau[i]` dans les boucles ; tentation du `!`.                                                                                                                                                                                                              | **Activé.** La parade est un accesseur écrit une fois (`findClass(id): Class \| undefined`), plus `@typescript-eslint/no-non-null-assertion` en erreur pour fermer l'échappatoire du `!`.                                                    |
+| `exactOptionalPropertyTypes`            | Distingue « propriété absente » de « propriété présente valant `undefined` ».                                                                                                                                                                                                                                                                                                                                     | Le `CharacterDraft` (arbitrage §A1) est **par nature** un objet partiellement rempli, et « effacer un choix » s'écrit naturellement `{ ...draft, subrace: undefined }`. Cette option transforme cette ligne banale en gymnastique (`delete`, `Omit`, types auxiliaires). | **Non activé.** Zéro bug évité ici, friction quotidienne garantie sur la structure centrale de trois lots. À reconsidérer seulement si le lot 2 modélise un jour les choix en `T \| null` obligatoire — l'option deviendrait alors gratuite. |
+| `noFallthroughCasesInSwitch`            | Le reducer de l'assistant est un `switch` sur les actions. Un `break` oublié y est un bug silencieux.                                                                                                                                                                                                                                                                                                             | Nul.                                                                                                                                                                                                                                                                     | **Activé.**                                                                                                                                                                                                                                  |
+| `noImplicitReturns`                     | Attrape la fonction qui rend une valeur sur un chemin et rien sur un autre.                                                                                                                                                                                                                                                                                                                                       | Quasi nul.                                                                                                                                                                                                                                                               | **Activé.**                                                                                                                                                                                                                                  |
+| `verbatimModuleSyntax`                  | Force `import type` explicite. Vite transpile fichier par fichier : l'ambiguïté « ce symbole est-il un type ? » disparaît. C'est aussi le défaut des modèles Vite : personne n'est surpris.                                                                                                                                                                                                                       | Il faut écrire `import type`.                                                                                                                                                                                                                                            | **Activé.**                                                                                                                                                                                                                                  |
+| `noUnusedLocals` / `noUnusedParameters` | Code mort.                                                                                                                                                                                                                                                                                                                                                                                                        | **Doublon** de `@typescript-eslint/no-unused-vars`, qui fait la même chose en mieux (motif `^_` configurable). Deux outils qui crient la même chose, c'est un outil de trop.                                                                                             | **Non activé.** `tsc` s'occupe des types, ESLint du code mort.                                                                                                                                                                               |
+| `noPropertyAccessFromIndexSignature`    | Marginal.                                                                                                                                                                                                                                                                                                                                                                                                         | Bruyant.                                                                                                                                                                                                                                                                 | **Non activé.**                                                                                                                                                                                                                              |
+| `noImplicitOverride`                    | Zéro classe dans ce projet.                                                                                                                                                                                                                                                                                                                                                                                       | —                                                                                                                                                                                                                                                                        | **Non activé (YAGNI).**                                                                                                                                                                                                                      |
+| `skipLibCheck`                          | Évite des erreurs non corrigeables dans les `.d.ts` tiers.                                                                                                                                                                                                                                                                                                                                                        | Masque de vraies erreurs de types tiers.                                                                                                                                                                                                                                 | **Activé** — c'est le compromis standard et le seul tenable.                                                                                                                                                                                 |
 
 **Pas d'alias de chemin** (`@/`). Quatre dossiers plats : les imports relatifs
 restent courts. Un alias coûterait une configuration en double (tsconfig + Vite)
@@ -253,7 +253,10 @@ l'application entière.
          tout paraît normal en développement. Ne pas retirer.
          Pas de maximum-scale ni de user-scalable=no : bloquer le zoom est une
          régression d'accessibilité, y compris sur un site pensé pour le pouce. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
     <!-- « light » SEUL, dicté par le lot 3 (arbitrage §A10). Annoncer « dark »
          sans thème sombre fait inverser les contrôles natifs par le système et
@@ -317,30 +320,30 @@ ne faut pas sacraliser.
 
 ### Traduction en interdictions
 
-Seuls les sens *remontants* sont interdits. Les sens descendants vont vers le
+Seuls les sens _remontants_ sont interdits. Les sens descendants vont vers le
 noyau stable et ne violent rien.
 
-| Dossier | N'a pas le droit d'importer | Pourquoi |
-|---|---|---|
-| `src/domain/` | `react`, `react-dom`, `ui`, `state`, `data` | Le domaine ne dépend de **rien**, pas même d'un `import type` depuis React (charte, section « Architecture »). |
-| `src/data/` | `react`, `react-dom`, `ui`, `state` | Contenu typé par `domain/`, aucune logique. |
-| `src/state/` | `react-dom`, `ui` | `state/` a droit à React (Context, `useReducer`), pas au DOM ni aux composants. |
-| `src/ui/` | **rien** | `ui → state`, `ui → domain` et `ui → data` sont tous **autorisés et voulus**. Il n'y a aucune couche au-dessus de `ui/`, donc aucun sens remontant à interdire : il n'y a **pas** de `layer('ui', …)` dans la configuration. |
+| Dossier       | N'a pas le droit d'importer                 | Pourquoi                                                                                                                                                                                                                     |
+| ------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/domain/` | `react`, `react-dom`, `ui`, `state`, `data` | Le domaine ne dépend de **rien**, pas même d'un `import type` depuis React (charte, section « Architecture »).                                                                                                               |
+| `src/data/`   | `react`, `react-dom`, `ui`, `state`         | Contenu typé par `domain/`, aucune logique.                                                                                                                                                                                  |
+| `src/state/`  | `react-dom`, `ui`                           | `state/` a droit à React (Context, `useReducer`), pas au DOM ni aux composants.                                                                                                                                              |
+| `src/ui/`     | **rien**                                    | `ui → state`, `ui → domain` et `ui → data` sont tous **autorisés et voulus**. Il n'y a aucune couche au-dessus de `ui/`, donc aucun sens remontant à interdire : il n'y a **pas** de `layer('ui', …)` dans la configuration. |
 
 Ce que le lint ne peut pas dire, et qui reste une affaire de revue : « un calcul
 de règle dans un composant est un bug de conception ». `ui/` a le droit
-d'*importer* `domain/` ; il n'a pas le droit de *refaire* ce que `domain/` calcule.
+d'_importer_ `domain/` ; il n'a pas le droit de _refaire_ ce que `domain/` calcule.
 L'arbitrage §A16 en donne le cas d'école : un écran qui décide lui-même si `+`
 est actif en connaissant la table de coûts d'achat de points. Aucun outil ne
 détecte cela ; seule la revue le voit.
 
 ### Les trois options, comparées
 
-| Solution | Dépendances ajoutées | Échoue en CI | Retour dans l'éditeur | Lignes de config | Précision |
-|---|---|---|---|---|---|
-| `no-restricted-imports` (règle **du cœur** d'ESLint) | **0** | oui | oui, pendant la frappe | ~20 | motifs sur la chaîne d'import |
-| `import/no-restricted-paths` (`eslint-plugin-import`) | 1 greffon + un résolveur TypeScript, ~15 paquets transitifs | oui | oui | ~20, plus les réglages de résolution | chemins **résolus**, sans faux positif |
-| Script maison (~25 lignes de Node + regex) | 0 | oui | **non** | ~25 dans un fichier à part | regex, à maintenir |
+| Solution                                              | Dépendances ajoutées                                        | Échoue en CI | Retour dans l'éditeur  | Lignes de config                     | Précision                              |
+| ----------------------------------------------------- | ----------------------------------------------------------- | ------------ | ---------------------- | ------------------------------------ | -------------------------------------- |
+| `no-restricted-imports` (règle **du cœur** d'ESLint)  | **0**                                                       | oui          | oui, pendant la frappe | ~20                                  | motifs sur la chaîne d'import          |
+| `import/no-restricted-paths` (`eslint-plugin-import`) | 1 greffon + un résolveur TypeScript, ~15 paquets transitifs | oui          | oui                    | ~20, plus les réglages de résolution | chemins **résolus**, sans faux positif |
+| Script maison (~25 lignes de Node + regex)            | 0                                                           | oui          | **non**                | ~25 dans un fichier à part           | regex, à maintenir                     |
 
 ### Décision : `no-restricted-imports`, la règle du cœur d'ESLint
 
@@ -387,8 +390,12 @@ question de revue. La sanctuariser vaudrait un greffon de plus, ce qui reviendra
 
 - **Sous-dossier homonyme.** Un `src/domain/ui/` déclencherait un faux positif.
   On n'en crée pas.
-- **Import dynamique.** ESLint 9 a étendu la règle aux `import()` à littéral de
-  chaîne ; à **confirmer par un essai réel** à l'étape 4, pas à supposer.
+- **Import dynamique — hypothèse démentie par l'essai (§A27).** On supposait que
+  la règle couvrait les `import()` à littéral de chaîne. **C'est faux** : un
+  `import('../ui/x')` dans `src/domain/` passait sans un mot. Corrigé par une
+  règle `no-restricted-syntax` par couche, sélecteur
+  `ImportExpression[source.value=/…/]`, motifs raisonnant sur des segments de
+  chemin entiers. Cinq lignes, aucune dépendance ajoutée.
 - **Renommage de dossier.** Renommer `src/state/` en `src/store/` sans toucher à
   `eslint.config.js` désactive la règle en silence. La liste des dossiers et
   celle des motifs tiennent dans les mêmes vingt lignes : un renommage qui ne les
@@ -624,7 +631,7 @@ exactement l'excès de configuration qu'on refuse.
 
 **Contre les seuils, honnêtement :** un pourcentage global est un indicateur de
 substitution. Il passe au vert en testant des accesseurs. Quand il bloque, la
-réaction n'est pas d'écrire un bon test mais d'écrire *n'importe quel* test. **Un
+réaction n'est pas d'écrire un bon test mais d'écrire _n'importe quel_ test. **Un
 seuil global apprend à tromper la mesure.**
 
 **Ce que la charte demande est plus fort et plus précis :** « Toute règle de
@@ -670,13 +677,13 @@ est un échec — sinon les avertissements s'accumulent et ne veulent plus rien 
 
 **Durée cible sur ce projet :**
 
-| Étape | Cible locale |
-|---|---|
-| `typecheck` | < 5 s |
-| `lint` | < 8 s |
-| `test` | < 15 s |
-| **Total** | **< 30 s** |
-| Tâche CI complète, `npm ci` compris | < 2 min |
+| Étape                               | Cible locale |
+| ----------------------------------- | ------------ |
+| `typecheck`                         | < 5 s        |
+| `lint`                              | < 8 s        |
+| `test`                              | < 15 s       |
+| **Total**                           | **< 30 s**   |
+| Tâche CI complète, `npm ci` compris | < 2 min      |
 
 Règle : **si `verify` dépasse 60 s en local, c'est un défaut à corriger**, au même
 titre qu'un test rouge. Un garde-fou lent finit contourné.
@@ -869,15 +876,15 @@ mobile de Lighthouse (Slow 4G, processeur bridé ×4).
 
 ### Poids (compressé gzip, mesuré sur `dist/`)
 
-| Poste | Budget | Comment on le mesure |
-|---|---|---|
-| Chunk d'entrée (JS exécuté au premier écran) | **≤ 110 kio** | `dist/assets/index-*.js`, étape « Budget de poids » de la CI |
-| Total JS émis | **≤ 200 kio** | somme de `dist/assets/*.js` |
-| CSS total | **≤ 15 kio** | somme de `dist/assets/*.css` |
-| Données SRD embarquées | **≤ 120 kio** | comptées dans les deux lignes ci-dessus |
-| Polices web | **0 octet** | on n'en charge aucune : pile de polices système |
-| Chaque image | **≤ 30 kio**, SVG de préférence | revue |
-| **Total transféré au premier chargement** | **≤ 250 kio** | onglet Réseau, cache vidé |
+| Poste                                        | Budget                          | Comment on le mesure                                         |
+| -------------------------------------------- | ------------------------------- | ------------------------------------------------------------ |
+| Chunk d'entrée (JS exécuté au premier écran) | **≤ 110 kio**                   | `dist/assets/index-*.js`, étape « Budget de poids » de la CI |
+| Total JS émis                                | **≤ 200 kio**                   | somme de `dist/assets/*.js`                                  |
+| CSS total                                    | **≤ 15 kio**                    | somme de `dist/assets/*.css`                                 |
+| Données SRD embarquées                       | **≤ 120 kio**                   | comptées dans les deux lignes ci-dessus                      |
+| Polices web                                  | **0 octet**                     | on n'en charge aucune : pile de polices système              |
+| Chaque image                                 | **≤ 30 kio**, SVG de préférence | revue                                                        |
+| **Total transféré au premier chargement**    | **≤ 250 kio**                   | onglet Réseau, cache vidé                                    |
 
 Repères pour comprendre ces chiffres : `react` + `react-dom` en 18.3 pèsent à eux
 seuls de l'ordre de **45 kio gzip**. C'est un coût fixe imposé par la charte
@@ -892,14 +899,14 @@ secours**, pas la conception initiale.
 
 ### Temps
 
-| Mesure | Budget |
-|---|---|
-| Premier affichage de contenu (FCP) | ≤ 1,8 s |
-| Plus grand élément affiché (LCP) | ≤ 2,5 s |
-| **Premier écran utilisable** : le titre, le premier choix et le bouton « Suivant » visibles **et** cliquables | **≤ 2,5 s** |
-| Temps de blocage total (TBT) | ≤ 200 ms |
-| Décalage de mise en page (CLS) | ≤ 0,1 |
-| Défilement horizontal à 360 px | **0** (charte, section « Mobile-first et design ») |
+| Mesure                                                                                                        | Budget                                             |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Premier affichage de contenu (FCP)                                                                            | ≤ 1,8 s                                            |
+| Plus grand élément affiché (LCP)                                                                              | ≤ 2,5 s                                            |
+| **Premier écran utilisable** : le titre, le premier choix et le bouton « Suivant » visibles **et** cliquables | **≤ 2,5 s**                                        |
+| Temps de blocage total (TBT)                                                                                  | ≤ 200 ms                                           |
+| Décalage de mise en page (CLS)                                                                                | ≤ 0,1                                              |
+| Défilement horizontal à 360 px                                                                                | **0** (charte, section « Mobile-first et design ») |
 
 ### Comment on mesure
 

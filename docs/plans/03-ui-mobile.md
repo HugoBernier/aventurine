@@ -25,7 +25,7 @@ Il réutilise mes composants et déclare les siens dans `ui/sheet/`.
 3. **Jamais de blocage.** « Suivant » est toujours actif ; un choix manquant est une ligne
    `incomplete` au récapitulatif, pas une erreur.
 4. **Aligner plutôt que juxtaposer.** Chaque option expose `facts: readonly [string, string,
-   string]` (§A4) : trois repères, même sens à chaque indice, même place sur chaque carte.
+string]` (§A4) : trois repères, même sens à chaque indice, même place sur chaque carte.
    On compare en balayant verticalement. Aucun tableau, aucun défilement horizontal.
 5. **Le mot avant la couleur.** « Choisi », « Erreur : », « Déjà acquise ». La couleur
    renforce, jamais elle seule.
@@ -40,24 +40,24 @@ Un seul fichier de variables sur `:root`. Aucune valeur brute dans les modules C
 
 ### Couleurs — thème clair, ratios WCAG calculés
 
-| Variable | Valeur | Usage | Contraste |
-|---|---|---|---|
-| `--color-page` | `#F7F5F2` | fond général, blanc cassé chaud (pas jaune) | — |
-| `--color-surface` | `#FFFFFF` | cartes, champs | — |
-| `--color-surface-selected` | `#EAEFF5` | carte sélectionnée | — |
-| `--color-surface-error` | `#FDF0EE` | bloc d'erreur | — |
-| `--color-text` | `#1B1A18` | texte courant, titres | **15,98** / page |
-| `--color-text-muted` | `#57534C` | accroches, descriptions | **7,03** / page |
-| `--color-text-subtle` | `#6E6960` | méta 14 px | **5,01** / page |
-| `--color-accent` | `#1F4E79` | **accent 1, interactif** : bouton principal, bord sélectionné, barre de progression | **7,96** / page ; blanc dessus **8,66** |
-| `--color-accent-pressed` | `#173C5C` | état pressé | blanc dessus **11,43** |
-| `--color-acquired` | `#3F6B3F` | **accent 2, acquis** : « Choisi », « Étape complète » | **5,70** / page ; **5,36** / sélectionné |
-| `--color-error` | `#9B2415` | état d'erreur. Pas un accent : jamais décoratif | **7,26** / page ; **7,10** / fond erreur |
-| `--color-rule` | `#E3DED5` | filets **décoratifs** uniquement | 1,23 — assumé, redondant avec du texte |
-| `--color-control-border` | `#8A8275` | contour de tout élément interactif | **3,49** / page, **3,80** / blanc → ≥ 3:1 (WCAG 1.4.11) |
-| `--color-focus` | `#1B1A18` | anneau de focus | **15,98** / page |
-| `--color-disabled-bg` | `#EDE9E3` | contrôle désactivé | — |
-| `--color-disabled-text` | `#6E6960` | texte désactivé | **4,51** / fond désactivé |
+| Variable                   | Valeur    | Usage                                                                               | Contraste                                               |
+| -------------------------- | --------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `--color-page`             | `#F7F5F2` | fond général, blanc cassé chaud (pas jaune)                                         | —                                                       |
+| `--color-surface`          | `#FFFFFF` | cartes, champs                                                                      | —                                                       |
+| `--color-surface-selected` | `#EAEFF5` | carte sélectionnée                                                                  | —                                                       |
+| `--color-surface-error`    | `#FDF0EE` | bloc d'erreur                                                                       | —                                                       |
+| `--color-text`             | `#1B1A18` | texte courant, titres                                                               | **15,98** / page                                        |
+| `--color-text-muted`       | `#57534C` | accroches, descriptions                                                             | **7,03** / page                                         |
+| `--color-text-subtle`      | `#6E6960` | méta 14 px                                                                          | **5,01** / page                                         |
+| `--color-accent`           | `#1F4E79` | **accent 1, interactif** : bouton principal, bord sélectionné, barre de progression | **7,96** / page ; blanc dessus **8,66**                 |
+| `--color-accent-pressed`   | `#173C5C` | état pressé                                                                         | blanc dessus **11,43**                                  |
+| `--color-acquired`         | `#3F6B3F` | **accent 2, acquis** : « Choisi », « Étape complète »                               | **5,70** / page ; **5,36** / sélectionné                |
+| `--color-error`            | `#9B2415` | état d'erreur. Pas un accent : jamais décoratif                                     | **7,26** / page ; **7,10** / fond erreur                |
+| `--color-rule`             | `#E3DED5` | filets **décoratifs** uniquement                                                    | 1,23 — assumé, redondant avec du texte                  |
+| `--color-control-border`   | `#8A8275` | contour de tout élément interactif                                                  | **3,49** / page, **3,80** / blanc → ≥ 3:1 (WCAG 1.4.11) |
+| `--color-focus`            | `#1B1A18` | anneau de focus                                                                     | **15,98** / page                                        |
+| `--color-disabled-bg`      | `#EDE9E3` | contrôle désactivé                                                                  | —                                                       |
+| `--color-disabled-text`    | `#6E6960` | texte désactivé                                                                     | **4,51** / fond désactivé                               |
 
 - Un **seul** accent interactif : aucune ambiguïté sur « où appuyer ».
 - Le **vert d'armoirie** ne marque que l'acquis, jamais cliquable — pas de confusion.
@@ -72,10 +72,12 @@ Un seul fichier de variables sur `:root`. Aucune valeur brute dans les modules C
 ### Typographie
 
 ```css
---font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-           "Helvetica Neue", Arial, "Noto Sans", sans-serif;
---font-title: "Iowan Old Style", "Palatino Linotype", Palatino,
-              "Book Antiqua", Georgia, "Noto Serif", serif;
+--font-ui:
+  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  'Noto Sans', sans-serif;
+--font-title:
+  'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif',
+  serif;
 ```
 
 Deux piles **système**, zéro octet téléchargé : pas de FOUT, pas de décalage au chargement,
@@ -83,13 +85,13 @@ pas de requête réseau sur un site consulté à table avec trois barres de rés
 sert qu'aux `h1`/`h2` : elle donne le ton « vieux grimoire » sans une seule image, ce qui
 est aussi la seule façon d'être « médiéval discret » sans copier d'habillage (charte §9).
 
-| Variable | Valeur | Usage |
-|---|---|---|
-| `--font-size-100` | `0.875rem` (14 px) | méta, notes, coût |
-| `--font-size-200` | `1rem` (16 px) | **texte, champs, boutons — plancher absolu** |
-| `--font-size-300` | `1.125rem` (18 px) | titre de carte, valeur de score |
-| `--font-size-400` | `1.375rem` (22 px) | `h1` d'écran (serif) |
-| `--font-size-500` | `1.75rem` (28 px) | grand chiffre (`tabular-nums`) |
+| Variable          | Valeur             | Usage                                        |
+| ----------------- | ------------------ | -------------------------------------------- |
+| `--font-size-100` | `0.875rem` (14 px) | méta, notes, coût                            |
+| `--font-size-200` | `1rem` (16 px)     | **texte, champs, boutons — plancher absolu** |
+| `--font-size-300` | `1.125rem` (18 px) | titre de carte, valeur de score              |
+| `--font-size-400` | `1.375rem` (22 px) | `h1` d'écran (serif)                         |
+| `--font-size-500` | `1.75rem` (28 px)  | grand chiffre (`tabular-nums`)               |
 
 `--line-height-body: 1.5` ; `--line-height-title: 1.25`. Graisses 400 / 600 / 700.
 **16 px minimum sur tout `input`** : sous 16 px iOS zoome au focus, casse la mise en page
@@ -98,13 +100,20 @@ et crée un défilement horizontal — cause n° 1 du « ça bouge tout seul ».
 ### Espacement, rayons, ombres, dimensions
 
 ```css
---space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
---space-5: 24px; --space-6: 32px; --space-7: 48px;
+--space-1: 4px;
+--space-2: 8px;
+--space-3: 12px;
+--space-4: 16px;
+--space-5: 24px;
+--space-6: 32px;
+--space-7: 48px;
 
---radius-sm: 4px;   --radius-md: 8px;   --radius-lg: 12px;
+--radius-sm: 4px;
+--radius-md: 8px;
+--radius-lg: 12px;
 
 /* Deux ombres, fonctionnelles : elles disent « cette zone flotte ». Aucune sur les cartes. */
---shadow-header:  0 1px 0 var(--color-rule);
+--shadow-header: 0 1px 0 var(--color-rule);
 --shadow-actions: 0 -1px 0 var(--color-rule), 0 -6px 16px rgb(27 26 24 / 0.08);
 
 --touch-target: 44px;
@@ -118,23 +127,26 @@ peinture nul sur téléphone d'entrée de gamme.
 
 ## Cadre d'écran mobile (`src/ui/shell/AppShell.tsx`)
 
-### 1. La barre d'actions n'est PAS `position: fixed` *(retenu §B5)*
+### 1. La barre d'actions n'est PAS `position: fixed` _(retenu §B5)_
 
 ```css
 .app {
-  height: 100vh;              /* repli */
+  height: 100vh; /* repli */
   height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr auto;   /* header | content | actions */
-  overflow: hidden;                    /* la page ne défile jamais */
+  grid-template-rows: auto 1fr auto; /* header | content | actions */
+  overflow: hidden; /* la page ne défile jamais */
 }
-.content { overflow-y: auto; overscroll-behavior: contain; }
+.content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 ```
 
 Une **rangée de grille** supprime d'un coup : le contenu masqué sous la barre, le
 `padding-bottom` magique à maintenir, et les bugs de repositionnement de `position: fixed`
 pendant le défilement élastique d'iOS. La barre est toujours visible parce qu'elle est
-*hors* du conteneur défilant, pas parce qu'elle est collée.
+_hors_ du conteneur défilant, pas parce qu'elle est collée.
 
 ### 2. `100vh` ment sur mobile → `dvh`
 
@@ -156,7 +168,7 @@ perdus barre rétractée.
 Prérequis dicté au lot 5 et commenté dans `index.html` (§A10) :
 
 ```html
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 ```
 
 Sans `viewport-fit=cover`, `env()` vaut `0px` : le bug est **invisible en développement** et
@@ -167,9 +179,11 @@ les boutons passent sous la barre d'accueil de l'iPhone en production.
   padding-block: var(--space-3);
   padding-block-end: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
-                  max(var(--space-4), env(safe-area-inset-right, 0px));
+    max(var(--space-4), env(safe-area-inset-right, 0px));
 }
-.header { padding-block-start: calc(var(--space-2) + env(safe-area-inset-top, 0px)); }
+.header {
+  padding-block-start: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+}
 ```
 
 Les insets latéraux comptent en **paysage** : sans eux l'encoche mange « Précédent ».
@@ -182,6 +196,7 @@ Les insets latéraux comptent en **paysage** : sans eux l'encoche mange « Préc
   la barre passe derrière. C'est un comportement du système, pas un défaut de CSS.
 
 Stratégie, par coût croissant :
+
 1. **Éviter.** Deux écrans seulement ont un champ important (identité, historique
    personnalisé). Le champ est dans un `<form>` avec `enterkeyhint="done"` : la touche du
    clavier valide. La barre revient dès la fermeture du clavier.
@@ -245,25 +260,27 @@ Le lot 4 se limite à cet inventaire (§A7) — ni `Button`, ni `Card`, ni `Chip
 export interface AppShellProps {
   header: React.ReactNode;
   actions: React.ReactNode;
-  screenKey: string;            // change → défilement remis à zéro + focus sur le h1
+  screenKey: string; // change → défilement remis à zéro + focus sur le h1
   children: React.ReactNode;
 }
 ```
+
 Toute la mécanique `dvh` / safe-area / clavier / impression existe **en un seul endroit**.
 
 ### 2. `ProgressBanner`
 
 ```ts
 export interface ProgressBannerProps {
-  stepIndex: number;      // 1-based
-  stepCount: number;      // 8
-  stepLabel: string;      // « Tes caractéristiques »
-  screenIndex: number;    // la barre fine mesure les écrans (§A9)
+  stepIndex: number; // 1-based
+  stepCount: number; // 8
+  stepLabel: string; // « Tes caractéristiques »
+  screenIndex: number; // la barre fine mesure les écrans (§A9)
   screenCount: number;
   onBack?: () => void;
-  onOpenSummary: () => void;   // « Ma fiche » → récapitulatif (lot 4)
+  onOpenSummary: () => void; // « Ma fiche » → récapitulatif (lot 4)
 }
 ```
+
 Les cinq champs viennent tels quels de `useWizard().progress`. Le texte annonce l'étape
 (stable, encourageant), la barre mesure les écrans (précise) : annoncer « écran 7 sur 19 »
 découragerait. `role="progressbar"` avec `aria-valuenow/min/max` et
@@ -275,15 +292,16 @@ découragerait. `role="progressbar"` avec `aria-valuenow/min/max` et
 import type { ChoiceSlot } from '../../domain/choice';
 
 export interface ChoiceGroupProps {
-  slot: ChoiceSlot;                       // porte title, help, pick, options
+  slot: ChoiceSlot; // porte title, help, pick, options
   selected: readonly string[];
   remaining: number;
   onToggle: (optionId: string) => void;
-  fieldName: string;                      // attribut name, stable
+  fieldName: string; // attribut name, stable
   error?: string;
   empty?: React.ReactNode;
 }
 ```
+
 **L'union discriminée de la v1 disparaît** : `useChoiceSlot` rend un `toggle` uniforme, et
 `slot.pick === 1` détermine `radio` contre `checkbox`. Un seul chemin de données, une
 branche de deux lignes sur la sémantique HTML. C'est le gain direct de §A4.
@@ -292,7 +310,7 @@ Huit usages réels : sous-race, créneaux de race, créneaux de classe, compéte
 outils, sorts, équipement — plus les choix locaux (méthode de caractéristiques, alignement)
 pour lesquels l'écran construit deux `ChoiceOption` littérales.
 
-### 4. `SelectableCard` *(interne à `ChoiceGroup`, non exportée)*
+### 4. `SelectableCard` _(interne à `ChoiceGroup`, non exportée)_
 
 ```ts
 interface SelectableCardProps {
@@ -303,14 +321,16 @@ interface SelectableCardProps {
   onSelect: (optionId: string) => void;
 }
 ```
+
 Rien d'autre n'en a besoin, donc elle n'est pas exportée hors du dossier. **Natif d'abord** :
 
 ```html
 <label class="card">
-  <input type="radio" name="race" value="nain-des-collines" class="input">
+  <input type="radio" name="race" value="nain-des-collines" class="input" />
   <span class="body"> … label, blurb, facts, details … </span>
 </label>
 ```
+
 `.input { position:absolute; width:1px; height:1px; clip-path: inset(50%); }` — jamais
 `display:none`, qui retire le champ de la tabulation et des lecteurs d'écran. Focus :
 `.input:focus-visible + .body` (compatible partout), `.card:has(:focus-visible)` en
@@ -323,21 +343,22 @@ prose longue (§A19), donc leurs cartes n'ont aucun dépliant.
 
 ```ts
 export interface AbilityStepperProps {
-  label: string;              // « Force »
-  purpose: string;            // « Frapper, porter, briser. »
+  label: string; // « Force »
+  purpose: string; // « Frapper, porter, briser. »
   score: number;
   racialBonus: number;
   bonusSource: string | null; // « nain »
   total: number;
-  modifier: string;           // « +2 », déjà signé par ui/format
+  modifier: string; // « +2 », déjà signé par ui/format
   increaseCost: number | null;
   canIncrease: boolean;
   canDecrease: boolean;
-  blockedReason: string | null;  // phrase composée par ui/format
+  blockedReason: string | null; // phrase composée par ui/format
   onIncrease: () => void;
   onDecrease: () => void;
 }
 ```
+
 Six instances sur un écran, une mécanique tactile non triviale. Il ne calcule rien : les
 booléens et le coût viennent du domaine. L'écran « tableau standard » réutilise la même
 mise en page de ligne via `abilityRow.module.css` partagé dans le dossier de l'écran, avec
@@ -347,10 +368,11 @@ un `<select>` natif à la place des deux boutons — un composant local, pas d'i
 
 ```ts
 export interface ExplainerProps {
-  label: string;               // « Comment ça marche ? »
+  label: string; // « Comment ça marche ? »
   children: React.ReactNode;
 }
 ```
+
 Seul mécanisme d'aide du site. `<details>/<summary>` natif, `<summary>` de 44 px, libellé
 qui bascule en « Masquer » à l'ouverture via `onToggle`.
 
@@ -363,6 +385,7 @@ export interface ActionBarProps {
   note?: string;
 }
 ```
+
 `grid-template-columns: auto 1fr` : « Précédent » compact à gauche, action principale large
 à droite, 8 px d'écart minimum, 48 px de haut. Porte `data-print="hide"`.
 
@@ -371,10 +394,10 @@ export interface ActionBarProps {
 ```ts
 export interface TextFieldProps {
   id: string;
-  label: string;                          // <label> visible, jamais un placeholder-libellé
+  label: string; // <label> visible, jamais un placeholder-libellé
   defaultValue: string;
-  onCommit: (value: string) => void;      // flou + Entrée — s'aligne sur useDraftText
-  onInput?: (value: string) => void;      // frappe, recherche locale uniquement
+  onCommit: (value: string) => void; // flou + Entrée — s'aligne sur useDraftText
+  onInput?: (value: string) => void; // frappe, recherche locale uniquement
   type?: 'text' | 'search';
   hint?: string;
   error?: string;
@@ -384,6 +407,7 @@ export interface TextFieldProps {
   maxLength?: number;
 }
 ```
+
 **Non contrôlé par conception** : `useDraftText` du lot 2 rend `{ initial, commit }`
 précisément pour ne pas re-rendre l'assistant à chaque frappe. `onInput` n'est branché que
 sur la recherche de sorts, où l'état est local et ne touche pas le brouillon.
@@ -395,10 +419,11 @@ export interface NoticeProps {
   tone: 'error' | 'reminder';
   title?: string;
   children: React.ReactNode;
-  live?: boolean;              // true → role="alert" (error) ou role="status" (reminder)
-  onDismiss?: () => void;      // rendu en bouton « Fermer » 44 px, libellé texte
+  live?: boolean; // true → role="alert" (error) ou role="status" (reminder)
+  onDismiss?: () => void; // rendu en bouton « Fermer » 44 px, libellé texte
 }
 ```
+
 Rend les `useScreenIssues(screenId)`, les avis de `useNotices()` et les erreurs de stockage.
 Le ton se lit dans le texte avant la couleur ; un filet gauche de 4 px double l'information.
 
@@ -409,25 +434,25 @@ Le ton se lit dans le texte avant la couleur ; un filet gauche de 4 px double l'
 Parcours canonique de §A9 : **8 étapes**, environ quinze à dix-neuf écrans selon les choix.
 L'écran de fiche ne m'appartient plus (§A8).
 
-| Étape | Écrans que je rends |
-|---|---|
-| — | Accueil |
-| 1 Ta race | race · sous-race *(si applicable)* · créneaux de race |
-| 2 Ta classe | classe · créneaux de classe hors compétences |
-| 3 Tes caractéristiques | **méthode** · répartition |
-| 4 Ton historique | historique · créneaux d'historique · champs libres si « Personnalisé » |
-| 5 Ce que tu sais faire | compétences · langues · outils |
-| 6 Tes sorts | tours de magie · sorts *(classes lanceuses)* |
-| 7 Ton équipement | options de départ |
-| 8 Ton identité | nom · alignement · personnalité |
-| — | → récapitulatif, puis fiche : **lot 4** |
+| Étape                  | Écrans que je rends                                                    |
+| ---------------------- | ---------------------------------------------------------------------- |
+| —                      | Accueil                                                                |
+| 1 Ta race              | race · sous-race _(si applicable)_ · créneaux de race                  |
+| 2 Ta classe            | classe · créneaux de classe hors compétences                           |
+| 3 Tes caractéristiques | **méthode** · répartition                                              |
+| 4 Ton historique       | historique · créneaux d'historique · champs libres si « Personnalisé » |
+| 5 Ce que tu sais faire | compétences · langues · outils                                         |
+| 6 Tes sorts            | tours de magie · sorts _(classes lanceuses)_                           |
+| 7 Ton équipement       | options de départ                                                      |
+| 8 Ton identité         | nom · alignement · personnalité                                        |
+| —                      | → récapitulatif, puis fiche : **lot 4**                                |
 
 **Un seul composant d'écran générique**, `ChoiceSlotScreen`, rend tous les écrans de créneau
 — soit la grande majorité : il appelle `useChoiceSlot(slotId)`, rend `slot.title` en `h1`,
 `slot.help` dans un `Explainer`, un `ChoiceGroup` et une `ActionBar`. Les écrans écrits à la
 main se réduisent à : accueil, race, classe, historique, méthode, répartition, identité.
 
-### Étape 1 — Ta race *(difficile : beaucoup de contenu à comparer)*
+### Étape 1 — Ta race _(difficile : beaucoup de contenu à comparer)_
 
 **Objectif** : choisir le peuple d'origine en comprenant ce qu'il change.
 
@@ -486,7 +511,7 @@ races n'ont pas pu être chargées. » + « Réessayer » 44 px.
 **État d'erreur** : aucun. Ne rien choisir n'est pas une erreur — « Suivant » passe et le
 récapitulatif portera une ligne `incomplete`.
 
-### Étape 3 — Tes caractéristiques *(difficile : chiffres, coûts, + et −)*
+### Étape 3 — Tes caractéristiques _(difficile : chiffres, coûts, + et −)_
 
 **Deux écrans, pas un écran à deux décisions** (§B1 + charte §4).
 
@@ -569,7 +594,7 @@ encore de race : les bonus s'ajouteront tout seuls après. »
 **État d'erreur** : le reducer refuse le budget négatif ; `invalid` n'est atteignable qu'en
 relisant une sauvegarde modifiée à la main, et s'affiche alors dans une `Notice error`.
 
-### Étape 6 — Tes sorts *(difficile : listes longues)*
+### Étape 6 — Tes sorts _(difficile : listes longues)_
 
 Deux écrans (tours de magie, puis sorts de niveau 1), tous deux rendus par
 `ChoiceSlotScreen`.
@@ -608,6 +633,7 @@ Deux écrans (tours de magie, puis sorts de niveau 1), tous deux rendus par
 ```
 
 Quatre décisions pour tenir la longueur :
+
 1. **Cartes courtes.** `summary` d'une à trois phrases plus les trois `facts` alignés. En v1
    la prose longue n'existe pas (§A19) : **aucun dépliant sur les cartes de sort**, ce qui divise la
    hauteur de liste par trois. Quand la prose longue arrivera, le `<details>` apparaîtra tout
@@ -693,14 +719,24 @@ le mot n'aurait pas dû être employé.
 ## Élargissement bureau
 
 **Une seule requête média : `@media (min-width: 600px)`.** Aucune `max-width` en requête média
-(charte §4) ; les `max-width` de *propriété* restent indispensables et autorisées.
+(charte §4) ; les `max-width` de _propriété_ restent indispensables et autorisées.
 
 ```css
 @media (min-width: 600px) {
-  .content > * { max-width: var(--content-max); margin-inline: auto; }
-  .actions > .inner { max-width: var(--content-max); margin-inline: auto; }
-  .card { padding: var(--space-5); }
-  :root { --font-size-400: 1.75rem; }
+  .content > * {
+    max-width: var(--content-max);
+    margin-inline: auto;
+  }
+  .actions > .inner {
+    max-width: var(--content-max);
+    margin-inline: auto;
+  }
+  .card {
+    padding: var(--space-5);
+  }
+  :root {
+    --font-size-400: 1.75rem;
+  }
 }
 ```
 
@@ -718,20 +754,23 @@ reste en bas au bureau : inhabituel, mais un seul comportement à expliquer.
 ## Accessibilité
 
 - **Groupes de choix : aucun rôle ARIA** (confirmé §B5). `<fieldset>` + `<legend>` + `<input
-  type="radio">` ou `checkbox` dans un `<label>`. Le natif fournit le regroupement, le nom du
+type="radio">` ou `checkbox` dans un `<label>`. Le natif fournit le regroupement, le nom du
   groupe, `aria-checked`, le tabindex tournant, les flèches, Home/End, Espace — correctement
   et sur tous les lecteurs d'écran. Un `role="radiogroup"` fait main serait plus de code **et**
   moins fiable. Seule exigence : masquer l'`<input>` par `clip-path`, jamais `display:none`.
   Le compteur « 2 sur 3 choisis » est lié au `<fieldset>` par `aria-describedby`.
 - **Focus visible, jamais supprimé** :
   ```css
-  :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px;
-                   border-radius: inherit; }
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
   ```
   L'`outline-offset` place l'anneau sur le fond de page, y compris autour d'un bouton bleu où
   un anneau collé tomberait à 2,01.
 - **Changement d'écran** : `AppShell` déplace le focus sur le `h1` et met à jour
-  `document.title` (« Tes caractéristiques — étape 3 sur 8 »). Le déplacement de focus *est*
+  `document.title` (« Tes caractéristiques — étape 3 sur 8 »). Le déplacement de focus _est_
   l'annonce ; pas de région live pour l'étape, ce qui provoquerait une double lecture. Les
   régions `aria-live="polite"` sont réservées aux changements de valeur sans changement de
   focus : points restants, compteur de sorts, échange de scores, état d'enregistrement.
@@ -742,9 +781,13 @@ reste en bas au bureau : inhabituel, mais un seul comportement à expliquer.
 - **`prefers-reduced-motion`**, dans `reset.css` :
   ```css
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: .01ms !important; animation-iteration-count: 1 !important;
-      transition-duration: .01ms !important; scroll-behavior: auto !important;
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
   ```
@@ -770,13 +813,17 @@ actif — un calcul de règle dans un composant, donc un bug de conception (char
 
 ```ts
 export type AbilityBlockReason =
-  | { readonly kind: 'not-enough-points'; readonly required: number; readonly remaining: number }
+  | {
+      readonly kind: 'not-enough-points';
+      readonly required: number;
+      readonly remaining: number;
+    }
   | { readonly kind: 'max-score'; readonly max: number }
   | { readonly kind: 'min-score'; readonly min: number };
 
 export interface AbilityRow {
   readonly id: AbilityId;
-  readonly score: number | null;        // null = non assigné (tableau standard)
+  readonly score: number | null; // null = non assigné (tableau standard)
   readonly racialBonus: number;
   readonly bonusSource: string | null;
   readonly total: number | null;
@@ -784,12 +831,13 @@ export interface AbilityRow {
   readonly canIncrease: boolean;
   readonly canDecrease: boolean;
   readonly increaseCost: number | null;
-  readonly blockedBy: AbilityBlockReason | null;   // structuré, jamais rédigé
+  readonly blockedBy: AbilityBlockReason | null; // structuré, jamais rédigé
 }
 // useAbilities(): { ...existant, readonly rows: readonly AbilityRow[] }
 ```
+
 La forme est exactement celle de `UnavailableReason` (§A4) et respecte §A5 : le domaine dit
-*pourquoi*, `ui/format/abilityBlock.ts` écrit la phrase.
+_pourquoi_, `ui/format/abilityBlock.ts` écrit la phrase.
 
 **2. `setRolled` et `AbilityMethod = 'dice'` disparaissent** (§B1). Je ne rends aucun écran de
 jet de dés.
@@ -815,12 +863,14 @@ pas coexister. Je plaide pour la première branche, par cohérence avec `Unavail
 Comportement visible uniquement, aucun snapshot.
 
 **Cadre**
+
 - `it('donne le focus au titre quand on change d\'écran')`
 - `it('remet le contenu en haut quand on change d\'écran')`
 - `it('rend la barre d\'actions en dehors de la zone défilante')`
 - `it('marque l\'en-tête et la barre d\'actions comme non imprimables')`
 
 **Composants et écrans**
+
 - `it('coche la race choisie et décoche la précédente')`
 - `it('donne un nom accessible à chaque bouton')` — parcourt `getAllByRole('button')`
 - `it('désactive le bouton + et affiche pourquoi quand il manque des points')`
@@ -840,6 +890,7 @@ explicite du renoncement à Playwright :
 remonte le brouillon depuis `localStorage`, remonte `<App />` et vérifie l'écran et les choix.
 
 **Garde-fous de charte (tests statiques sur les fichiers de `src/ui/`)**
+
 - `it('n\'utilise aucune media query max-width')`
 - `it('déclare 100dvh partout où 100vh apparaît')`
 - `it('n\'écrit aucune couleur en dur hors de tokens.css')`
@@ -857,7 +908,7 @@ TalkBack sur Race et Caractéristiques.
 
 - **L'écran de fiche et le récapitulatif** : lot 4 (§A8).
 - **Pas de thème sombre, et j'y souscris** : il double le travail (seconde palette à concevoir
-  *et* à vérifier au contraste, chaque état d'accent à revoir) pour un bénéfice nul sur la
+  _et_ à vérifier au contraste, chaque état d'accent à revoir) pour un bénéfice nul sur la
   fonction du site. Les jetons sémantiques (`--color-text`, pas `--gray-900`) font que
   l'ajouter plus tard coûtera une trentaine de lignes. En attendant, `color-scheme: light`.
 - **Pas de boîte de dialogue, pas de confirmation** (§B4) : avis a posteriori plus retour
@@ -874,15 +925,15 @@ TalkBack sur Race et Caractéristiques.
 
 ## Risques
 
-| Risque | Gravité | Parade |
-|---|---|---|
-| Le clavier iOS masque la barre d'actions | Élevée | `<form>` + `enterKeyHint`, champs à 16 px ; hook `useKeyboardInset` documenté, écrit seulement si le test sur iPhone échoue |
-| `dvh` provoque un tremblement pendant le défilement iOS | Moyenne | Aucune hauteur animée ; repli `100svh` si constaté sur appareil |
-| `Issue.message` rédigé dans `domain/` (contradiction lot 2) | Moyenne | À trancher avant d'écrire `ui/format/issue.ts` ; voir contrat ci-dessus |
-| `useAbilities` ne rend pas `rows` : l'UI devrait calculer les coûts | Élevée | Demande n° 1 du contrat ; sans elle l'écran 3.2 n'est pas implémentable dans les règles |
-| `:has()` indisponible (Firefox < 121) pour le focus de carte | Faible | `input:focus-visible + .body` en base, `:has()` en amélioration |
-| Libellés français longs débordant à 360 px | Moyenne | `hyphens: auto` + `lang="fr"`, `overflow-wrap: anywhere`, test avec les chaînes SRD les plus longues |
-| Écran 3.2 à 320 px et 200 % de zoom | Moyenne | Colonne de commande fixée à 56 px, texte en `1fr` sur deux lignes ; testé explicitement |
-| 40 cartes de sorts sur téléphone d'entrée de gamme | Faible | Cartes sans dépliant en v1 (§B2) + `content-visibility: auto` ; pas de virtualisation |
-| Le retour de la prose longue des sorts (§A19) rallonge les listes | Faible | Le `<details>` apparaît dès que les options portent des `details` ; aucun composant à changer |
-| Un `Explainer` trop long devient une page dans la page | Faible | Limite de six lignes en revue ; au-delà, c'est le vocabulaire de l'écran qu'il faut corriger |
+| Risque                                                              | Gravité | Parade                                                                                                                      |
+| ------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Le clavier iOS masque la barre d'actions                            | Élevée  | `<form>` + `enterKeyHint`, champs à 16 px ; hook `useKeyboardInset` documenté, écrit seulement si le test sur iPhone échoue |
+| `dvh` provoque un tremblement pendant le défilement iOS             | Moyenne | Aucune hauteur animée ; repli `100svh` si constaté sur appareil                                                             |
+| `Issue.message` rédigé dans `domain/` (contradiction lot 2)         | Moyenne | À trancher avant d'écrire `ui/format/issue.ts` ; voir contrat ci-dessus                                                     |
+| `useAbilities` ne rend pas `rows` : l'UI devrait calculer les coûts | Élevée  | Demande n° 1 du contrat ; sans elle l'écran 3.2 n'est pas implémentable dans les règles                                     |
+| `:has()` indisponible (Firefox < 121) pour le focus de carte        | Faible  | `input:focus-visible + .body` en base, `:has()` en amélioration                                                             |
+| Libellés français longs débordant à 360 px                          | Moyenne | `hyphens: auto` + `lang="fr"`, `overflow-wrap: anywhere`, test avec les chaînes SRD les plus longues                        |
+| Écran 3.2 à 320 px et 200 % de zoom                                 | Moyenne | Colonne de commande fixée à 56 px, texte en `1fr` sur deux lignes ; testé explicitement                                     |
+| 40 cartes de sorts sur téléphone d'entrée de gamme                  | Faible  | Cartes sans dépliant en v1 (§B2) + `content-visibility: auto` ; pas de virtualisation                                       |
+| Le retour de la prose longue des sorts (§A19) rallonge les listes   | Faible  | Le `<details>` apparaît dès que les options portent des `details` ; aucun composant à changer                               |
+| Un `Explainer` trop long devient une page dans la page              | Faible  | Limite de six lignes en revue ; au-delà, c'est le vocabulaire de l'écran qu'il faut corriger                                |

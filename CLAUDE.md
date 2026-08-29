@@ -31,17 +31,17 @@ spéculative, pas de couche de plugins.
 
 ## 2. Stack
 
-| Sujet | Choix | Raison |
-|---|---|---|
-| Build | Vite | rapide, zéro config |
-| Langage | TypeScript `strict` | erreurs à la compilation |
-| UI | React 18 + fonctions/hooks | standard, bien connu |
-| Style | CSS Modules + variables CSS | pas de runtime, pas de dépendance |
-| Cible | mobile d'abord, 360 px de large | usage réel : au téléphone, à table |
-| État | React Context + `useReducer` | suffisant, pas de Redux/Zustand |
-| Tests | Vitest + Testing Library | même moteur que Vite |
-| Routage | aucun (assistant à étapes) | YAGNI |
-| Persistance | `localStorage` | pas de backend |
+| Sujet       | Choix                           | Raison                             |
+| ----------- | ------------------------------- | ---------------------------------- |
+| Build       | Vite                            | rapide, zéro config                |
+| Langage     | TypeScript `strict`             | erreurs à la compilation           |
+| UI          | React 18 + fonctions/hooks      | standard, bien connu               |
+| Style       | CSS Modules + variables CSS     | pas de runtime, pas de dépendance  |
+| Cible       | mobile d'abord, 360 px de large | usage réel : au téléphone, à table |
+| État        | React Context + `useReducer`    | suffisant, pas de Redux/Zustand    |
+| Tests       | Vitest + Testing Library        | même moteur que Vite               |
+| Routage     | aucun (assistant à étapes)      | YAGNI                              |
+| Persistance | `localStorage`                  | pas de backend                     |
 
 **Aucune nouvelle dépendance sans justification écrite dans la PR.** Une
 dépendance = du poids, des failles, une mise à jour. Si 30 lignes suffisent,
@@ -52,6 +52,7 @@ on écrit les 30 lignes.
 ## 3. Principes non négociables
 
 ### KISS — la solution la plus simple qui marche
+
 - Une fonction fait une chose et tient à l'écran (< 40 lignes).
 - Pas de généricité tant qu'il n'y a pas **trois** cas réels.
 - Pas de métaprogrammation, pas de `any`, pas de types conditionnels
@@ -59,6 +60,7 @@ on écrit les 30 lignes.
 - Un nom clair vaut mieux qu'un commentaire.
 
 ### YAGNI — on n'écrit que ce qui sert aujourd'hui
+
 - Pas de paramètre « pour plus tard », pas de champ inutilisé, pas de
   `TODO: quand on aura…`.
 - Pas d'interface à une seule implémentation, sauf frontière réelle
@@ -66,6 +68,7 @@ on écrit les 30 lignes.
 - Supprimer du code mort est une amélioration, pas une perte.
 
 ### XP — boucles courtes et retours rapides
+
 - **Test d'abord** sur toute la logique métier (règles, calculs, validation).
 - Petits commits, chacun laissant l'appli verte.
 - Refactoring continu : on améliore le code qu'on traverse, sans changer son
@@ -74,6 +77,7 @@ on écrit les 30 lignes.
   on l'étoffe.
 
 ### SOLID — appliqué avec mesure
+
 - **S** : un module = une raison de changer. Les règles D&D ne connaissent pas
   React ; les composants ne calculent pas de règles.
 - **O** : les données ouvrent l'extension. Ajouter une race = ajouter une
@@ -95,6 +99,7 @@ Le téléphone n'est pas une adaptation : **c'est la cible principale**. Le
 bureau est l'élargissement du mobile, jamais l'inverse.
 
 ### Règles de mise en page
+
 - On écrit le CSS pour **360 px de large**, puis on élargit avec
   `@media (min-width: …)`. Aucune `max-width` en media query.
 - **Une colonne** sur téléphone. Pas de tableau à défilement horizontal :
@@ -107,6 +112,7 @@ bureau est l'élargissement du mobile, jamais l'inverse.
 - Pas de défilement horizontal de la page. Jamais.
 
 ### Design simple et compréhensible
+
 - **Une décision par écran.** Un choix à faire, énoncé en titre clair.
 - Vocabulaire de joueur, pas de jargon technique : « Ta race », pas
   « Sélection de l'espèce ». Tutoiement, ton chaleureux.
@@ -154,7 +160,7 @@ domain  →  rien
 - Un calcul de règle dans un composant est un bug de conception.
 - Aucun fichier baril à la racine de `src/` ni d'une couche : c'est le seul
   chemin par lequel une couche peut en atteindre une autre sans que le lint le
-  voie. Un module d'agrégation *à l'intérieur* d'une couche est autorisé.
+  voie. Un module d'agrégation _à l'intérieur_ d'une couche est autorisé.
 
 ---
 
@@ -174,7 +180,7 @@ domain  →  rien
   `SCREAMING_SNAKE` constantes.
 - Fichiers : un composant par fichier, nom du fichier = nom du composant.
 - Pas de `export default` sauf composants React.
-- Pas de commentaire qui paraphrase le code ; commenter le *pourquoi*.
+- Pas de commentaire qui paraphrase le code ; commenter le _pourquoi_.
 
 ---
 

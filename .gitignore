@@ -4,3 +4,7 @@ coverage/
 *.local
 .DS_Store
 .vite/
+*.log
+npm-debug.log*
+.idea/
+.vscode/

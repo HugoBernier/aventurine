@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- viewport-fit=cover est OBLIGATOIRE (00-arbitrage.md §A10). Sans lui,
+         env(safe-area-inset-*) vaut 0px : la barre d'actions passe sous la
+         barre d'accueil de l'iPhone EN PRODUCTION, alors que tout paraît
+         normal en développement. Ne pas retirer.
+         Pas de maximum-scale ni de user-scalable=no : bloquer le zoom est une
+         régression d'accessibilité, y compris sur un site pensé pour le pouce. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+
+    <!-- « light » SEUL (00-arbitrage.md §A10). Annoncer « dark » sans thème
+         sombre fait inverser les contrôles natifs par le système et détruit
+         les ratios de contraste AA calculés un par un. Le thème sombre est
+         hors périmètre. À rouvrir le jour où un thème sombre existe. -->
+    <meta name="color-scheme" content="light" />
+
+    <meta
+      name="description"
+      content="Aventurine : crée ton personnage de D&amp;D 5e en français, depuis ton téléphone. Non affilié à Wizards of the Coast."
+    />
+    <title>Aventurine — créateur de personnage D&amp;D 5e en français</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

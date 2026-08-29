@@ -1,0 +1,63 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Indispensable avec lang="fr" pour que la césure fonctionne et que les
+     libellés longs ne débordent pas à 360 px. */
+  hyphens: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-200);
+  line-height: var(--line-height-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2 {
+  font-family: var(--font-title);
+  line-height: var(--line-height-title);
+  margin: 0;
+}
+
+/* Tout élément interactif est au moins de la taille d'un doigt. */
+button,
+summary,
+input,
+select,
+label {
+  min-height: var(--touch-target);
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* L'offset pose l'anneau sur le fond de page (contraste 15,98), y compris
+   autour d'un bouton bleu foncé où un anneau collé serait invisible. */
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* Il n'y a que deux transitions de 120 ms dans tout le site, mais la règle
+   protège aussi le défilement des ancres de la fiche. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

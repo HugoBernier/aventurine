@@ -10,11 +10,11 @@ ce fichier, ce fichier gagne.**
 
 ### A1. Trois définitions incompatibles du brouillon
 
-| Lot | Nom | Forme des choix |
-|---|---|---|
-| 1 | `BrouillonPersonnage` (français) | `reponses: Record<ChoixId, string[]>` |
-| 2 | `CharacterDraft` (anglais) | `choices: Record<ChoiceSlotId, string[]>` |
-| 4 | `CharacterDraft` (anglais) | `skillChoices[]`, `languageChoices[]`, `toolChoices[]`, `featureChoices{}`, `spellChoices{}` |
+| Lot | Nom                              | Forme des choix                                                                              |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | `BrouillonPersonnage` (français) | `reponses: Record<ChoixId, string[]>`                                                        |
+| 2   | `CharacterDraft` (anglais)       | `choices: Record<ChoiceSlotId, string[]>`                                                    |
+| 4   | `CharacterDraft` (anglais)       | `skillChoices[]`, `languageChoices[]`, `toolChoices[]`, `featureChoices{}`, `spellChoices{}` |
 
 **Tranché : la forme du lot 2 gagne.** Un seul dictionnaire `choices`, clé =
 identifiant de créneau. La forme du lot 4 (un tableau par catégorie) casse
@@ -42,11 +42,11 @@ noms de hooks, de variables CSS, de fichiers et de dossiers.
 
 ### A3. Identifiant de créneau de choix
 
-| Lot | Convention |
-|---|---|
-| 1 | `'roublard/competences'` |
-| 2 | `'class:roublard:skills'` |
-| 4 | `'style-de-combat'` (aucun parent) |
+| Lot | Convention                         |
+| --- | ---------------------------------- |
+| 1   | `'roublard/competences'`           |
+| 2   | `'class:roublard:skills'`          |
+| 4   | `'style-de-combat'` (aucun parent) |
 
 **Tranché : `source:parentId:subject`** → `class:roublard:skills`,
 `race:haut-elfe:cantrip`, `background:acolyte:languages`.
@@ -77,11 +77,19 @@ Deux corrections de fond aux propositions initiales :
 
 ```ts
 // src/domain/choice.ts
-export type ChoiceSlotId = string;            // 'class:roublard:skills'
+export type ChoiceSlotId = string; // 'class:roublard:skills'
 export type ChoiceSource = 'race' | 'class' | 'background';
 export type ChoiceKind =
-  | 'skill' | 'language' | 'tool' | 'cantrip' | 'spell'
-  | 'ability' | 'equipment' | 'ancestry' | 'fighting-style' | 'expertise';
+  | 'skill'
+  | 'language'
+  | 'tool'
+  | 'cantrip'
+  | 'spell'
+  | 'ability'
+  | 'equipment'
+  | 'ancestry'
+  | 'fighting-style'
+  | 'expertise';
 
 export type UnavailableReason =
   | { readonly kind: 'already-granted'; readonly source: ChoiceSource }
@@ -89,9 +97,9 @@ export type UnavailableReason =
 
 export interface ChoiceOption {
   readonly id: string;
-  readonly label: string;                     // « Discrétion »
-  readonly blurb: string;                     // une phrase, vocabulaire de joueur
-  readonly facts: readonly [string, string, string];  // repères ALIGNÉS
+  readonly label: string; // « Discrétion »
+  readonly blurb: string; // une phrase, vocabulaire de joueur
+  readonly facts: readonly [string, string, string]; // repères ALIGNÉS
   readonly details: readonly { title: string; body: string }[];
   readonly unavailable: UnavailableReason | null;
 }
@@ -100,7 +108,7 @@ export interface ChoiceSlot {
   readonly id: ChoiceSlotId;
   readonly source: ChoiceSource;
   readonly kind: ChoiceKind;
-  readonly title: string;                     // « Choisis 2 compétences de roublard »
+  readonly title: string; // « Choisis 2 compétences de roublard »
   readonly help: string;
   readonly pick: number;
   readonly options: readonly ChoiceOption[];
@@ -110,7 +118,7 @@ export interface ChoiceSlot {
 ### A5. Où s'écrit le français — le lot 2 et le lot 3 se contredisent frontalement
 
 Lot 2 : « les messages sont écrits en français **dans `domain/`** ».
-Lot 3 : « le lot 2 dit *pourquoi* c'est bloqué, le lot 3 écrit la phrase ».
+Lot 3 : « le lot 2 dit _pourquoi_ c'est bloqué, le lot 3 écrit la phrase ».
 
 **Tranché, avec une ligne nette :**
 
@@ -169,17 +177,17 @@ Lot 2 annonçait 8 étapes, lot 3 en montrait 9 à 11, lot 4 écrivait « étape
 
 **Tranché — 8 étapes, dans cet ordre :**
 
-| # | Étape | Écrans |
-|---|---|---|
-| 1 | Ta race | race, sous-race *(si applicable)*, créneaux de race |
-| 2 | Ta classe | classe, créneaux de classe hors compétences |
-| 3 | Tes caractéristiques | méthode, répartition |
-| 4 | Ton historique | historique, créneaux d'historique |
-| 5 | Ce que tu sais faire | créneaux de compétences, langues, outils |
-| 6 | Tes sorts | tours de magie, sorts *(classes lanceuses seulement)* |
-| 7 | Ton équipement | options de départ |
-| 8 | Ton identité | nom, alignement, personnalité |
-| — | Récapitulatif puis fiche | hors numérotation d'étape |
+| #   | Étape                    | Écrans                                                |
+| --- | ------------------------ | ----------------------------------------------------- |
+| 1   | Ta race                  | race, sous-race _(si applicable)_, créneaux de race   |
+| 2   | Ta classe                | classe, créneaux de classe hors compétences           |
+| 3   | Tes caractéristiques     | méthode, répartition                                  |
+| 4   | Ton historique           | historique, créneaux d'historique                     |
+| 5   | Ce que tu sais faire     | créneaux de compétences, langues, outils              |
+| 6   | Tes sorts                | tours de magie, sorts _(classes lanceuses seulement)_ |
+| 7   | Ton équipement           | options de départ                                     |
+| 8   | Ton identité             | nom, alignement, personnalité                         |
+| —   | Récapitulatif puis fiche | hors numérotation d'étape                             |
 
 **Changement de fond par rapport au plan du lot 2** : les créneaux de compétences
 sont regroupés à l'étape 5, **après** l'historique, au lieu d'être accrochés
@@ -196,10 +204,10 @@ L'affichage reste « Étape 3 sur 8 » ; la barre fine mesure les écrans.
 Le lot 3 a démontré deux prérequis, le lot 5 a écrit un `index.html` qui les
 contredit tous les deux.
 
-| Point | Lot 3 | Lot 5 | Tranché |
-|---|---|---|---|
-| `viewport` | `viewport-fit=cover` **obligatoire** | absent | **Lot 3.** Sans lui `env(safe-area-inset-*)` vaut `0px` : le problème est invisible en développement, et les boutons passent sous la barre d'accueil de l'iPhone en production. |
-| `color-scheme` | `light` seul | `light dark` | **Lot 3.** Annoncer `dark` sans thème sombre fait inverser les contrôles natifs par le système et détruit les contrastes vérifiés du lot 3. On annonce `light` tant qu'il n'y a pas de thème sombre. |
+| Point          | Lot 3                                | Lot 5        | Tranché                                                                                                                                                                                              |
+| -------------- | ------------------------------------ | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `viewport`     | `viewport-fit=cover` **obligatoire** | absent       | **Lot 3.** Sans lui `env(safe-area-inset-*)` vaut `0px` : le problème est invisible en développement, et les boutons passent sous la barre d'accueil de l'iPhone en production.                      |
+| `color-scheme` | `light` seul                         | `light dark` | **Lot 3.** Annoncer `dark` sans thème sombre fait inverser les contrôles natifs par le système et détruit les contrastes vérifiés du lot 3. On annonce `light` tant qu'il n'y a pas de thème sombre. |
 
 `index.html` appartient au lot 5, mais ces deux attributs sont dictés par le
 lot 3. Ils sont commentés dans le fichier pour que personne ne les « nettoie ».
@@ -420,8 +428,7 @@ déjà défini pour `Issue` : `{ kind: 'slot', slotId }` ou
 
 ### A24. `validateDraft` enveloppe `listMissingChoices`
 
-Le lot 4 signale un doublon réel dans mon arbitrage : `validateDraft` (lots 1 et
-2) produit des `Issue` de sévérité `incomplete`, et `listMissingChoices`
+Le lot 4 signale un doublon réel dans mon arbitrage : `validateDraft` (lots 1 et 2) produit des `Issue` de sévérité `incomplete`, et `listMissingChoices`
 (lot 4) calcule la même chose. Deux fonctions, une seule vérité — celle qui
 divergera un jour.
 
@@ -448,6 +455,42 @@ un **contrat public**, puisqu'ils apparaissent dans les clés des fichiers
 exportés. Renommer `'roublard'` invaliderait les fichiers déjà enregistrés. D'où
 la règle : un créneau inconnu à l'import est un **avertissement**, jamais une
 erreur, et le joueur est renvoyé à l'écran concerné.
+
+### A26. React 19, pas 18 — amendement de la charte
+
+La charte fixait React 18. Le lot 5 l'a signalé deux fois comme un risque :
+React 18 n'a plus bougé depuis 18.3.1 et l'écosystème est passé à 19.
+
+Vérifié à l'installation : `@testing-library/react@16` accepte
+`^18.0.0 || ^19.0.0`, l'API `createRoot` est identique, et **aucun plan
+n'utilise quoi que ce soit de spécifique à une version**.
+
+**Tranché : React 19.** Le lot 5 avait raison de dire qu'on ne change pas la
+pile pendant que quatre lots planifient dessus — mais l'inverse est vrai aussi :
+le seul moment où ce choix est gratuit est celui où zéro ligne de produit est
+écrite, c'est-à-dire maintenant. Démarrer un projet neuf sur une majeure en
+maintenance est une dette qu'on prend les yeux ouverts. La charte est amendée.
+
+### A27. `no-restricted-imports` ne voit pas les imports dynamiques — vérifié, faux
+
+Le lot 5 avait écrit : « ESLint 9 a étendu la règle aux `import()` à littéral de
+chaîne ; **à confirmer par un test réel**, pas à supposer. » Il a eu raison de
+refuser de le supposer : **la sonde a échoué**. Un `import('../ui/x')` placé
+dans `src/domain/` passait le lint sans un mot.
+
+C'est le pire cas possible pour un garde-fou : le trou se trouve exactement là
+où quelqu'un irait chercher une échappatoire.
+
+**Corrigé** : une règle `no-restricted-syntax` par couche, avec un sélecteur
+`ImportExpression[source.value=/…/]`. Cinq lignes, aucune dépendance. Les
+motifs raisonnent sur des **segments de chemin entiers**, pour ne pas attraper
+`src/domain/equipment` en croyant y voir la couche `data`.
+
+Neuf sondes couvrent désormais la règle, et elles vérifient les deux sens :
+que l'interdit échoue **et** que l'autorisé passe — `ui → data`,
+`state → react`, et l'`import()` dynamique de `data/` depuis `state/`, qui est
+précisément le levier de découpage prévu au-delà de 150 ko gzip. Un garde-fou
+qu'on n'a jamais vu se taire est un garde-fou qu'on finira par contourner.
 
 ---
 
