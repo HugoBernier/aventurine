@@ -161,7 +161,10 @@ export const ROGUE: CharacterClass = {
       items: [{ itemId: 'epee-courte', quantity: 1 }],
     },
   ],
-  fixedEquipment: [{ itemId: 'outils-de-voleur', quantity: 1 }],
+  fixedEquipment: [
+    { itemId: 'outils-de-voleur', quantity: 1 },
+    { itemId: 'armure-de-cuir', quantity: 1 },
+  ],
   spellcasting: null,
   subclass: null,
 };
@@ -216,7 +219,10 @@ const classes: readonly CharacterClass[] = [
       },
     ],
     equipmentOptions: [],
-    fixedEquipment: [],
+    fixedEquipment: [
+      { itemId: 'cotte-de-mailles', quantity: 1 },
+      { itemId: 'bouclier', quantity: 1 },
+    ],
     spellcasting: {
       ability: 'sagesse',
       level1Slots: 2,
@@ -413,12 +419,23 @@ export const MINI_CATALOGUE: Catalogue = {
       dexterity: 'none',
       strengthRequired: 13,
     },
+    {
+      id: 'bouclier',
+      name: 'Bouclier',
+      category: 'bouclier',
+      base: 2,
+      dexterity: 'none',
+      strengthRequired: 0,
+    },
   ],
   items: [
     { id: 'symbole-sacre', name: 'Symbole sacré', weightKg: 0.5 },
     { id: 'outils-de-voleur', name: 'Outils de voleur', weightKg: 0.5 },
     { id: 'rapiere', name: 'Rapière', weightKg: 1 },
     { id: 'epee-courte', name: 'Épée courte', weightKg: 1 },
+    { id: 'armure-de-cuir', name: 'Armure de cuir', weightKg: 5 },
+    { id: 'cotte-de-mailles', name: 'Cotte de mailles', weightKg: 25 },
+    { id: 'bouclier', name: 'Bouclier', weightKg: 3 },
   ],
   spells,
   ancestries: [
