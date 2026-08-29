@@ -320,6 +320,73 @@ quartz — qui contient « aventure », ne reprend aucune marque et se retient.
   (`aventurine:draft:v1`, format `aventurine.personnage`,
   `fiche-alric-guerrier.json` inchangé). Aucune migration : rien n'est publié.
 
+### A19. Trois objections du lot 1 — deux acceptées, une rejetée
+
+**Acceptée — `fullText` n'est pas déclaré.** Voir l'amendement de §B2 ci-dessous.
+Un champ que rien ne remplit et que rien ne lit est du code mort ; l'argument
+« l'ajout sera purement additif » vaut dans les deux sens, et joue donc contre le
+fait de l'écrire maintenant. Le lot 1 avait raison de le contester tout en
+l'écrivant, plutôt que de trancher seul.
+
+**Acceptée — les intitulés de repères vivent dans `ui/format/`.** Le lot 1
+observe que `facts` vaut `['…', '—', '—']` pour quatre `kind` sur dix, et
+surtout que le type ne porte aucun intitulé de colonne alors que l'alignement
+vertical du lot 3 en dépend. Sa résolution est retenue telle quelle, sans
+toucher au type : une table `ChoiceKind → [intitulé, intitulé, intitulé]` dans
+`ui/format/`, et l'UI ne rend la bande de repères que pour les `kind` où elle
+informe (race, sous-race, classe, historique, équipement, sorts). Pour
+`skill`, `language`, `tool` et `ability`, on affiche la seule information utile
+en ligne simple.
+
+**Rejetée — `slot-full` reste un blocage explicite.** Le lot 1 propose qu'un
+groupe plafonné remplace la sélection la plus ancienne quand on coche au-delà du
+maximum, au lieu de désactiver les options restantes.
+
+Le remplacement silencieux est **imprévisible** : le joueur coche une troisième
+compétence et une autre disparaît, sans qu'il sache laquelle ni pourquoi. Le
+lot 3 a déjà conçu le cas correctement — options désactivées **plus** un message
+qui dit quoi faire (« Tu as tes 2 compétences. Décoche-en une pour en changer »)
+— et son argument tient : un appui sans effet fait croire à un bug, un appui
+refusé avec une raison affichée ne le fait pas. Le coût est une tape
+supplémentaire pour changer d'avis ; le bénéfice est qu'on ne perd jamais un
+choix sans l'avoir demandé.
+
+Deux garde-fous, sans lesquels le rejet ne tient pas : le message accompagne
+**toujours** l'état plein (jamais des cases grises muettes), et pour `pick === 1`
+le groupe reste un bouton radio, où le remplacement est naturel et attendu.
+
+### A20. Duplication assumée de la liste des compétences
+
+Le lot 1 signale que « `data → domain`, types uniquement » interdit à `data/`
+d'importer la constante `SKILL_ABILITY` : les 18 identifiants de compétence
+existent donc dans les deux couches — une fois comme règle (quelle
+caractéristique gouverne quoi), une fois comme contenu (nom français, phrase
+d'usage).
+
+**C'est acceptable et ça reste ainsi.** L'alternative — autoriser `data/` à
+importer des valeurs et non plus seulement des types — rouvrirait exactement la
+porte que §A11 vient de fermer, pour économiser dix-huit lignes. La duplication
+est verrouillée par un test d'égalité des deux ensembles ; c'est le bon échange.
+
+### A21. La frontière d'erreur React appartient au lot 3
+
+Le lot 5 relève, à juste titre, qu'en écartant Sentry il a désigné le vrai besoin
+— « une frontière d'erreur React affichant un message en français et un bouton
+Recharger » — sans que personne ne l'attribue à un lot. Une responsabilité que
+tout le monde mentionne et que personne ne porte est une responsabilité qui
+tombe.
+
+**Tranché : elle appartient au lot 3**, dans `src/ui/shell/`, au même titre que
+`AppShell`. C'est un composant de présentation, elle utilise le composant
+`Notice` existant, et elle n'a besoin d'aucune règle ni d'aucun état.
+
+Portée volontairement minimale, conforme au refus de Sentry : elle enveloppe
+l'application, affiche un message en français et un bouton « Recharger », et
+**ne remonte rien à personne**. Elle n'essaie pas de sauver le brouillon en
+cours : `state/` écrit déjà dans `localStorage` à chaque changement, donc un
+rechargement reprend là où on en était. Une tentative de sauvegarde depuis un
+état déjà cassé ferait plus de mal que de bien.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)
@@ -348,12 +415,17 @@ risque n° 1 de la livraison.
 école, temps d'incantation, portée, composantes, durée, concentration, rituel,
 classes) et un **résumé d'effet de 1 à 3 phrases en français**. La prose longue
 est un enrichissement ultérieur, purement additif : un champ, aucune structure à
-changer. Le champ `description` devient donc `summary: string` (obligatoire) et
-`fullText: string | null` (facultatif, `null` en v1).
+changer. Le champ `description` devient donc `summary: string`, obligatoire.
 
-Conséquence pour le lot 3 : le `<details>` « Texte complet » n'apparaît que si
-`fullText` existe. Conséquence pour le poids : la charge de données v1 tombe très
-en dessous du budget, ce qui confirme qu'aucun découpage n'est nécessaire.
+**Amendement (§A19) : le champ `fullText` n'est pas déclaré.** La rédaction
+initiale prévoyait `fullText: string | null`, à `null` pour les 85 sorts. Le
+lot 1 a fait remarquer que c'est un champ mort, et que la charte l'interdit noir
+sur blanc (« pas de champ inutilisé, pas de `TODO: quand on aura…` »). Il a
+raison : on le déclarera le jour où un sort le remplit, ce qui reste une ligne.
+Conséquence pour le lot 3 : les cartes de sort n'ont **aucun** dépliant en v1,
+et le `<details>` réapparaîtra avec le champ. Conséquence pour le poids : la
+charge de données v1 tombe très en dessous du budget, ce qui confirme qu'aucun
+découpage n'est nécessaire.
 
 ### B3. Historique « personnalisé » — la charte est amendée
 

@@ -317,7 +317,7 @@ Rien d'autre n'en a besoin, donc elle n'est pas exportée hors du dossier. **Nat
 amélioration. `touch-action: manipulation` supprime le délai de 300 ms.
 `option.unavailable` → `disabled` + raison formatée par `ui/format/unavailable.ts`.
 Le `<details>` n'est rendu que si `option.details.length > 0` — en v1 les sorts n'ont pas de
-`fullText` (§B2), donc leurs cartes n'ont aucun dépliant.
+prose longue (§A19), donc leurs cartes n'ont aucun dépliant.
 
 ### 5. `AbilityStepper`
 
@@ -609,7 +609,7 @@ Deux écrans (tours de magie, puis sorts de niveau 1), tous deux rendus par
 
 Quatre décisions pour tenir la longueur :
 1. **Cartes courtes.** `summary` d'une à trois phrases plus les trois `facts` alignés. En v1
-   `fullText` est `null` (§B2) : **aucun dépliant sur les cartes de sort**, ce qui divise la
+   la prose longue n'existe pas (§A19) : **aucun dépliant sur les cartes de sort**, ce qui divise la
    hauteur de liste par trois. Quand la prose longue arrivera, le `<details>` apparaîtra tout
    seul, sans changer une ligne de composant.
 2. **Recherche**, pas de facettes. `TextField type="search"` avec `onInput`, filtrage par nom
@@ -884,5 +884,5 @@ TalkBack sur Race et Caractéristiques.
 | Libellés français longs débordant à 360 px | Moyenne | `hyphens: auto` + `lang="fr"`, `overflow-wrap: anywhere`, test avec les chaînes SRD les plus longues |
 | Écran 3.2 à 320 px et 200 % de zoom | Moyenne | Colonne de commande fixée à 56 px, texte en `1fr` sur deux lignes ; testé explicitement |
 | 40 cartes de sorts sur téléphone d'entrée de gamme | Faible | Cartes sans dépliant en v1 (§B2) + `content-visibility: auto` ; pas de virtualisation |
-| Le retour de la prose longue des sorts (§B2) rallonge les listes | Faible | Le `<details>` apparaît tout seul quand `fullText` existe ; aucun composant à changer |
+| Le retour de la prose longue des sorts (§A19) rallonge les listes | Faible | Le `<details>` apparaît dès que les options portent des `details` ; aucun composant à changer |
 | Un `Explainer` trop long devient une page dans la page | Faible | Limite de six lignes en revue ; au-delà, c'est le vocabulaire de l'écran qu'il faut corriger |
