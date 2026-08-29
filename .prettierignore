@@ -1,3 +1,9 @@
 dist/
 coverage/
 package-lock.json
+
+# La prose reste écrite à la main. Les plans contiennent des maquettes ASCII
+# calibrées sur 360 px et des tableaux tenus à 80 colonnes ; Prettier les
+# gonfle à 200 colonnes sans rien améliorer, ce qui rend les diffs illisibles.
+# Prettier possède le code, pas la documentation.
+*.md
