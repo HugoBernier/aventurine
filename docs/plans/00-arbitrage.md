@@ -301,7 +301,7 @@ Rien à trancher, la cohérence est faite.
 
 ### A18. Nom du produit — tranché
 
-« D&D Beyond Franché » reprenait le nom d'un service de Wizards of the Coast, ce
+« Aventurine » reprenait le nom d'un service de Wizards of the Coast, ce
 que la licence CC BY du SRD ne couvre pas (elle porte sur le contenu, pas sur les
 marques).
 

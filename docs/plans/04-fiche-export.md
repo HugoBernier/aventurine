@@ -325,7 +325,7 @@ Clés en **anglais** (c'est du code sérialisé), valeurs d'identifiants de cont
 
 ```ts
 // src/domain/export/CharacterFile.ts
-export const FILE_FORMAT = 'ddbf.personnage';
+export const FILE_FORMAT = 'aventurine.personnage';
 export const FILE_VERSION = 1;
 
 export interface CharacterFile {
@@ -391,7 +391,7 @@ Pipeline défensif, dans cet ordre, chaque étape sortant proprement :
 1. **Taille** : `file.size > 1_000_000` → `file-too-large`. On ne lit pas un fichier de 300 Mo pour découvrir qu'il est mauvais.
 2. **Lecture** : `await file.text()`.
 3. **`JSON.parse` dans un `try/catch`** → `invalid-json`. Aucune exception ne remonte jusqu'à React.
-4. **Signature** : `format !== 'ddbf.personnage'` → `not-our-format`. C'est le filet pour « un fichier qui n'est pas de nous » : une fiche exportée d'un autre outil est refusée immédiatement, avec un message qui ne culpabilise pas.
+4. **Signature** : `format !== 'aventurine.personnage'` → `not-our-format`. C'est le filet pour « un fichier qui n'est pas de nous » : une fiche exportée d'un autre outil est refusée immédiatement, avec un message qui ne culpabilise pas.
 5. **Version** : `version > FILE_VERSION` → `version-too-recent` (message dédié : « Ce fichier a été créé avec une version plus récente. Mets l'application à jour. »). `version < 1` ou non entier → `not-our-format`. Aucune fonction de migration aujourd'hui : il n'y a qu'une version (YAGNI). La politique est écrite ici pour le jour où il y en aura deux.
 6. **Structure, champ par champ** : ~80 lignes de gardes manuelles (`isString`, `isIntBetween`, `asStringArray`). Justification du refus de zod/valibot : un seul schéma, un seul point d'entrée, 80 lignes testées contre 12 Ko de dépendance.
 7. **Reconstruction explicite** : l'objet est rebâti champ par champ, jamais par `spread` ni `Object.assign`. Conséquence directe : les **champs inconnus sont ignorés silencieusement** et une clé `__proto__` malveillante n'atteint jamais l'état.
@@ -435,7 +435,7 @@ Compétences maîtrisées : Athlétisme +5, Intimidation +2,
 Aptitudes : Second souffle, Style de combat (Défense),
   Résistance naine, Attitude militaire
 
-Créé avec D&D Beyond Franché — SRD 5.1, CC BY 4.0
+Créé avec Aventurine — SRD 5.1, CC BY 4.0
 ```
 
 ---
@@ -499,7 +499,7 @@ Aucun jeton nouveau. Un seul ajout demandé : l'attribut convenu `data-print="hi
 - `it('calcule +5 à l\'attaque pour un guerrier de Force 16 avec une épée longue')`
 - `it('utilise la Dextérité pour une arme de finesse quand elle est meilleure')`
 - `it('n\'expose aucune magie pour un guerrier')`
-- `it('exporte un fichier de format ddbf.personnage en version 1')`
+- `it('exporte un fichier de format aventurine.personnage en version 1')`
 - `it('refuse un fichier dont le format n\'est pas le nôtre')`
 - `it('refuse un JSON corrompu sans lever d\'exception')`
 - `it('refuse un fichier de version 2 avec une erreur dédiée')`

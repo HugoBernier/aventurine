@@ -711,7 +711,7 @@ librement) — techniquement dans le SRD, mais c'est nous qui l'assemblons ;
 (c) écrire 5 à 6 historiques originaux, ce qui sort du SRD et demande de modifier
 la charte. **Je recommande (b)**, avec une mention claire dans l'interface.
 
-**2. Nom du projet.** « D&D Beyond Franché » évoque directement D&D Beyond,
+**2. Nom du projet.** « Aventurine » évoque directement D&D Beyond,
 service de Wizards of the Coast. La CC BY couvre le contenu du SRD, pas les
 marques. Le nom du dépôt n'engage pas grand-chose, mais un nom public identique
 est un risque de marque réel. À arbitrer avant toute publication.

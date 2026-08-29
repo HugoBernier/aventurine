@@ -517,7 +517,7 @@ export function localStorageDraftStorage(): DraftStorage;
 export function memoryDraftStorage(): DraftStorage;   // tests + navigation privée
 ```
 
-- **Clé** : `'ddbf:draft:v1'`. Version dans la clé **et** dans la charge utile ; le champ
+- **Clé** : `'aventurine:draft:v1'`. Version dans la clé **et** dans la charge utile ; le champ
   `version` fait autorité (défense contre une charge éditée à la main).
 - **Écriture** : anti-rebond 400 ms après toute action changeant `draft` ou
   `currentScreenId` (comparaison par référence : le reducer ne crée un objet que s'il a
