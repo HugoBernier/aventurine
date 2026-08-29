@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { throughJson } from '../test/throughJson';
 import { ABILITIES } from './abilities';
 import { emptyDraft, hasAnyContent, pickedFor } from './draft';
 
@@ -19,12 +20,7 @@ describe('brouillon vide', () => {
 
   it('produit un brouillon identique après un aller-retour par JSON', () => {
     const draft = emptyDraft();
-    // On teste la fidélité de l'aller-retour JSON — la propriété exacte dont
-    // dépendent localStorage et l'export — et non un clonage profond.
-    // `structuredClone` réussirait avec une Map ou une Date, c'est-à-dire
-    // avec ce que ce test doit justement interdire.
-    // eslint-disable-next-line unicorn/prefer-structured-clone
-    expect(JSON.parse(JSON.stringify(draft))).toEqual(draft);
+    expect(throughJson(draft)).toEqual(draft);
   });
 
   it('ne stocke aucune valeur dérivable', () => {
