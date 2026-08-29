@@ -316,7 +316,9 @@ export function openChoices(
     const id = slotId(source, parentId, spec.subject);
     const picked = pickedFor(draft, id);
     const register = registerFor(spec.kind, granted);
-    const isFull = picked.length >= spec.pick;
+    // `slot-full` ne vaut que pour un choix multiple. Un choix unique reste un
+    // bouton radio, où remplacer sa sélection est naturel et attendu (§A19).
+    const isFull = spec.pick > 1 && picked.length >= spec.pick;
 
     const options = buildOptions(owner, draft, catalogue, granted).map(
       (entry): ChoiceOption => {

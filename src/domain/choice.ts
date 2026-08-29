@@ -79,3 +79,21 @@ const SLOT_ID_PATTERN = /^(?:race|class|background):[a-z0-9-]+:[a-z-]+$/;
 export function isWellFormedSlotId(value: string): boolean {
   return SLOT_ID_PATTERN.test(value);
 }
+
+export interface ParsedSlotId {
+  readonly source: ChoiceSource;
+  readonly parentId: string;
+  readonly subject: string;
+}
+
+/** Un créneau fermé n'existe plus : son identifiant est la seule trace qui reste. */
+export function parseSlotId(value: string): ParsedSlotId | null {
+  if (!isWellFormedSlotId(value)) {
+    return null;
+  }
+  const [source, parentId, subject] = value.split(':', 3);
+  if (source === undefined || parentId === undefined || subject === undefined) {
+    return null;
+  }
+  return { source: source as ChoiceSource, parentId, subject };
+}
