@@ -73,7 +73,7 @@ export function slotId(
   return `${source}:${parentId}:${subject}`;
 }
 
-const SLOT_ID_PATTERN = /^(?:race|class|background):[a-z0-9-]+:[a-z-]+$/;
+const SLOT_ID_PATTERN = /^(?:race|class|background):[a-z0-9-]+:[a-z0-9-]+$/;
 
 /** Filet à l'import d'un fichier : les clés d'un JSON ne sont pas de confiance. */
 export function isWellFormedSlotId(value: string): boolean {
