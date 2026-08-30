@@ -97,15 +97,22 @@ export function findSubrace(
 }
 
 /** Dérivée de `Spell.classes` : les listes ne sont jamais recopiées ailleurs. */
+/**
+ * Les sorts d'une classe, du niveau `from` au niveau `to` inclus. Une plage
+ * plutôt qu'un niveau : à partir du niveau 3, un lanceur choisit parmi tout ce
+ * qu'il sait lancer, pas seulement parmi le dernier palier ouvert.
+ */
 export function spellsForClass(
   catalogue: Catalogue,
   classId: string | null,
-  level: 0 | 1,
+  from: number,
+  to: number = from,
 ): readonly Spell[] {
   if (classId === null) {
     return [];
   }
   return catalogue.spells.filter(
-    (spell) => spell.level === level && spell.classes.includes(classId),
+    (spell) =>
+      spell.level >= from && spell.level <= to && spell.classes.includes(classId),
   );
 }

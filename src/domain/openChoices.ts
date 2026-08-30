@@ -24,7 +24,7 @@ import {
 } from './catalogue';
 import type { Advancement, EquipmentOption, Facts } from './content';
 import { pickedFor } from './draft';
-import { clampLevel } from './progression';
+import { clampLevel, pactMagic, spellSlots } from './progression';
 import type { CharacterDraft } from './draft';
 
 const NO_FACT = '—';
@@ -102,6 +102,21 @@ function fixedGrants(draft: CharacterDraft, catalogue: Catalogue): Granted {
  * compétences déjà acquises — accrochée derrière la classe elle proposerait
  * une liste vide (docs/plans/00-arbitrage.md §A15).
  */
+/**
+ * Le plus haut niveau de sort que les emplacements du personnage ouvrent.
+ * Zéro tant qu'aucune classe n'est choisie — la liste est alors vide.
+ */
+function highestSpellLevel(draft: CharacterDraft, catalogue: Catalogue): number {
+  const casting = findClass(catalogue, draft.classId)?.spellcasting;
+  if (casting == null) {
+    return 0;
+  }
+  if (casting.progression === 'pact') {
+    return pactMagic(draft.level).slotLevel;
+  }
+  return spellSlots(casting.progression, draft.level).length;
+}
+
 /** La suite d'un palier dépend de la route retenue ; aucune tant qu'elle manque. */
 function advancementFollowUp(
   step: Advancement,
@@ -320,8 +335,11 @@ function buildOptions(
     }
     case 'cantrip':
     case 'spell': {
-      const level = spec.kind === 'cantrip' ? 0 : 1;
-      return spellsForClass(catalogue, spec.listFrom, level).map((spell) =>
+      // Un tour de magie reste de niveau 0. Un sort va du premier niveau au
+      // plus haut que les emplacements du personnage ouvrent.
+      const [from, to] =
+        spec.kind === 'cantrip' ? [0, 0] : [1, highestSpellLevel(draft, catalogue)];
+      return spellsForClass(catalogue, spec.listFrom, from, to).map((spell) =>
         option(
           spell.id,
           spell.name,

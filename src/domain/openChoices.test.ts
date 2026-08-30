@@ -4,6 +4,7 @@ import type { Catalogue } from './catalogue';
 import type { SkillId } from './skills';
 import { emptyDraft } from './draft';
 import type { CharacterDraft } from './draft';
+import { spellsForClass } from './catalogue';
 import { MINI_CATALOGUE as C, ROGUE } from './fixtures/miniCatalogue';
 import { openChoices } from './openChoices';
 
@@ -371,5 +372,25 @@ describe('paliers de niveau', () => {
     );
     const force = slot?.options.find((option) => option.id === 'force');
     expect(force?.unavailable).toEqual({ kind: 'max-ability', max: 20 });
+  });
+});
+
+describe('sorts d’une classe', () => {
+  it('ne rend que le niveau demandé quand la plage est un seul niveau', () => {
+    const cantrips = spellsForClass(C, 'clerc', 0);
+    expect(cantrips.length).toBeGreaterThan(0);
+    expect(cantrips.every((spell) => spell.level === 0)).toBe(true);
+  });
+
+  it('rend toute la plage quand elle en couvre plusieurs', () => {
+    // C'est ce qui permet à un lanceur de niveau 5 de choisir parmi tout ce
+    // qu'il sait lancer, et pas seulement parmi le dernier palier ouvert.
+    const upToOne = spellsForClass(C, 'clerc', 0, 1);
+    expect(upToOne.length).toBeGreaterThan(spellsForClass(C, 'clerc', 0).length);
+    expect(upToOne.every((spell) => spell.level <= 1)).toBe(true);
+  });
+
+  it('ne rend rien sans classe', () => {
+    expect(spellsForClass(C, null, 0, 9)).toEqual([]);
   });
 });
