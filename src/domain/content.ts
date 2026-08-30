@@ -129,8 +129,11 @@ export type MagicSchool =
   | 'necromancie'
   | 'transmutation';
 
+export type SpellLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+
 export interface Spell extends Named {
-  readonly level: 0 | 1;
+  /** 0 = tour de magie. Le SRD 5.1 monte jusqu'au neuvième. */
+  readonly level: SpellLevel;
   readonly school: MagicSchool;
   readonly castingTime: string;
   readonly range: string;

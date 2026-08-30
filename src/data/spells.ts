@@ -1,5 +1,5 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
-import type { MagicSchool, Spell } from '../domain/content';
+import type { MagicSchool, Spell, SpellLevel } from '../domain/content';
 
 interface Draft {
   readonly id: string;
@@ -18,7 +18,7 @@ interface Draft {
 }
 
 const spell =
-  (level: 0 | 1) =>
+  (level: SpellLevel) =>
   (draft: Draft): Spell => ({
     id: draft.id,
     name: draft.name,
@@ -40,6 +40,7 @@ const spell =
 
 const cantrip = spell(0);
 const level1 = spell(1);
+const level2 = spell(2);
 
 const ARCANE = ['ensorceleur', 'magicien'];
 
@@ -630,5 +631,617 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     ritual: true,
     summary: 'Une force invisible exécute pour toi les tâches simples d’un domestique.',
     classes: ['barde', 'magicien', 'occultiste'],
+  }),
+
+  // ---------- Niveau 2 ----------
+  level2({
+    id: 'agrandissement-rapetissement',
+    name: 'Agrandissement/Rapetissement',
+    school: 'transmutation',
+    range: '9 mètres',
+    m: 'une pincée de limaille de fer',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'La cible double ou réduit de moitié sa taille : ses dégâts et ses tests de Force suivent.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'aide',
+    name: 'Aide',
+    school: 'abjuration',
+    range: '9 mètres',
+    m: 'une bandelette de tissu blanc',
+    duration: '8 heures',
+    summary:
+      'Trois créatures gagnent 5 points de vie, maximum compris, pendant huit heures.',
+    classes: ['clerc', 'paladin'],
+  }),
+  level2({
+    id: 'amelioration-de-caracteristique',
+    name: 'Amélioration de caractéristique',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'de la fourrure ou une plume de bête',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La cible gagne l’avantage sur les tests d’une caractéristique de ton choix, et parfois des points de vie temporaires.',
+    classes: ['barde', 'clerc', 'druide', 'ensorceleur'],
+  }),
+  level2({
+    id: 'apaisement-des-emotions',
+    name: 'Apaisement des émotions',
+    school: 'enchantement',
+    range: '18 mètres',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Les humanoïdes d’une sphère de 6 mètres perdent leur charme et leur terreur, ou toute hostilité.',
+    classes: ['barde', 'clerc'],
+  }),
+  level2({
+    id: 'appel-de-destrier',
+    name: 'Appel de destrier',
+    school: 'invocation',
+    time: '10 minutes',
+    range: '9 mètres',
+    summary:
+      'Tu lies à toi une monture d’esprit — cheval de guerre, poney, élan — intelligente et loyale.',
+    classes: ['paladin'],
+  }),
+  level2({
+    id: 'arme-magique',
+    name: 'Arme magique',
+    school: 'transmutation',
+    time: '1 action bonus',
+    range: 'contact',
+    duration: '1 heure',
+    concentration: true,
+    summary: 'Une arme ordinaire devient magique et gagne +1 à l’attaque et aux dégâts.',
+    classes: ['magicien', 'paladin'],
+  }),
+  level2({
+    id: 'arme-spirituelle',
+    name: 'Arme spirituelle',
+    school: 'evocation',
+    time: '1 action bonus',
+    range: '18 mètres',
+    duration: '1 minute',
+    summary:
+      'Une arme spectrale flotte et frappe pour 1d8 plus ton modificateur d’incantation. Tu la déplaces en action bonus.',
+    classes: ['clerc'],
+  }),
+  level2({
+    id: 'augure',
+    name: 'Augure',
+    school: 'divination',
+    time: '1 minute',
+    range: 'personnelle',
+    m: 'des bâtonnets, des os ou des cartes marqués, valant au moins 25 po',
+    ritual: true,
+    summary:
+      'Tu demandes si une action prévue dans la demi-heure tournera bien, mal, les deux, ou ni l’un ni l’autre.',
+    classes: ['clerc'],
+  }),
+  level2({
+    id: 'aura-magique-de-l-arcaniste',
+    name: 'Aura magique de l’arcaniste',
+    school: 'illusion',
+    range: 'contact',
+    m: 'un petit carré de soie',
+    duration: '24 heures',
+    summary:
+      'Les sorts de divination mentent sur la cible : fausse nature magique, ou fausse allégeance.',
+    classes: ['magicien'],
+  }),
+  level2({
+    id: 'bouche-magique',
+    name: 'Bouche magique',
+    school: 'illusion',
+    time: '1 minute',
+    range: '9 mètres',
+    m: 'un rayon de miel et de la poudre de jade valant au moins 10 po',
+    duration: 'jusqu’à dissipation',
+    ritual: true,
+    summary:
+      'Un objet prononce vingt-cinq mots quand la condition que tu as fixée se produit.',
+    classes: ['barde', 'magicien'],
+  }),
+  level2({
+    id: 'bourrasque',
+    name: 'Bourrasque',
+    school: 'evocation',
+    range: 'personnelle',
+    m: 'une graine de légumineuse',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un vent violent de 18 mètres repousse ceux qui ratent leur sauvegarde et double le coût du déplacement à contresens.',
+    classes: ['druide', 'ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'chatiment-revelateur',
+    name: 'Châtiment révélateur',
+    school: 'evocation',
+    time: '1 action bonus',
+    range: 'personnelle',
+    s: false,
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Ta prochaine attaque inflige 2d6 radiants de plus et fait briller la cible, qui ne peut plus se rendre invisible.',
+    classes: ['paladin'],
+  }),
+  level2({
+    id: 'corde-enchantee',
+    name: 'Corde enchantée',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'de l’extrait de maïs en poudre et une boucle de parchemin torsadé',
+    duration: '1 heure',
+    summary:
+      'Une corde se dresse et ouvre en haut un refuge extradimensionnel pour huit créatures.',
+    classes: ['magicien'],
+  }),
+  level2({
+    id: 'croissance-d-epines',
+    name: 'Croissance d’épines',
+    school: 'transmutation',
+    range: '45 mètres',
+    m: 'sept épines ou sept brindilles taillées en pointe',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Le sol se hérisse sur 6 mètres de rayon : terrain difficile, et 2d4 perforants tous les 1,50 mètre parcouru.',
+    classes: ['druide', 'rodeur'],
+  }),
+  level2({
+    id: 'cecite-surdite',
+    name: 'Cécité/Surdité',
+    school: 'necromancie',
+    range: '9 mètres',
+    s: false,
+    duration: '1 minute',
+    summary:
+      'Une créature devient aveugle ou sourde, à ton choix, si elle rate sa sauvegarde de Constitution. Elle peut retenter à chaque tour.',
+    classes: ['barde', 'clerc', 'ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'discours-captivant',
+    name: 'Discours captivant',
+    school: 'enchantement',
+    range: '18 mètres',
+    duration: '1 minute',
+    summary:
+      'Ton discours accapare l’attention : ceux qui ratent leur sauvegarde ont un désavantage à te remarquer autrement.',
+    classes: ['barde', 'occultiste'],
+  }),
+  level2({
+    id: 'doux-repos',
+    name: 'Doux repos',
+    school: 'necromancie',
+    range: 'contact',
+    m: 'une pincée de sel et une pièce de cuivre par œil',
+    duration: '10 jours',
+    ritual: true,
+    summary:
+      'Un cadavre cesse de se décomposer et ne peut pas devenir mort-vivant. Le délai pour le ramener s’allonge d’autant.',
+    classes: ['clerc', 'magicien'],
+  }),
+  level2({
+    id: 'deblocage',
+    name: 'Déblocage',
+    school: 'transmutation',
+    range: '18 mètres',
+    s: false,
+    summary:
+      'Une serrure s’ouvre, une barre saute, des menottes tombent — dans un claquement qu’on entend à 90 mètres.',
+    classes: ['barde', 'ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'detection-de-l-invisibilite',
+    name: 'Détection de l’invisibilité',
+    school: 'divination',
+    range: 'personnelle',
+    m: 'une pincée de talc et un peu de poudre d’argent',
+    duration: '1 heure',
+    summary:
+      'Tu vois l’invisible et l’éthéré comme des silhouettes translucides, pendant une heure.',
+    classes: ['barde', 'ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'detection-des-pensees',
+    name: 'Détection des pensées',
+    school: 'divination',
+    range: 'personnelle',
+    m: 'une pièce de cuivre',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Tu lis les pensées de surface d’une créature à moins de 9 mètres, et tu peux creuser plus loin si elle rate sa sauvegarde.',
+    classes: ['barde', 'ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'detection-des-pieges',
+    name: 'Détection des pièges',
+    school: 'divination',
+    range: '36 mètres',
+    summary:
+      'Tu sens la présence d’un piège dans ton champ de vision, sans savoir où ni lequel.',
+    classes: ['clerc', 'druide', 'rodeur'],
+  }),
+  level2({
+    id: 'flamme-eternelle',
+    name: 'Flamme éternelle',
+    school: 'evocation',
+    range: 'contact',
+    m: 'de la poudre de rubis valant 50 po',
+    duration: 'jusqu’à dissipation',
+    summary:
+      'Une flamme sans chaleur naît sur un objet et brûle sans fin, jusqu’à dissipation.',
+    classes: ['clerc', 'magicien'],
+  }),
+  level2({
+    id: 'flou',
+    name: 'Flou',
+    school: 'illusion',
+    range: 'personnelle',
+    s: false,
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Ta silhouette tremble : on t’attaque avec un désavantage, sauf à te voir autrement qu’avec les yeux.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'fleche-acide',
+    name: 'Flèche acide',
+    school: 'evocation',
+    range: '27 mètres',
+    m: 'de la feuille de rhubarbe en poudre et un estomac de vipère',
+    summary:
+      'Une flèche verte file vers ta cible : 4d4 acide si elle touche, et 2d4 de plus à la fin de son tour suivant.',
+    classes: ['magicien'],
+  }),
+  level2({
+    id: 'foulee-brumeuse',
+    name: 'Foulée brumeuse',
+    school: 'invocation',
+    time: '1 action bonus',
+    range: 'personnelle',
+    s: false,
+    summary:
+      'Tu disparais dans une brume argentée et réapparais jusqu’à 9 mètres plus loin, à un endroit que tu vois.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'fracassement',
+    name: 'Fracassement',
+    school: 'evocation',
+    range: '18 mètres',
+    m: 'un éclat de mica',
+    summary:
+      'Un son insoutenable : 3d8 de tonnerre dans une sphère de 3 mètres, davantage subis par ce qui est minéral.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'image-miroir',
+    name: 'Image miroir',
+    school: 'illusion',
+    range: 'personnelle',
+    duration: '1 minute',
+    summary:
+      'Trois doubles illusoires bougent avec toi. Chaque attaque a de bonnes chances de frapper une image plutôt que toi.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'immobilisation-de-personne',
+    name: 'Immobilisation de personne',
+    school: 'enchantement',
+    range: '18 mètres',
+    m: 'un petit morceau de fer droit',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un humanoïde est paralysé s’il rate sa sauvegarde de Sagesse. Il retente à la fin de chacun de ses tours.',
+    classes: ['barde', 'clerc', 'druide', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'invisibilite',
+    name: 'Invisibilité',
+    school: 'illusion',
+    range: 'contact',
+    m: 'un cil enrobé de gomme arabique',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La cible devient invisible, avec ce qu’elle porte. Le sort prend fin si elle attaque ou lance un sort.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'lame-de-feu',
+    name: 'Lame de feu',
+    school: 'evocation',
+    time: '1 action bonus',
+    range: 'personnelle',
+    m: 'une feuille de sumac',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Une lame de feu apparaît dans ta main libre : 3d6 dégâts de feu quand elle touche.',
+    classes: ['druide'],
+  }),
+  level2({
+    id: 'lien-de-protection',
+    name: 'Lien de protection',
+    school: 'abjuration',
+    range: 'contact',
+    m: 'une paire d’anneaux de platine valant au moins 50 po chacun',
+    duration: '1 heure',
+    summary:
+      'La cible gagne +1 en classe d’armure et aux sauvegardes et résiste à tout — mais tu subis les mêmes dégâts qu’elle.',
+    classes: ['clerc'],
+  }),
+  level2({
+    id: 'localisation-d-animaux-ou-de-plantes',
+    name: 'Localisation d’animaux ou de plantes',
+    school: 'divination',
+    range: 'personnelle',
+    m: 'un peu de poil de limier',
+    ritual: true,
+    summary:
+      'Tu apprends la direction et la distance du plus proche animal ou végétal de l’espèce que tu nommes, dans un rayon de 7,5 km.',
+    classes: ['barde', 'druide', 'rodeur'],
+  }),
+  level2({
+    id: 'localisation-d-objet',
+    name: 'Localisation d’objet',
+    school: 'divination',
+    range: 'personnelle',
+    m: 'une brindille fourchue',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Tu sens la direction d’un objet que tu connais, s’il est à moins de 300 mètres.',
+    classes: ['barde', 'clerc', 'druide', 'magicien', 'paladin', 'rodeur'],
+  }),
+  level2({
+    id: 'levitation',
+    name: 'Lévitation',
+    school: 'transmutation',
+    range: '18 mètres',
+    m: 'une petite boucle de cuir ou un fil d’or',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Une créature ou un objet s’élève jusqu’à 6 mètres et reste suspendu. Tu le déplaces verticalement à ta guise.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'messager-animal',
+    name: 'Messager animal',
+    school: 'enchantement',
+    range: '9 mètres',
+    m: 'une bouchée de nourriture',
+    duration: '24 heures',
+    ritual: true,
+    summary:
+      'Une petite bête porte ton message jusqu’à un lieu que tu connais et une personne que tu décris.',
+    classes: ['barde', 'druide', 'rodeur'],
+  }),
+  level2({
+    id: 'modification-d-apparence',
+    name: 'Modification d’apparence',
+    school: 'transmutation',
+    range: 'personnelle',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'Tu changes ton corps : respirer sous l’eau, prendre un autre visage, ou te faire des armes naturelles.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'metal-brulant',
+    name: 'Métal brûlant',
+    school: 'transmutation',
+    range: '18 mètres',
+    m: 'un morceau de fer et une flamme',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un objet en métal devient rouge : 2d8 de feu à qui le touche, et tu peux recommencer à chaque tour.',
+    classes: ['barde', 'druide'],
+  }),
+  level2({
+    id: 'passage-sans-trace',
+    name: 'Passage sans trace',
+    school: 'abjuration',
+    range: 'personnelle',
+    m: 'des cendres de gui brûlé et une feuille de sapin',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'Toi et tes compagnons gagnez +10 en Discrétion et ne laissez plus de traces à suivre.',
+    classes: ['druide', 'rodeur'],
+  }),
+  level2({
+    id: 'pattes-d-araignee',
+    name: 'Pattes d’araignée',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'une goutte de bitume et une araignée',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La cible marche sur les murs et au plafond, les mains libres, à sa vitesse de déplacement.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'peau-d-ecorce',
+    name: 'Peau d’écorce',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'une poignée d’écorce de chêne',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La peau de la cible se couvre d’écorce : sa classe d’armure ne descend plus sous 16.',
+    classes: ['druide', 'rodeur'],
+  }),
+  level2({
+    id: 'priere-de-guerison',
+    name: 'Prière de guérison',
+    school: 'evocation',
+    time: '10 minutes',
+    range: '9 mètres',
+    s: false,
+    summary:
+      'Jusqu’à six créatures récupèrent 2d8 points de vie plus ton modificateur d’incantation. Il faut dix minutes.',
+    classes: ['clerc'],
+  }),
+  level2({
+    id: 'protection-contre-le-poison',
+    name: 'Protection contre le poison',
+    school: 'abjuration',
+    range: 'contact',
+    duration: '1 heure',
+    summary:
+      'Tu neutralises un poison, et la cible résiste aux dégâts de poison pendant une heure.',
+    classes: ['clerc', 'druide', 'paladin', 'rodeur'],
+  }),
+  level2({
+    id: 'rayon-affaiblissant',
+    name: 'Rayon affaiblissant',
+    school: 'necromancie',
+    range: '18 mètres',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un rayon noir : la cible touchée n’inflige plus que la moitié des dégâts de ses attaques de Force.',
+    classes: ['magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'rayon-ardent',
+    name: 'Rayon ardent',
+    school: 'evocation',
+    range: '36 mètres',
+    summary:
+      'Trois rayons de feu, à répartir comme tu veux : 2d6 de feu par rayon qui touche.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'rayon-de-lune',
+    name: 'Rayon de lune',
+    school: 'evocation',
+    range: '36 mètres',
+    m: 'des graines de ményanthe et un morceau d’opale',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un cylindre de lumière pâle : 2d10 radiants pour qui y entre ou y commence son tour. Tu le déplaces à chaque tour.',
+    classes: ['druide'],
+  }),
+  level2({
+    id: 'restauration-partielle',
+    name: 'Restauration partielle',
+    school: 'abjuration',
+    range: 'contact',
+    summary:
+      'Tu supprimes une maladie, ou un état aveuglé, assourdi, paralysé ou empoisonné.',
+    classes: ['barde', 'clerc', 'druide', 'paladin', 'rodeur'],
+  }),
+  level2({
+    id: 'silence',
+    name: 'Silence',
+    school: 'illusion',
+    range: '36 mètres',
+    duration: '10 minutes',
+    concentration: true,
+    ritual: true,
+    summary:
+      'Aucun son dans une sphère de 6 mètres : plus d’incantation à voix haute, et personne n’entend rien.',
+    classes: ['barde', 'clerc', 'rodeur'],
+  }),
+  level2({
+    id: 'sphere-de-feu',
+    name: 'Sphère de feu',
+    school: 'invocation',
+    range: '18 mètres',
+    m: 'un peu de suif, une pincée de soufre et de la poudre de fer',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Une boule de feu roule où tu veux : 2d6 de feu pour qui finit son tour à côté.',
+    classes: ['druide', 'magicien'],
+  }),
+  level2({
+    id: 'suggestion',
+    name: 'Suggestion',
+    school: 'enchantement',
+    range: '9 mètres',
+    s: false,
+    m: 'une langue de serpent et un morceau de rayon de miel ou une goutte d’huile douce',
+    duration: '8 heures',
+    concentration: true,
+    summary:
+      'Tu souffles une conduite raisonnable en une phrase ou deux ; qui rate sa sauvegarde la suit de son mieux.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'toile-d-araignee',
+    name: 'Toile d’araignée',
+    school: 'invocation',
+    range: '18 mètres',
+    m: 'un peu de toile d’araignée',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'Un cube de 6 mètres de toile collante : terrain difficile, et qui rate sa sauvegarde y reste entravé.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level2({
+    id: 'tenebres',
+    name: 'Ténèbres',
+    school: 'evocation',
+    range: '18 mètres',
+    s: false,
+    m: 'de la fourrure de chauve-souris et une goutte de poix',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Une sphère de 4,50 mètres de ténèbres magiques que même la vision dans le noir ne perce pas.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level2({
+    id: 'verrou-magique',
+    name: 'Verrou magique',
+    school: 'abjuration',
+    range: 'contact',
+    m: 'de la poudre d’or valant au moins 25 po',
+    duration: 'jusqu’à dissipation',
+    summary:
+      'Une porte, un coffre ou une fenêtre se verrouille jusqu’à dissipation. Toi et ceux que tu désignes passez quand même.',
+    classes: ['magicien'],
+  }),
+  level2({
+    id: 'vision-dans-le-noir',
+    name: 'Vision dans le noir',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'une pincée de carotte séchée ou une agate',
+    duration: '8 heures',
+    summary: 'La cible voit dans le noir jusqu’à 18 mètres pendant huit heures.',
+    classes: ['druide', 'ensorceleur', 'magicien', 'rodeur'],
+  }),
+  level2({
+    id: 'zone-de-verite',
+    name: 'Zone de vérité',
+    school: 'enchantement',
+    range: '18 mètres',
+    duration: '10 minutes',
+    summary:
+      'Dans une sphère de 4,50 mètres, qui rate sa sauvegarde ne peut plus mentir sciemment. Tu sais qui a résisté.',
+    classes: ['barde', 'clerc', 'paladin'],
   }),
 ];

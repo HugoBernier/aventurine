@@ -36,8 +36,16 @@ jobs:
 
       - name: Budget de poids
         run: |
-          entry_budget=112640   # 110 kio, chunk d'entrée
-          total_budget=204800   # 200 kio, tout le JS
+          # Relevé de 110 à 150 kio en connaissance de cause : l'application
+          # embarque tout le contenu SRD, ce qui lui permet de fonctionner hors
+          # ligne et sans le moindre appel réseau après le chargement. Un sort
+          # coûte ~74 octets gzip ; les ~300 du SRD pèsent donc ~22 kio, et
+          # découper le catalogue en morceaux chargés à la demande ajouterait un
+          # état d'attente sur chaque écran pour économiser une seconde une
+          # seule fois. Le garde-fou reste : il attrape une dépendance ajoutée
+          # par mégarde, ce pour quoi il a été posé.
+          entry_budget=153600   # 150 kio, chunk d'entrée
+          total_budget=256000   # 250 kio, tout le JS
           css_budget=15360      # 15 kio
 
           gz() { gzip -9 -c "$1" | wc -c; }
