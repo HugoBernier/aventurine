@@ -372,3 +372,37 @@ describe('historiques', () => {
     }
   });
 });
+
+/** Même règle que partout : sans accent, sans majuscule, mots liés par des tirets. */
+const slug = (name: string) =>
+  name
+    .replaceAll('’', "'")
+    .toLowerCase()
+    .normalize('NFD')
+    .replaceAll(/\p{Diacritic}/gu, '')
+    .replaceAll(/[^a-z0-9]+/gu, '-')
+    .replaceAll(/^-|-$/gu, '');
+
+describe('sorts', () => {
+  it('donne à chaque sort un identifiant qui découle de son nom', () => {
+    // Six entrées portaient un identifiant sans rapport avec leur nom —
+    // « toucher-du-vampire » pour Contact glacial. Le nom est la source.
+    for (const spell of C.spells) {
+      expect(spell.id).toBe(slug(spell.name));
+    }
+  });
+
+  it('n’attribue un sort qu’à des classes qui lancent des sorts', () => {
+    const casters = new Set(
+      C.classes.filter((entry) => entry.spellcasting !== null).map((entry) => entry.id),
+    );
+    // Paladin et rôdeur figurent dans les listes du SRD sans bloc d'incantation
+    // au niveau 1 : ils sont attendus, tout le reste serait une faute de frappe.
+    const known = new Set([...casters, 'paladin', 'rodeur']);
+    for (const spell of C.spells) {
+      for (const id of spell.classes) {
+        expect(known).toContain(id);
+      }
+    }
+  });
+});

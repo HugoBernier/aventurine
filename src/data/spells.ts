@@ -41,6 +41,7 @@ const spell =
 const cantrip = spell(0);
 const level1 = spell(1);
 const level2 = spell(2);
+const level3 = spell(3);
 
 const ARCANE = ['ensorceleur', 'magicien'];
 
@@ -127,8 +128,8 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ARCANE,
   }),
   cantrip({
-    id: 'projection-acide',
-    name: "Projection d'acide",
+    id: 'projection-d-acide',
+    name: 'Projection d’acide',
     school: 'invocation',
     range: '18 mètres',
     summary:
@@ -206,7 +207,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['occultiste'],
   }),
   cantrip({
-    id: 'toucher-du-vampire',
+    id: 'contact-glacial',
     name: 'Contact glacial',
     school: 'necromancie',
     range: '36 mètres',
@@ -417,7 +418,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['clerc'],
   }),
   level1({
-    id: 'protection-mal-bien',
+    id: 'protection-contre-le-mal-et-le-bien',
     name: 'Protection contre le mal et le bien',
     school: 'abjuration',
     m: 'de l’eau bénite',
@@ -462,14 +463,6 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['barde', 'paladin'],
   }),
   level1({
-    id: 'flechette-acide',
-    name: 'Trait ensorcelé',
-    school: 'evocation',
-    range: '36 mètres',
-    summary: 'Un éclat d’énergie inflige 1d6 dégâts du type de ton choix parmi quatre.',
-    classes: ['ensorceleur'],
-  }),
-  level1({
     id: 'grande-foulee',
     name: 'Grande foulée',
     school: 'transmutation',
@@ -482,7 +475,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['druide', 'rodeur', 'ensorceleur', 'magicien'],
   }),
   level1({
-    id: 'compagnon-animal',
+    id: 'communication-avec-les-animaux',
     name: 'Communication avec les animaux',
     school: 'divination',
     range: 'personnelle',
@@ -501,7 +494,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['barde', 'ensorceleur', 'magicien'],
   }),
   level1({
-    id: 'saut-illusoire',
+    id: 'image-silencieuse',
     name: 'Image silencieuse',
     school: 'illusion',
     m: 'un peu de laine',
@@ -522,29 +515,6 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     summary:
       'La cible s’effondre de rire, à terre et neutralisée, sauf sauvegarde de Sagesse.',
     classes: ['barde'],
-  }),
-  level1({
-    id: 'malediction',
-    name: 'Malédiction',
-    school: 'enchantement',
-    time: '1 action bonus',
-    range: '27 mètres',
-    duration: 'concentration, 1 minute',
-    concentration: true,
-    summary:
-      'Tu ajoutes 1d6 à tes dégâts contre une cible et la retrouves plus facilement.',
-    classes: ['occultiste'],
-  }),
-  level1({
-    id: 'armure-d-agathys',
-    name: 'Armure d’Agathys',
-    school: 'abjuration',
-    m: 'une coupe d’eau',
-    range: 'personnelle',
-    duration: '1 heure',
-    summary:
-      '5 points de vie temporaires, et 5 dégâts de froid à qui te frappe au corps à corps.',
-    classes: ['occultiste'],
   }),
   level1({
     id: 'comprehension-des-langues',
@@ -570,7 +540,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ['barde', 'ensorceleur', 'magicien'],
   }),
   level1({
-    id: 'grease',
+    id: 'graisse',
     name: 'Graisse',
     school: 'invocation',
     m: 'une couenne de lard',
@@ -580,26 +550,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     classes: ARCANE,
   }),
   level1({
-    id: 'flechettes-de-feu',
-    name: 'Bouclier de flammes',
-    school: 'evocation',
-    m: 'du miel vert',
-    range: 'personnelle',
-    duration: '10 minutes',
-    summary:
-      'Tu résistes au froid, tu éclaires, et qui te frappe subit 2d8 dégâts de feu.',
-    classes: ARCANE,
-  }),
-  level1({
-    id: 'trait-de-lumiere',
-    name: 'Rayon de maladie',
-    school: 'necromancie',
-    range: '18 mètres',
-    summary: 'Un rayon verdâtre : 2d8 dégâts nécrotiques et un possible empoisonnement.',
-    classes: ARCANE,
-  }),
-  level1({
-    id: 'purification-de-nourriture',
+    id: 'purification-de-nourriture-et-de-boisson',
     name: 'Purification de nourriture et de boisson',
     school: 'transmutation',
     time: '1 action',
@@ -1243,5 +1194,485 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     summary:
       'Dans une sphère de 4,50 mètres, qui rate sa sauvegarde ne peut plus mentir sciemment. Tu sais qui a résisté.',
     classes: ['barde', 'clerc', 'paladin'],
+  }),
+
+  // ---------- Niveau 3 ----------
+  level3({
+    id: 'animation-des-morts',
+    name: 'Animation des morts',
+    school: 'necromancie',
+    time: '1 minute',
+    range: '3 mètres',
+    m: 'une goutte de sang, un morceau de chair et une pincée d’os en poudre',
+    summary:
+      'Tu relèves un squelette ou un zombie à partir d’ossements ou d’un cadavre. Il t’obéit, et il faut renouveler le lien chaque jour.',
+    classes: ['clerc', 'magicien'],
+  }),
+  level3({
+    id: 'antidetection',
+    name: 'Antidétection',
+    school: 'abjuration',
+    range: 'contact',
+    m: 'une pincée de poudre de diamant valant 25 po',
+    duration: '8 heures',
+    summary:
+      'La cible échappe à toute divination et à tout capteur magique pendant huit heures.',
+    classes: ['barde', 'magicien', 'rodeur'],
+  }),
+  level3({
+    id: 'appel-de-la-foudre',
+    name: 'Appel de la foudre',
+    school: 'invocation',
+    range: '36 mètres',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Un nuage d’orage t’obéit : 3d10 de foudre à chaque tour, sur le point que tu désignes.',
+    classes: ['druide'],
+  }),
+  level3({
+    id: 'boule-de-feu',
+    name: 'Boule de feu',
+    school: 'evocation',
+    range: '45 mètres',
+    m: 'une bille de guano de chauve-souris et de soufre',
+    summary:
+      'Une sphère de 6 mètres de rayon : 8d6 de feu, moitié moins sur une sauvegarde de Dextérité réussie.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'caresse-du-vampire',
+    name: 'Caresse du vampire',
+    school: 'necromancie',
+    range: 'personnelle',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Ta main draine la vie : 3d6 nécrotiques, et tu récupères la moitié en points de vie. À chaque tour.',
+    classes: ['magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'cercle-magique',
+    name: 'Cercle magique',
+    school: 'abjuration',
+    time: '1 minute',
+    range: '3 mètres',
+    m: 'de l’eau bénite ou de la poudre d’argent et de fer valant au moins 100 po',
+    duration: '1 heure',
+    summary:
+      'Un cylindre que les créatures d’un type choisi ne peuvent ni franchir, ni charmer, ni posséder à travers.',
+    classes: ['clerc', 'magicien', 'occultiste', 'paladin'],
+  }),
+  level3({
+    id: 'clairvoyance',
+    name: 'Clairvoyance',
+    school: 'divination',
+    time: '10 minutes',
+    range: '1,5 km',
+    m: 'un focaliseur valant au moins 100 po',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Tu poses un capteur invisible dans un lieu connu et tu y vois ou tu y entends, à distance.',
+    classes: ['barde', 'clerc', 'ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'clignotement',
+    name: 'Clignotement',
+    school: 'transmutation',
+    range: 'personnelle',
+    duration: '1 minute',
+    summary:
+      'À chaque tour, une chance sur deux de disparaître dans l’Éthéré et de revenir : intouchable pendant ce temps.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'communication-avec-les-morts',
+    name: 'Communication avec les morts',
+    school: 'necromancie',
+    range: '3 mètres',
+    m: 'de l’encens qui brûle',
+    duration: '10 minutes',
+    summary:
+      'Un cadavre répond à cinq questions, avec ce qu’il savait de son vivant — et ce qu’il veut bien dire.',
+    classes: ['barde', 'clerc'],
+  }),
+  level3({
+    id: 'communication-avec-les-plantes',
+    name: 'Communication avec les plantes',
+    school: 'transmutation',
+    range: 'personnelle',
+    duration: '10 minutes',
+    summary:
+      'Les plantes alentour te répondent sur ce qui s’est passé, et t’ouvrent le passage si tu leur demandes.',
+    classes: ['barde', 'druide', 'rodeur'],
+  }),
+  level3({
+    id: 'communication-a-distance',
+    name: 'Communication à distance',
+    school: 'evocation',
+    range: 'illimitée',
+    m: 'un court fil de cuivre fin',
+    duration: '1 round',
+    summary:
+      'Vingt-cinq mots atteignent quelqu’un que tu connais, où qu’il soit. Il peut répondre aussitôt.',
+    classes: ['barde', 'clerc', 'magicien'],
+  }),
+  level3({
+    id: 'contresort',
+    name: 'Contresort',
+    school: 'abjuration',
+    time: '1 réaction',
+    range: '18 mètres',
+    v: false,
+    summary:
+      'En réaction, tu coupes le sort qu’on est en train de lancer. Automatique jusqu’au niveau 3, un test au-delà.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'croissance-vegetale',
+    name: 'Croissance végétale',
+    school: 'transmutation',
+    range: '45 mètres',
+    summary:
+      'Les plantes s’épaississent et rendent la zone deux fois plus lente à traverser — ou nourrissent une récolte entière.',
+    classes: ['barde', 'druide', 'rodeur'],
+  }),
+  level3({
+    id: 'creation-de-nourriture-et-d-eau',
+    name: 'Création de nourriture et d’eau',
+    school: 'invocation',
+    range: '9 mètres',
+    summary:
+      'De quoi nourrir quinze personnes ou cinq montures pendant une journée. Fade, mais nourrissant.',
+    classes: ['clerc', 'druide', 'paladin'],
+  }),
+  level3({
+    id: 'dissipation-de-la-magie',
+    name: 'Dissipation de la magie',
+    school: 'abjuration',
+    range: '36 mètres',
+    summary:
+      'Tu mets fin aux sorts qui affectent une cible : d’office jusqu’au niveau 3, avec un test au-delà.',
+    classes: [
+      'barde',
+      'clerc',
+      'druide',
+      'ensorceleur',
+      'magicien',
+      'occultiste',
+      'paladin',
+    ],
+  }),
+  level3({
+    id: 'don-des-langues',
+    name: 'Don des langues',
+    school: 'divination',
+    range: 'contact',
+    s: false,
+    m: 'un petit modèle de ziggourat en argile',
+    duration: '1 heure',
+    summary:
+      'La cible comprend toute langue parlée, et tout le monde la comprend en retour, pendant une heure.',
+    classes: ['barde', 'clerc', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'delivrance-des-maledictions',
+    name: 'Délivrance des malédictions',
+    school: 'abjuration',
+    range: 'contact',
+    summary:
+      'Toutes les malédictions d’une créature ou d’un objet cessent. Un objet maudit se laisse enfin lâcher.',
+    classes: ['clerc', 'magicien', 'occultiste', 'paladin'],
+  }),
+  level3({
+    id: 'esprits-gardiens',
+    name: 'Esprits gardiens',
+    school: 'invocation',
+    range: 'personnelle',
+    m: 'un symbole sacré',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Des esprits tournoient sur 4,50 mètres : 3d8 radiants ou nécrotiques, et la moitié de la vitesse, pour tes ennemis.',
+    classes: ['clerc'],
+  }),
+  level3({
+    id: 'forme-gazeuse',
+    name: 'Forme gazeuse',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'un peu de gaze et une volute de fumée',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La cible devient un nuage : elle vole lentement, passe par le moindre interstice, et ne peut plus rien manipuler.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'fusion-dans-la-pierre',
+    name: 'Fusion dans la pierre',
+    school: 'transmutation',
+    range: 'contact',
+    duration: '8 heures',
+    ritual: true,
+    summary:
+      'Tu entres dans la pierre et t’y fonds huit heures durant, invisible et à l’abri.',
+    classes: ['clerc'],
+  }),
+  level3({
+    id: 'glyphe-de-garde',
+    name: 'Glyphe de garde',
+    school: 'abjuration',
+    time: '1 heure',
+    range: 'contact',
+    m: 'de l’encens et de la poudre de diamant valant au moins 200 po',
+    duration: 'jusqu’à dissipation',
+    summary:
+      'Tu inscris un piège magique qui se déclenche à la condition que tu poses : explosion ou sort mis en réserve.',
+    classes: ['barde', 'clerc', 'magicien'],
+  }),
+  level3({
+    id: 'hate',
+    name: 'Hâte',
+    school: 'transmutation',
+    range: '9 mètres',
+    m: 'un copeau de racine de réglisse',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'La cible double sa vitesse, gagne +2 en classe d’armure et une action supplémentaire par tour. Le contrecoup est rude.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'image-majeure',
+    name: 'Image majeure',
+    school: 'illusion',
+    range: '36 mètres',
+    m: 'un peu de laine',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'Une illusion d’un cube de 6 mètres, avec le son, l’odeur et la température. Elle tient à l’examen jusqu’au toucher.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'invocation-d-animaux',
+    name: 'Invocation d’animaux',
+    school: 'invocation',
+    range: '18 mètres',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'Tu appelles des esprits féeriques en forme de bêtes, qui combattent à tes côtés une heure durant.',
+    classes: ['druide', 'rodeur'],
+  }),
+  level3({
+    id: 'lenteur',
+    name: 'Lenteur',
+    school: 'transmutation',
+    range: '36 mètres',
+    m: 'une goutte de mélasse',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Six créatures voient leur vitesse divisée par deux, perdent 2 en classe d’armure, et n’agissent plus qu’une fois sur deux.',
+    classes: ['ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'lueur-d-espoir',
+    name: 'Lueur d’espoir',
+    school: 'abjuration',
+    range: '9 mètres',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Tes alliés ont l’avantage aux sauvegardes de Sagesse et contre la mort, et récupèrent le maximum de chaque soin.',
+    classes: ['clerc'],
+  }),
+  level3({
+    id: 'lumiere-du-jour',
+    name: 'Lumière du jour',
+    school: 'evocation',
+    range: '18 mètres',
+    duration: '1 heure',
+    summary:
+      'Une sphère de 18 mètres de lumière vive, qui dissipe les ténèbres magiques de niveau inférieur.',
+    classes: ['clerc', 'druide', 'ensorceleur', 'paladin', 'rodeur'],
+  }),
+  level3({
+    id: 'malediction',
+    name: 'Malédiction',
+    school: 'necromancie',
+    range: 'contact',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Tu maudis une créature : désavantage sur une caractéristique, action parfois perdue, ou 1d8 nécrotiques de plus quand tu la frappes.',
+    classes: ['barde', 'clerc', 'magicien'],
+  }),
+  level3({
+    id: 'marche-sur-l-onde',
+    name: 'Marche sur l’onde',
+    school: 'transmutation',
+    range: '9 mètres',
+    m: 'un morceau de liège',
+    duration: '1 heure',
+    ritual: true,
+    summary:
+      'Dix créatures marchent sur l’eau, la boue, la neige ou les sables mouvants comme sur un sol ferme.',
+    classes: ['clerc', 'druide', 'ensorceleur', 'rodeur'],
+  }),
+  level3({
+    id: 'monture-fantome',
+    name: 'Monture fantôme',
+    school: 'illusion',
+    time: '1 minute',
+    range: '9 mètres',
+    duration: '1 heure',
+    ritual: true,
+    summary:
+      'Un cheval quasi réel, sellé, qui court à 30 mètres par tour pendant une heure.',
+    classes: ['magicien'],
+  }),
+  level3({
+    id: 'mot-de-guerison-de-groupe',
+    name: 'Mot de guérison de groupe',
+    school: 'evocation',
+    time: '1 action bonus',
+    range: '18 mètres',
+    s: false,
+    summary:
+      'Six créatures récupèrent 1d4 plus ton modificateur d’incantation, en une action bonus.',
+    classes: ['clerc'],
+  }),
+  level3({
+    id: 'motif-hypnotique',
+    name: 'Motif hypnotique',
+    school: 'illusion',
+    range: '36 mètres',
+    v: false,
+    m: 'un bâton d’encens ou un cristal luminescent',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un entrelacs de couleurs : qui rate reste charmé, immobile et hébété, jusqu’à ce qu’on le secoue.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'mur-de-vent',
+    name: 'Mur de vent',
+    school: 'evocation',
+    range: '36 mètres',
+    m: 'un petit éventail et une plume exotique',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un mur de vent de 15 mètres : les flèches et les gaz ne passent pas, les créatures légères non plus.',
+    classes: ['druide', 'rodeur'],
+  }),
+  level3({
+    id: 'nuage-nauseabond',
+    name: 'Nuage nauséabond',
+    school: 'invocation',
+    range: '27 mètres',
+    m: 'un œuf pourri ou des feuilles de chou puant',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un gaz jaune sur 6 mètres de rayon : qui rate sa sauvegarde de Constitution perd son action à vomir.',
+    classes: ['barde', 'ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'petite-hutte',
+    name: 'Petite hutte',
+    school: 'evocation',
+    time: '1 minute',
+    range: 'personnelle',
+    m: 'une petite perle de cristal',
+    duration: '8 heures',
+    ritual: true,
+    summary:
+      'Un dôme de force de 3 mètres, immobile, où dix personnes passent la nuit à l’abri du temps et des regards.',
+    classes: ['barde', 'magicien'],
+  }),
+  level3({
+    id: 'protection-contre-l-energie',
+    name: 'Protection contre l’énergie',
+    school: 'abjuration',
+    range: 'contact',
+    duration: '1 heure',
+    concentration: true,
+    summary:
+      'La cible résiste à l’acide, au froid, au feu, à la foudre ou au tonnerre, à ton choix.',
+    classes: ['clerc', 'druide', 'ensorceleur', 'magicien', 'rodeur'],
+  }),
+  level3({
+    id: 'respiration-aquatique',
+    name: 'Respiration aquatique',
+    school: 'transmutation',
+    range: '9 mètres',
+    m: 'un court morceau de roseau ou de paille',
+    duration: '24 heures',
+    ritual: true,
+    summary:
+      'Dix créatures respirent sous l’eau pendant vingt-quatre heures, sans perdre leur souffle normal.',
+    classes: ['druide', 'ensorceleur', 'magicien', 'rodeur'],
+  }),
+  level3({
+    id: 'retour-a-la-vie',
+    name: 'Retour à la vie',
+    school: 'invocation',
+    range: 'contact',
+    m: 'des diamants valant 300 po, consumés',
+    summary:
+      'Une créature morte depuis moins d’une minute revient avec 1 point de vie. Rien ne repousse.',
+    classes: ['clerc', 'paladin'],
+  }),
+  level3({
+    id: 'tempete-de-neige',
+    name: 'Tempête de neige',
+    school: 'invocation',
+    range: '45 mètres',
+    m: 'une pincée de poussière et quelques gouttes d’eau',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Grésil et verglas : la zone est obscurcie, le sol glissant, et la concentration difficile à tenir.',
+    classes: ['druide', 'ensorceleur', 'magicien'],
+  }),
+  level3({
+    id: 'terreur',
+    name: 'Terreur',
+    school: 'illusion',
+    range: 'personnelle',
+    m: 'une plume blanche ou un cœur de poule',
+    duration: '1 minute',
+    concentration: true,
+    summary:
+      'Un cône de 9 mètres : qui rate lâche ce qu’il tient et fuit, terrorisé, tant qu’il te voit.',
+    classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'vol',
+    name: 'Vol',
+    school: 'transmutation',
+    range: 'contact',
+    m: 'une plume d’aile d’oiseau',
+    duration: '10 minutes',
+    concentration: true,
+    summary:
+      'La cible vole à 18 mètres par tour. Attention à la fin du sort si elle est encore en l’air.',
+    classes: ['ensorceleur', 'magicien', 'occultiste'],
+  }),
+  level3({
+    id: 'eclair',
+    name: 'Éclair',
+    school: 'evocation',
+    range: 'personnelle',
+    m: 'un peu de fourrure et une baguette d’ambre ou de cristal',
+    summary:
+      'Une ligne de 30 mètres : 8d6 de foudre, moitié moins sur une sauvegarde de Dextérité réussie.',
+    classes: ['ensorceleur', 'magicien'],
   }),
 ];
