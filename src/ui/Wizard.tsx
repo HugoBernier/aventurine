@@ -134,13 +134,9 @@ export function Wizard(): ReactNode {
           />
         }
         actions={
+          // Une seule action : « ‹ Continuer » à côté faisait exactement la même
+          // chose sous un autre nom, ce qui donne à croire qu'elles diffèrent.
           <ActionBar
-            back={{
-              label: '‹ Continuer',
-              onClick: () => {
-                setIsSummaryOpen(false);
-              },
-            }}
             primary={{
               label: 'Revenir à l’assistant',
               onClick: () => {

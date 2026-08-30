@@ -76,6 +76,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           { name: 'Robustesse naine', text: 'Tu gagnes 1 point de vie par niveau.' },
         ],
         bonusHitPointsPerLevel: 1,
+        darkvision: null,
         speed: null,
         choices: [],
       },
@@ -99,6 +100,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: null,
         choices: [],
       },
@@ -158,6 +160,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: null,
         choices: [
           {
@@ -202,7 +205,45 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: 10.5,
+        choices: [],
+      },
+      {
+        id: 'elfe-noir',
+        name: 'Elfe noir',
+        blurb:
+          'Grandi sous la terre, à l’aise dans le noir complet — et mal à l’aise au grand jour.',
+        facts: ['+1 Charisme', 'Voit à 36 m dans le noir', 'Gêné en plein soleil'],
+        abilityBonuses: { charisme: 1 },
+        skills: [],
+        proficiencies: {
+          armor: [],
+          weaponCategories: [],
+          weapons: ['rapiere', 'epee-courte', 'arbalete-de-poing'],
+          tools: [],
+        },
+        features: [
+          {
+            name: 'Vision supérieure dans le noir',
+            text: 'Tu vois dans le noir jusqu’à 36 mètres, soit deux fois plus loin que les autres elfes.',
+          },
+          {
+            name: 'Sensibilité au soleil',
+            text: 'En plein soleil, tu as un désavantage à tes attaques et à ce que tu perçois à la vue.',
+          },
+          {
+            name: 'Magie des elfes noirs',
+            text: 'Tu connais le tour de magie Lumières dansantes ; d’autres sorts viendront plus tard.',
+          },
+          {
+            name: 'Entraînement des elfes noirs aux armes',
+            text: 'Tu maîtrises la rapière, l’épée courte et l’arbalète de poing.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        darkvision: 36,
+        speed: null,
         choices: [],
       },
     ],
@@ -246,6 +287,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: null,
         choices: [],
       },
@@ -264,6 +306,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: null,
         choices: [],
       },
@@ -370,6 +413,35 @@ export const RACE_ENTRIES: readonly Race[] = [
     choices: [],
     subraces: [
       {
+        id: 'gnome-des-forets',
+        name: 'Gnome des forêts',
+        blurb:
+          'Discret sous les feuilles, il parle aux bestioles et fait apparaître ce qui n’existe pas.',
+        facts: ['+1 Dextérité', '7,50 m', 'Illusion mineure, parle aux bêtes'],
+        abilityBonuses: { dexterite: 1 },
+        skills: [],
+        proficiencies: {
+          armor: [],
+          weaponCategories: [],
+          weapons: [],
+          tools: [],
+        },
+        features: [
+          {
+            name: 'Illusionniste-né',
+            text: 'Tu connais le tour de magie Illusion mineure. C’est ton Intelligence qui le porte.',
+          },
+          {
+            name: 'Discours avec les petites bêtes',
+            text: 'Par des sons et des gestes, tu échanges des idées simples avec les petits animaux.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        darkvision: null,
+        speed: null,
+        choices: [],
+      },
+      {
         id: 'gnome-des-roches',
         name: 'Gnome des roches',
         blurb: 'Bricoleur né : il démonte tout, et remonte presque tout.',
@@ -388,6 +460,7 @@ export const RACE_ENTRIES: readonly Race[] = [
           },
         ],
         bonusHitPointsPerLevel: 0,
+        darkvision: null,
         speed: null,
         choices: [],
       },

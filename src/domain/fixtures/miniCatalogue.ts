@@ -62,6 +62,7 @@ const races: readonly Race[] = [
         proficiencies: NO_PROFICIENCIES,
         features: [],
         bonusHitPointsPerLevel: 1,
+        darkvision: null,
         speed: null,
         choices: [],
       },

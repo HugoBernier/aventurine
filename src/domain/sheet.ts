@@ -91,6 +91,8 @@ export interface CharacterSheet {
   readonly initiative: number;
   readonly speedMeters: number | null;
   readonly speedReducedByArmor: boolean;
+  /** 0 quand la race n'y voit pas mieux qu'un humain ; `null` avant tout choix. */
+  readonly darkvisionMeters: number | null;
   readonly saves: readonly RollLine[];
   readonly skills: readonly RollLine[];
   readonly attacks: readonly Attack[];
@@ -452,6 +454,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
   const { proficient, expert } = grantedSkills(draft, catalogue);
   const { armor } = wornArmor(lines, catalogue);
   const speed = subrace?.speed ?? race?.speed ?? null;
+  const darkvision = subrace?.darkvision ?? race?.darkvision ?? null;
   const isSpeedReducedByArmor =
     armor !== null &&
     armor.strengthRequired > 0 &&
@@ -513,6 +516,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     initiative: modifiers.dexterite,
     speedMeters: speed,
     speedReducedByArmor: isSpeedReducedByArmor,
+    darkvisionMeters: darkvision,
     saves,
     skills,
     attacks: attacks(lines, catalogue, modifiers, proficiencies),

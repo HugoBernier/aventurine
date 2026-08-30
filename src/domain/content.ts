@@ -156,6 +156,8 @@ export interface Subrace extends Named {
   readonly features: readonly Feature[];
   readonly bonusHitPointsPerLevel: number;
   readonly speed: number | null;
+  /** `null` : la sous-race garde la portée de sa race. L'elfe noir la double. */
+  readonly darkvision: number | null;
   readonly choices: readonly ChoiceSpec[];
 }
 

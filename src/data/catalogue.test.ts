@@ -300,3 +300,29 @@ describe('garde-fous de la charte', () => {
     }
   });
 });
+
+const subraceOf = (raceId: string, subraceId: string) =>
+  C.races
+    .find((race) => race.id === raceId)
+    ?.subraces.find((subrace) => subrace.id === subraceId);
+
+describe('sous-races du SRD 5.1', () => {
+  it('donne +1 en Charisme à l’elfe noir', () => {
+    expect(subraceOf('elfe', 'elfe-noir')?.abilityBonuses).toEqual({ charisme: 1 });
+  });
+
+  it('donne à l’elfe noir une vision dans le noir supérieure, à 36 m', () => {
+    expect(subraceOf('elfe', 'elfe-noir')?.darkvision).toBe(36);
+  });
+
+  it('donne +1 en Dextérité au gnome des forêts', () => {
+    expect(subraceOf('gnome', 'gnome-des-forets')?.abilityBonuses).toEqual({
+      dexterite: 1,
+    });
+  });
+
+  it('propose les trois sous-races d’elfe et les deux de gnome', () => {
+    expect(C.races.find((race) => race.id === 'elfe')?.subraces).toHaveLength(3);
+    expect(C.races.find((race) => race.id === 'gnome')?.subraces).toHaveLength(2);
+  });
+});

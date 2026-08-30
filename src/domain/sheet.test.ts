@@ -309,3 +309,15 @@ describe('maîtrises, aptitudes et équipement', () => {
     expect(sheetOf({ backgroundId: 'acolyte' }).goldPieces).toBe(15);
   });
 });
+
+describe('vision dans le noir', () => {
+  it('reprend la portée de la race quand la sous-race n’en change pas', () => {
+    expect(
+      sheetOf({ raceId: 'nain', subraceId: 'nain-des-collines' }).darkvisionMeters,
+    ).toBe(18);
+  });
+
+  it('ne connaît aucune portée tant que la race n’est pas choisie', () => {
+    expect(sheetOf({}).darkvisionMeters).toBeNull();
+  });
+});

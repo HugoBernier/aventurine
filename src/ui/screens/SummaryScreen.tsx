@@ -171,6 +171,14 @@ export function SummaryScreen({ onNavigate }: SummaryScreenProps): ReactNode {
           value={sheet.hitDice === null ? TO_CHOOSE : `1 d${String(sheet.hitDice.die)}`}
         />
         <Tile label="Bonus de maîtrise" value={formatModifier(sheet.proficiencyBonus)} />
+        {sheet.darkvisionMeters !== null && sheet.darkvisionMeters > 0 && (
+          // Rien à annoncer pour qui voit comme un humain : la tuile n'apparaît
+          // que quand la race apporte vraiment quelque chose.
+          <Tile
+            label="Vision dans le noir"
+            value={`${sheet.darkvisionMeters.toLocaleString('fr-FR')} m`}
+          />
+        )}
       </div>
 
       <h2 className={styles.heading}>Tes caractéristiques</h2>
