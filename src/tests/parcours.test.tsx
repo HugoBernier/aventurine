@@ -196,4 +196,20 @@ describe('parcours de création', () => {
     expect(main.getByText(/System Reference Document/)).toBeInTheDocument();
     expect(main.getByText(/non affilié à Wizards of the Coast/)).toBeInTheDocument();
   });
+
+  it('permet de monter de niveau depuis la fiche', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+
+    // Le retour le plus fréquent sur une fiche finie : après une séance, on
+    // monte d'un niveau. Il doit se faire depuis la fiche, pas en refaisant
+    // tout le parcours à l'envers.
+    await user.click(screen.getByRole('button', { name: /Niveau · 1/ }));
+    await user.click(screen.getByRole('button', { name: 'Monter d’un niveau' }));
+
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
 });

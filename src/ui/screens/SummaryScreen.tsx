@@ -118,6 +118,9 @@ export function SummaryScreen({ onNavigate }: SummaryScreenProps): ReactNode {
             ['Race', race?.name ?? TO_CHOOSE, 'race'],
             ['Branche', subrace?.name ?? '—', 'subrace'],
             ['Classe', characterClass?.name ?? TO_CHOOSE, 'class'],
+            // Monter d'un niveau après une séance est LE retour le plus
+            // fréquent sur une fiche finie : il lui faut une entrée ici.
+            ['Niveau', String(draft.level), 'level'],
             ['Caractéristiques', abilitySummary, 'ability-assign'],
             ['Historique', background?.name ?? TO_CHOOSE, 'background'],
             ['Alignement', alignment?.name ?? TO_CHOOSE, 'alignment'],
