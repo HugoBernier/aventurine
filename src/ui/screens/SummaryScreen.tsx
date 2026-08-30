@@ -5,6 +5,7 @@ import {
   findClass,
   findRace,
   findSubrace,
+  findWeapon,
 } from '../../domain/catalogue';
 import {
   useCatalogue,
@@ -14,11 +15,16 @@ import {
   useWizard,
 } from '../../state/hooks';
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
+import { Notice } from '../components/Notice';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
+import { formatHeavyWeapons } from '../format/heavyWeapons';
+import { formatMeters } from '../format/meters';
+import { plural } from '../format/plural';
 import styles from './SummaryScreen.module.css';
 
 const TO_CHOOSE = 'À choisir';
+const SIZE_NAMES = { P: 'Petite', M: 'Moyenne' } as const;
 
 function Tile({
   label,
@@ -68,6 +74,11 @@ export function SummaryScreen({
 
   const lineage = subrace?.name ?? race?.name ?? TO_CHOOSE;
   const armorClass = sheet.armorClass;
+  // La règle ne vaut la peine d'être dite que quand elle mord : un personnage
+  // de petite taille qui porte effectivement une arme lourde.
+  const heavyWeapons = sheet.attacks
+    .filter((attack) => attack.heavyForSmallSize)
+    .map((attack) => findWeapon(catalogue, attack.weaponId)?.name ?? attack.weaponId);
   const abilitySummary = sheet.saves
     .map((save) => String(sheet.abilities[save.ability]))
     .join(' ');
@@ -177,7 +188,7 @@ export function SummaryScreen({
           value={
             sheet.speedMeters === null
               ? TO_CHOOSE
-              : `${sheet.speedMeters.toLocaleString('fr-FR')} m`
+              : `${formatMeters(sheet.speedMeters)} m`
           }
         />
         <Tile
@@ -191,10 +202,23 @@ export function SummaryScreen({
           // que quand la race apporte vraiment quelque chose.
           <Tile
             label="Vision dans le noir"
-            value={`${sheet.darkvisionMeters.toLocaleString('fr-FR')} m`}
+            value={`${formatMeters(sheet.darkvisionMeters)} m`}
+          />
+        )}
+        {sheet.size !== null && <Tile label="Taille" value={SIZE_NAMES[sheet.size]} />}
+        {sheet.resistances.length > 0 && (
+          // Même règle que la vision : une tuile « aucune » n'apprend rien.
+          <Tile
+            label={plural(sheet.resistances.length, 'Résistance', 'Résistances')}
+            value={sheet.resistances.join(', ')}
+            detail="Tu encaisses moitié moins de ces dégâts"
           />
         )}
       </div>
+
+      {heavyWeapons.length > 0 && (
+        <Notice tone="reminder">{formatHeavyWeapons(heavyWeapons)}</Notice>
+      )}
 
       <h2 className={styles.heading}>Tes caractéristiques</h2>
       <div className={styles.tiles}>

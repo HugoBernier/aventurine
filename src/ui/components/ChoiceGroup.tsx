@@ -3,12 +3,17 @@ import type { ChoiceKind, ChoiceOption } from '../../domain/choice';
 import { formatUnavailable } from '../format/unavailable';
 import styles from './ChoiceGroup.module.css';
 
+export type FactLabels = readonly [string, string, string];
+
 /**
  * Intitulés des trois repères, par genre de choix. Ils vivent ici et non dans
  * le domaine : ce sont des libellés d'affichage. Un genre absent de cette
  * table n'affiche pas de bande de repères, elle n'informerait pas.
+ *
+ * Race, classe et historique partagent le genre `ability` sans partager le
+ * sens de leurs repères : eux passent leurs intitulés par `factLabels`.
  */
-const FACT_LABELS: Partial<Record<ChoiceKind, readonly [string, string, string]>> = {
+const FACT_LABELS: Partial<Record<ChoiceKind, FactLabels>> = {
   cantrip: ['Portée', 'Durée', 'Incantation'],
   spell: ['Portée', 'Durée', 'Incantation'],
   equipment: ['Dégâts', 'Propriétés', 'Usage'],
@@ -30,16 +35,20 @@ export interface ChoiceGroupProps {
   readonly picked: readonly string[];
   readonly onToggle: (optionId: string) => void;
   readonly empty?: ReactNode | undefined;
+  /** Prioritaire sur la table par genre, quand un genre sert à plusieurs sens. */
+  readonly factLabels?: FactLabels | undefined;
 }
 
 function Facts({
   kind,
   facts,
+  factLabels,
 }: {
   readonly kind: ChoiceKind;
   readonly facts: readonly [string, string, string];
+  readonly factLabels: FactLabels | undefined;
 }): ReactNode {
-  const labels = FACT_LABELS[kind];
+  const labels = factLabels ?? FACT_LABELS[kind];
   if (labels === undefined) {
     return null;
   }
@@ -73,6 +82,7 @@ export function ChoiceGroup({
   picked,
   onToggle,
   empty,
+  factLabels,
 }: ChoiceGroupProps): ReactNode {
   if (options.length === 0) {
     return (
@@ -116,7 +126,7 @@ export function ChoiceGroup({
                   {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
                 </span>
                 <span className={styles.blurb}>{option.blurb}</span>
-                <Facts kind={kind} facts={option.facts} />
+                <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
                 {option.unavailable !== null && (
                   <span className={styles.unavailable}>
                     {formatUnavailable(option.unavailable, kind)}

@@ -11,6 +11,14 @@ const draftWith = (parts: Partial<CharacterDraft>): CharacterDraft => ({
 
 const sheetOf = (parts: Partial<CharacterDraft>) => buildSheet(draftWith(parts), C);
 
+/** Le roublard choisit son arme de départ : c'est par là qu'on l'arme. */
+const armed = (raceId: string, weaponId: string) =>
+  sheetOf({
+    raceId,
+    classId: 'roublard',
+    choices: { 'class:roublard:equipment-1': [weaponId] },
+  }).attacks.find((attack) => attack.weaponId === weaponId);
+
 const withScores = (
   parts: Partial<CharacterDraft>,
   scores: Partial<Record<string, number>>,
@@ -374,5 +382,59 @@ describe('aptitudes par niveau', () => {
       (feature) => feature.name,
     );
     expect(names).toContain('Esquive instinctive');
+  });
+});
+
+describe('résistances aux dégâts', () => {
+  it('donne au nain la résistance au poison de son peuple', () => {
+    expect(sheetOf({ raceId: 'nain' }).resistances).toEqual(['poison']);
+  });
+
+  it('n’en donne aucune au gnome, qui n’en a pas', () => {
+    expect(sheetOf({ raceId: 'gnome' }).resistances).toEqual([]);
+  });
+
+  it('n’en donne aucune tant qu’aucune race n’est choisie', () => {
+    expect(sheetOf({}).resistances).toEqual([]);
+  });
+
+  it('ajoute le type de dégâts de l’ascendance choisie', () => {
+    const sheet = sheetOf({
+      classId: 'clerc',
+      choices: { 'class:clerc:ancestry': ['or'] },
+    });
+    expect(sheet.resistances).toContain('feu');
+  });
+
+  it('ne compte pas deux fois une résistance déjà donnée par le peuple', () => {
+    const sheet = sheetOf({
+      raceId: 'nain',
+      classId: 'clerc',
+      choices: { 'class:clerc:ancestry': ['argent'] },
+    });
+    expect(sheet.resistances).toEqual(['poison', 'froid']);
+  });
+});
+
+describe('taille et armes lourdes', () => {
+  it('reporte la taille du peuple sur la fiche', () => {
+    expect(sheetOf({ raceId: 'gnome' }).size).toBe('P');
+    expect(sheetOf({ raceId: 'nain' }).size).toBe('M');
+  });
+
+  it('laisse la taille vide tant qu’aucune race n’est choisie', () => {
+    expect(sheetOf({}).size).toBeNull();
+  });
+
+  it('signale le désavantage d’une créature de petite taille à l’arme lourde', () => {
+    expect(armed('gnome', 'hache-a-deux-mains')?.heavyForSmallSize).toBe(true);
+  });
+
+  it('ne le signale pas pour une créature de taille moyenne', () => {
+    expect(armed('nain', 'hache-a-deux-mains')?.heavyForSmallSize).toBe(false);
+  });
+
+  it('ne le signale pas pour une arme qui n’est pas lourde', () => {
+    expect(armed('gnome', 'rapiere')?.heavyForSmallSize).toBe(false);
   });
 });

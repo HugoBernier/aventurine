@@ -67,11 +67,25 @@ describe('parcours de création', () => {
     );
   });
 
-  it('annonce ce que la race change sur la fiche', async () => {
+  it('annonce ce que la race change sur la fiche, dans la barre qui ne défile pas', async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('radio', { name: /Nain/ }));
-    expect(screen.getByText(/Ce que ça change/)).toBeInTheDocument();
+    // Le « p » distingue la ligne de la barre des repères de la carte, qui
+    // portent le même fait dans une liste de définitions.
+    const line = screen.getByText(/résiste au poison/, { selector: 'p' });
+    expect(line).toHaveTextContent(/Ta fiche/);
+    expect(line).toHaveTextContent(/7,50 m/);
+    expect(line).toHaveTextContent(/vision 18 m/);
+  });
+
+  it('montre les repères d’une race avant même de la choisir', () => {
+    render(<App />);
+    // La bande de repères ne s'affichait pas du tout : les trois colonnes
+    // existaient dans les données et n'atteignaient jamais l'écran.
+    expect(screen.getAllByText('Taille et vitesse').length).toBeGreaterThan(0);
+    expect(screen.getByText('Vision 18 m, résiste au poison')).toBeInTheDocument();
+    expect(screen.getByText('Vision 18 m, résiste au feu')).toBeInTheDocument();
   });
 
   it('donne un nom accessible à chaque bouton', () => {

@@ -8,7 +8,12 @@ export interface ActionBarProps {
     readonly onClick?: (() => void) | undefined;
     readonly type?: 'button' | 'submit' | undefined;
   };
-  readonly note?: string | undefined;
+  /**
+   * « Ce que ça change sur ta fiche ». Il est ici, dans la barre qui ne défile
+   * jamais, et non en bas de la liste : sur neuf races il faudrait dérouler
+   * jusqu'en bas pour lire l'effet du choix qu'on vient de faire en haut.
+   */
+  readonly effect?: string | null | undefined;
 }
 
 /**
@@ -16,9 +21,15 @@ export interface ActionBarProps {
  * pouce. La barre n'est jamais désactivée : avancer avec un choix incomplet
  * est un usage normal, pas une erreur.
  */
-export function ActionBar({ back, primary, note }: ActionBarProps): ReactNode {
+export function ActionBar({ back, primary, effect = null }: ActionBarProps): ReactNode {
   return (
     <div className={styles.bar} data-print="hide">
+      {effect === null ? null : (
+        <p className={styles.effect}>
+          <span className={styles.effectLabel}>Ta fiche : </span>
+          {effect}
+        </p>
+      )}
       {back === undefined ? (
         <span />
       ) : (
@@ -33,7 +44,6 @@ export function ActionBar({ back, primary, note }: ActionBarProps): ReactNode {
       >
         {primary.label}
       </button>
-      {note === undefined ? null : <p className={styles.note}>{note}</p>}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { ABILITIES, abilityModifier, abilityScores } from './abilities';
 import type { AbilityId, AbilityScores } from './abilities';
 import {
+  findAncestry,
   findArmor,
   findBackground,
   findClass,
@@ -12,6 +13,7 @@ import type { Catalogue } from './catalogue';
 import type { ChoiceSource } from './choice';
 import type {
   Armor,
+  CreatureSize,
   DamageType,
   ItemLine,
   PreparationMode,
@@ -67,6 +69,11 @@ export interface Attack {
   readonly damageBonus: number;
   readonly damageType: DamageType;
   readonly rangeMeters: readonly [number, number] | null;
+  /**
+   * Une créature de petite taille attaque avec désavantage à l'arme lourde.
+   * Le domaine pose le fait ; la phrase se compose dans `ui/format/`.
+   */
+  readonly heavyForSmallSize: boolean;
 }
 
 export interface SpellcastingSheet {
@@ -102,6 +109,9 @@ export interface CharacterSheet {
   readonly speedReducedByArmor: boolean;
   /** 0 quand la race n'y voit pas mieux qu'un humain ; `null` avant tout choix. */
   readonly darkvisionMeters: number | null;
+  /** `null` tant qu'aucune race n'est choisie : la taille vient du peuple. */
+  readonly size: CreatureSize | null;
+  readonly resistances: readonly DamageType[];
   readonly saves: readonly RollLine[];
   readonly skills: readonly RollLine[];
   readonly attacks: readonly Attack[];
@@ -400,12 +410,33 @@ function spellcastingSheet(
   };
 }
 
+/** Propriété d'arme, telle qu'elle est écrite dans `data/weapons.ts`. */
+const HEAVY = 'lourde';
+
+/**
+ * Le nain résiste au poison, le tieffelin au feu, et le drakéide au type de
+ * dégâts de l'ascendance qu'il a choisie : c'est le seul cas où la résistance
+ * dépend d'une réponse et non du peuple seul.
+ */
+function resistances(draft: CharacterDraft, catalogue: Catalogue): readonly DamageType[] {
+  const found = new Set<DamageType>(findRace(catalogue, draft.raceId)?.resistances);
+  const chosen = pickedByKind(draft, catalogue, ['ancestry']);
+  for (const id of chosen) {
+    const ancestry = findAncestry(catalogue, id);
+    if (ancestry !== null) {
+      found.add(ancestry.damageType);
+    }
+  }
+  return [...found];
+}
+
 function attacks(
   lines: readonly ItemLine[],
   catalogue: Catalogue,
   modifiers: AbilityScores,
   proficiencies: Proficiencies,
   proficiency: number,
+  size: CreatureSize | null,
 ): readonly Attack[] {
   const result: Attack[] = [];
   for (const line of lines) {
@@ -426,6 +457,7 @@ function attacks(
       damageBonus: modifier,
       damageType: weapon.damageType,
       rangeMeters: weapon.rangeMeters,
+      heavyForSmallSize: size === 'P' && weapon.properties.includes(HEAVY),
     });
   }
   return result;
@@ -548,9 +580,18 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     speedMeters: speed,
     speedReducedByArmor: isSpeedReducedByArmor,
     darkvisionMeters: darkvision,
+    size: race?.size ?? null,
+    resistances: resistances(draft, catalogue),
     saves,
     skills,
-    attacks: attacks(lines, catalogue, modifiers, proficiencies, proficiency),
+    attacks: attacks(
+      lines,
+      catalogue,
+      modifiers,
+      proficiencies,
+      proficiency,
+      race?.size ?? null,
+    ),
     spellcasting: spellcastingSheet(draft, catalogue, modifiers),
     proficiencies: characterClass === null ? NO_PROFICIENCIES : proficiencies,
     languageIds: race?.languages ?? [],

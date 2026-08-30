@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { useChoiceSlot, useNotices, useStorageStatus, useWizard } from '../state/hooks';
+import {
+  useCharacterSheet,
+  useChoiceSlot,
+  useNotices,
+  useStorageStatus,
+  useWizard,
+} from '../state/hooks';
 import type { Screen, StepId } from '../state/types';
 import { Notice } from './components/Notice';
 import { ProgressBanner } from './components/ProgressBanner';
 import { ActionBar } from './components/ActionBar';
 import { AppShell } from './shell/AppShell';
 import { formatNotice } from './format/notice';
+import { formatSheetSummary } from './format/sheetSummary';
 import { AbilityAssignScreen } from './screens/AbilityAssignScreen';
 import { AbilityMethodScreen } from './screens/AbilityMethodScreen';
 import { AlignmentScreen } from './screens/AlignmentScreen';
@@ -115,6 +122,7 @@ export function Wizard(): ReactNode {
   const slotView = useChoiceSlot(screen.kind === 'choice' ? screen.slotId : null);
   const { notices, dismiss } = useNotices();
   const storage = useStorageStatus();
+  const sheet = useCharacterSheet();
   // Le récapitulatif n'est pas une étape : il s'ouvre par « Ma fiche » et se
   // referme. C'est de l'état d'affichage, il reste donc dans l'interface.
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
@@ -242,7 +250,7 @@ export function Wizard(): ReactNode {
                   setIsSummaryOpen(true);
                 },
           }}
-          note="Tu pourras revenir sur ce choix."
+          effect={formatSheetSummary(sheet)}
         />
       }
     >

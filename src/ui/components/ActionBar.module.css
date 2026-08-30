@@ -5,12 +5,19 @@
   align-items: center;
 }
 
-.note {
+/* Au-DESSUS des boutons : on lit ce qu'on vient d'obtenir, puis on décide de
+   continuer. L'inverse ferait passer l'action avant son résultat. */
+.effect {
   grid-column: 1 / -1;
   margin: 0;
-  padding-block-start: var(--space-2);
-  color: var(--color-text-subtle);
+  padding-block-end: var(--space-2);
   font-size: var(--font-size-100);
+  color: var(--color-text-muted);
+}
+
+.effectLabel {
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .button {

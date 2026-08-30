@@ -36,6 +36,24 @@ const skills: readonly Skill[] = ALL_SKILLS.map((id) => ({
 }));
 
 const races: readonly Race[] = [
+  /** Petite taille et sans résistance : le contre-exemple du nain. */
+  {
+    id: 'gnome',
+    name: 'Gnome',
+    blurb: 'Petit, curieux, increvable.',
+    facts: ['+2 au choix', '7,50 m · petite taille', 'Ruse gnome'],
+    abilityBonuses: {},
+    size: 'P',
+    speed: 7.5,
+    darkvision: 18,
+    languages: ['commun'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [],
+    choices: [],
+    subraces: [],
+  },
   {
     id: 'nain',
     name: 'Nain',
@@ -172,7 +190,7 @@ export const ROGUE: CharacterClass = {
       title: 'Ton arme de départ',
       help: 'Les deux sont à finesse : tu frapperas avec ta Dextérité.',
       pick: 1,
-      from: ['rapiere', 'epee-courte', 'arme-inconnue'],
+      from: ['rapiere', 'epee-courte', 'hache-a-deux-mains', 'arme-inconnue'],
     },
     {
       kind: 'expertise',
@@ -197,6 +215,13 @@ export const ROGUE: CharacterClass = {
       blurb: 'Courte et maniable.',
       facts: ['1d6 perforant', 'Finesse, légère', 'Corps à corps'],
       items: [{ itemId: 'epee-courte', quantity: 1 }],
+    },
+    {
+      id: 'hache-a-deux-mains',
+      name: 'Une hache à deux mains',
+      blurb: 'Lourde, et il faut les deux mains.',
+      facts: ['1d12 tranchant', 'Lourde, à deux mains', 'Corps à corps'],
+      items: [{ itemId: 'hache-a-deux-mains', quantity: 1 }],
     },
   ],
   fixedEquipment: [
@@ -502,6 +527,17 @@ export const MINI_CATALOGUE: Catalogue = {
       rangeMeters: null,
       properties: ['finesse', 'légère'],
     },
+    {
+      id: 'hache-a-deux-mains',
+      name: 'Hache à deux mains',
+      category: 'de-guerre',
+      damageDice: '1d12',
+      damageType: 'tranchant',
+      finesse: false,
+      ranged: false,
+      rangeMeters: null,
+      properties: ['lourde', 'à deux mains'],
+    },
   ],
   armor: [
     {
@@ -534,6 +570,7 @@ export const MINI_CATALOGUE: Catalogue = {
     { id: 'outils-de-voleur', name: 'Outils de voleur', weightKg: 0.5 },
     { id: 'rapiere', name: 'Rapière', weightKg: 1 },
     { id: 'epee-courte', name: 'Épée courte', weightKg: 1 },
+    { id: 'hache-a-deux-mains', name: 'Hache à deux mains', weightKg: 3.5 },
     { id: 'armure-de-cuir', name: 'Armure de cuir', weightKg: 5 },
     { id: 'cotte-de-mailles', name: 'Cotte de mailles', weightKg: 25 },
     { id: 'bouclier', name: 'Bouclier', weightKg: 3 },

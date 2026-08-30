@@ -177,6 +177,7 @@ describe('équipement, ascendance et style de combat', () => {
     expect(optionIds(draft, 'class:roublard:equipment-1')).toEqual([
       'rapiere',
       'epee-courte',
+      'hache-a-deux-mains',
     ]);
   });
 

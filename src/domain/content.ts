@@ -18,6 +18,9 @@ export interface LeveledFeature extends Feature {
 
 export type ArmorCategory = 'legere' | 'intermediaire' | 'lourde' | 'bouclier';
 export type WeaponCategory = 'courantes' | 'de-guerre';
+/** « P » petite, « M » moyenne : les deux seules tailles jouables du SRD 5.1. */
+export type CreatureSize = 'P' | 'M';
+
 export type DamageType =
   | 'tranchant'
   | 'perforant'
@@ -174,7 +177,7 @@ export interface Race extends Named {
   readonly blurb: string;
   readonly facts: Facts;
   readonly abilityBonuses: Partial<AbilityScores>;
-  readonly size: 'P' | 'M';
+  readonly size: CreatureSize;
   /** En mètres : c'est l'usage français, et aucune conversion n'existe. */
   readonly speed: number;
   readonly darkvision: number;
