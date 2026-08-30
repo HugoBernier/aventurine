@@ -22,28 +22,59 @@ const withScores = (
   };
 };
 
-describe('bonus raciaux', () => {
-  it('ajoute +2 en Constitution à un nain', () => {
-    expect(sheetOf({ raceId: 'nain' }).abilities.constitution).toBe(10);
+describe('bonus d’origine', () => {
+  it('place le +2 du nain là où le joueur l’a mis', () => {
+    const sheet = buildSheet(
+      draftWith({ raceId: 'nain', choices: { 'race:nain:origin-2': ['force'] } }),
+      C,
+    );
+    expect(sheet.abilities.force).toBe(10);
+    expect(sheet.abilities.constitution).toBe(8);
   });
 
-  it('ajoute +1 en Sagesse à un nain des collines, en plus du +2 de Constitution', () => {
-    const sheet = sheetOf({ raceId: 'nain', subraceId: 'nain-des-collines' });
-    expect(sheet.abilities.constitution).toBe(10);
+  it('additionne le +2 de la race et le +1 de la sous-race, chacun là où il est posé', () => {
+    const sheet = buildSheet(
+      draftWith({
+        raceId: 'nain',
+        subraceId: 'nain-des-collines',
+        choices: {
+          'race:nain:origin-2': ['force'],
+          'race:nain-des-collines:origin-1': ['sagesse'],
+        },
+      }),
+      C,
+    );
+    expect(sheet.abilities.force).toBe(10);
     expect(sheet.abilities.sagesse).toBe(9);
+    expect(sheet.abilities.constitution).toBe(8);
+  });
+
+  it('compte un créneau de +2 pour deux points, pas pour un', () => {
+    const sheet = buildSheet(
+      draftWith({ raceId: 'nain', choices: { 'race:nain:origin-2': ['sagesse'] } }),
+      C,
+    );
+    expect(sheet.abilities.sagesse).toBe(10);
   });
 
   it('applique le +1 aux deux caractéristiques choisies par un demi-elfe', () => {
     const sheet = buildSheet(
       draftWith({
         raceId: 'demi-elfe',
-        choices: { 'race:demi-elfe:ability': ['force', 'dexterite'] },
+        choices: {
+          'race:demi-elfe:origin-2': ['charisme'],
+          'race:demi-elfe:ability': ['force', 'dexterite'],
+        },
       }),
       C,
     );
     expect(sheet.abilities.force).toBe(9);
     expect(sheet.abilities.dexterite).toBe(9);
     expect(sheet.abilities.charisme).toBe(10);
+  });
+
+  it('ne modifie rien tant qu’aucun bonus n’est placé', () => {
+    expect(sheetOf({ raceId: 'nain' }).abilities.constitution).toBe(8);
   });
 
   it('ne modifie rien tant qu’aucune race n’est choisie', () => {
@@ -64,7 +95,14 @@ describe('valeurs dérivées de base', () => {
   it('ajoute 1 point de vie à un nain des collines', () => {
     const sheet = buildSheet(
       withScores(
-        { classId: 'clerc', raceId: 'nain', subraceId: 'nain-des-collines' },
+        {
+          classId: 'clerc',
+          raceId: 'nain',
+          subraceId: 'nain-des-collines',
+          // Le +2 est posé sur la Constitution : le test isole le point de vie
+          // de la sous-race, il ne teste pas où va le bonus d'origine.
+          choices: { 'race:nain:origin-2': ['constitution'] },
+        },
         { constitution: 12 },
       ),
       C,

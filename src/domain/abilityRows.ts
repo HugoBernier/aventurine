@@ -3,7 +3,8 @@ import type { AbilityId } from './abilities';
 import { findRace, findSubrace } from './catalogue';
 import type { Catalogue } from './catalogue';
 import type { CharacterDraft } from './draft';
-import { openChoices } from './openChoices';
+import { chosenAbilityBonuses } from './openChoices';
+import type { ChosenAbilityBonus } from './openChoices';
 import { POINT_BUY_MAX, POINT_BUY_MIN, increaseCost, pointsRemaining } from './pointBuy';
 
 /** Même forme que `UnavailableReason` : structuré, jamais rédigé. */
@@ -35,22 +36,6 @@ interface Bonus {
   readonly sources: readonly string[];
 }
 
-interface ChosenBonus {
-  readonly ability: string;
-  readonly slotId: string;
-}
-
-function chosenBonuses(
-  draft: CharacterDraft,
-  catalogue: Catalogue,
-): readonly ChosenBonus[] {
-  return openChoices(draft, catalogue).flatMap((slot) =>
-    slot.kind === 'ability'
-      ? (draft.choices[slot.id] ?? []).map((ability) => ({ ability, slotId: slot.id }))
-      : [],
-  );
-}
-
 function bonusFor(
   ability: AbilityId,
   race: {
@@ -61,7 +46,7 @@ function bonusFor(
     readonly id: string;
     readonly abilityBonuses: Partial<Record<AbilityId, number>>;
   } | null,
-  chosen: readonly ChosenBonus[],
+  chosen: readonly ChosenAbilityBonus[],
 ): Bonus {
   const sources: string[] = [];
   let value = 0;
@@ -77,7 +62,7 @@ function bonusFor(
     sources.push(subrace.id);
   }
   const picked = chosen.filter((entry) => entry.ability === ability);
-  value += picked.length;
+  value += picked.reduce((total, entry) => total + entry.bonus, 0);
   sources.push(...picked.map((entry) => entry.slotId));
 
   return { value, sources };
@@ -89,7 +74,7 @@ function racialBonuses(
 ): Readonly<Record<AbilityId, Bonus>> {
   const race = findRace(catalogue, draft.raceId);
   const subrace = findSubrace(catalogue, draft.raceId, draft.subraceId);
-  const chosen = chosenBonuses(draft, catalogue);
+  const chosen = chosenAbilityBonuses(draft, catalogue);
 
   const bonuses = {} as Record<AbilityId, Bonus>;
   for (const ability of ABILITIES) {

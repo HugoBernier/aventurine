@@ -119,7 +119,7 @@ export function ChoiceGroup({
                 <Facts kind={kind} facts={option.facts} />
                 {option.unavailable !== null && (
                   <span className={styles.unavailable}>
-                    {formatUnavailable(option.unavailable)}
+                    {formatUnavailable(option.unavailable, kind)}
                   </span>
                 )}
               </span>

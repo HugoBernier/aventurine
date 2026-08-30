@@ -8,7 +8,6 @@ const NOUNS: Partial<Record<MissingKind, readonly [string, string]>> = {
   tool: ['outil', 'outils'],
   cantrip: ['tour de magie', 'tours de magie'],
   spell: ['sort', 'sorts'],
-  ability: ['bonus de caractéristique', 'bonus de caractéristique'],
   equipment: ["choix d'équipement", "choix d'équipement"],
 };
 
@@ -33,6 +32,12 @@ export function formatMissing(missing: MissingChoice): string {
     return missing.remaining === 1
       ? 'Tes caractéristiques ne sont pas encore réparties'
       : `Il te reste ${counted(missing.remaining, 'point à répartir', 'points à répartir')}`;
+  }
+  if (missing.kind === 'ability') {
+    // « à placer », pas « à choisir » : on ne choisit pas le bonus, on choisit
+    // où il va. « Bonus » est invariable.
+    const noun = 'bonus de caractéristique à placer';
+    return `Il te reste ${counted(missing.remaining, noun, noun)}`;
   }
   if (missing.kind === 'personality') {
     return `Il te reste ${counted(missing.remaining, 'trait de personnalité à écrire', 'traits de personnalité à écrire')}`;

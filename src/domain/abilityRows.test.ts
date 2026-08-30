@@ -25,8 +25,11 @@ describe('lignes de caractéristiques', () => {
     expect(abilityRows(emptyDraft(), C)).toHaveLength(6);
   });
 
-  it('additionne le score de base et le bonus racial', () => {
-    const draft = withScores({ raceId: 'nain' }, { constitution: 14 });
+  it('additionne le score de base et le +2 posé par le joueur', () => {
+    const draft = withScores(
+      { raceId: 'nain', choices: { 'race:nain:origin-2': ['constitution'] } },
+      { constitution: 14 },
+    );
     const row = rowFor(draft, 'constitution');
     expect(row?.score).toBe(14);
     expect(row?.racialBonus).toBe(2);
@@ -34,10 +37,19 @@ describe('lignes de caractéristiques', () => {
     expect(row?.modifier).toBe(3);
   });
 
-  it('cite la race et la sous-race comme sources du bonus', () => {
-    const draft = draftWith({ raceId: 'nain', subraceId: 'nain-des-collines' });
-    expect(rowFor(draft, 'constitution')?.bonusSources).toEqual(['nain']);
-    expect(rowFor(draft, 'sagesse')?.bonusSources).toEqual(['nain-des-collines']);
+  it('cite le créneau de chaque bonus, race et sous-race distinctes', () => {
+    const draft = draftWith({
+      raceId: 'nain',
+      subraceId: 'nain-des-collines',
+      choices: {
+        'race:nain:origin-2': ['constitution'],
+        'race:nain-des-collines:origin-1': ['sagesse'],
+      },
+    });
+    expect(rowFor(draft, 'constitution')?.bonusSources).toEqual(['race:nain:origin-2']);
+    expect(rowFor(draft, 'sagesse')?.bonusSources).toEqual([
+      'race:nain-des-collines:origin-1',
+    ]);
   });
 
   it('cite le créneau de choix comme source d’un +1 choisi', () => {

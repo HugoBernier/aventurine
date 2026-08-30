@@ -33,6 +33,8 @@ const COMPLETE: CharacterDraft = {
     charisme: 8,
   },
   choices: {
+    'race:nain:origin-2': ['constitution'],
+    'race:nain-des-collines:origin-1': ['sagesse'],
     'background:acolyte:languages': ['elfique', 'gobelin'],
     'class:roublard:skills': ['acrobaties', 'athletisme', 'discretion', 'supercherie'],
     'class:roublard:equipment-1': ['rapiere'],

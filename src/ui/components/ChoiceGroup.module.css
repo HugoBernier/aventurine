@@ -96,6 +96,14 @@
   border-radius: var(--radius-sm);
 }
 
+/* `.body` est un `span` : sans mise en page en colonne, ses enfants restent
+   en ligne, leurs marges verticales sont ignorées, et la raison d'indisponibilité
+   se colle à la fin de la description. */
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
 .head {
   display: flex;
   justify-content: space-between;

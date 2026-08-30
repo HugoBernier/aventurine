@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { useNotices, useStorageStatus, useWizard } from '../state/hooks';
+import { useChoiceSlot, useNotices, useStorageStatus, useWizard } from '../state/hooks';
 import type { Screen, StepId } from '../state/types';
 import { Notice } from './components/Notice';
 import { ProgressBanner } from './components/ProgressBanner';
@@ -98,15 +98,11 @@ function ScreenBody({ screen }: { readonly screen: Screen }): ReactNode {
   }
 }
 
-function titleFor(screen: Screen): { readonly title: string; readonly lead: string } {
-  if (screen.kind === 'anchor') {
-    return ANCHOR_TITLES[screen.anchor] ?? { title: 'Ton personnage', lead: '' };
-  }
-  return { title: 'Un choix à faire', lead: '' };
-}
-
 export function Wizard(): ReactNode {
   const { screen, progress, canGoBack, canGoNext, goNext, goBack } = useWizard();
+  // Le titre d'un écran de créneau EST sa question — « Où mettre ton +2 ? » —
+  // et non le générique « Un choix à faire », identique sur vingt écrans.
+  const slotView = useChoiceSlot(screen.kind === 'choice' ? screen.slotId : null);
   const { notices, dismiss } = useNotices();
   const storage = useStorageStatus();
   // Le récapitulatif n'est pas une étape : il s'ouvre par « Ma fiche » et se
@@ -155,7 +151,10 @@ export function Wizard(): ReactNode {
     );
   }
 
-  const { title, lead } = titleFor(screen);
+  const { title, lead } =
+    screen.kind === 'anchor'
+      ? (ANCHOR_TITLES[screen.anchor] ?? { title: 'Ton personnage', lead: '' })
+      : { title: slotView?.slot.title ?? 'Un choix à faire', lead: '' };
 
   return (
     <AppShell

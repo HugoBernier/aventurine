@@ -35,13 +35,31 @@ describe('ouverture des créneaux', () => {
   });
 
   it('n’ouvre les créneaux de sous-race que si une sous-race est choisie', () => {
-    const withoutSubrace = openChoices(draftWith({ raceId: 'nain' }), C);
-    expect(withoutSubrace).toEqual([]);
+    const ids = openChoices(draftWith({ raceId: 'nain' }), C).map((s) => s.id);
+    // Seul le bonus d'origine de la race : rien de la sous-race, non choisie.
+    expect(ids).toEqual(['race:nain:origin-2']);
   });
 
-  it('ouvre les deux créneaux du demi-elfe', () => {
+  it('ouvre les trois créneaux du demi-elfe', () => {
     const ids = openChoices(draftWith({ raceId: 'demi-elfe' }), C).map((s) => s.id);
-    expect(ids).toEqual(['race:demi-elfe:ability', 'race:demi-elfe:skills']);
+    expect(ids).toEqual([
+      'race:demi-elfe:origin-2',
+      'race:demi-elfe:ability',
+      'race:demi-elfe:skills',
+    ]);
+  });
+
+  it('grise la caractéristique qui a déjà reçu le +2', () => {
+    const draft = draftWith({
+      raceId: 'nain',
+      subraceId: 'nain-des-collines',
+      choices: { 'race:nain:origin-2': ['force'] },
+    });
+    const minor = openChoices(draft, C).find(
+      (slot) => slot.id === 'race:nain-des-collines:origin-1',
+    );
+    const force = minor?.options.find((option) => option.id === 'force');
+    expect(force?.unavailable).toEqual({ kind: 'already-granted', source: 'race' });
   });
 
   it('ne pose aucun créneau de sort à une classe qui n’en lance pas', () => {

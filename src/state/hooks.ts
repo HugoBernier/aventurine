@@ -103,7 +103,8 @@ export interface ChoiceSlotView {
   readonly toggle: (optionId: string) => void;
 }
 
-export function useChoiceSlot(slotId: ChoiceSlotId): ChoiceSlotView | null {
+/** `null` quand l'écran courant n'est pas un créneau : un hook ne se conditionne pas. */
+export function useChoiceSlot(slotId: ChoiceSlotId | null): ChoiceSlotView | null {
   const { state, catalogue } = useWizardContext();
   const dispatch = useWizardDispatch();
   const slot = useMemo(
@@ -113,12 +114,14 @@ export function useChoiceSlot(slotId: ChoiceSlotId): ChoiceSlotView | null {
   );
   const toggle = useCallback(
     (optionId: string) => {
-      dispatch({ type: 'TOGGLE_CHOICE', slotId, optionId });
+      if (slotId !== null) {
+        dispatch({ type: 'TOGGLE_CHOICE', slotId, optionId });
+      }
     },
     [dispatch, slotId],
   );
 
-  if (slot === null) {
+  if (slot === null || slotId === null) {
     return null;
   }
   const picked = pickedFor(state.draft, slotId);

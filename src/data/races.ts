@@ -1,7 +1,32 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+import { ABILITIES } from '../domain/abilities';
+import type { ChoiceSpec } from '../domain/choiceSpec';
 import type { Race } from '../domain/content';
 import { NO_PROFICIENCIES } from '../domain/content';
 import { ALL_SKILLS } from '../domain/skills';
+
+/**
+ * Origines personnalisées : le joueur PLACE le bonus de son peuple au lieu de
+ * le subir. C'est la seule règle de ce dépôt qui ne vient pas du SRD 5.1 —
+ * exception assumée, voir CLAUDE.md, « Sources et droits ».
+ *
+ * Le registre des caractéristiques du domaine interdit d'empiler deux bonus
+ * sur un même score : le second créneau grise ce que le premier a pris.
+ */
+function originChoice(bonus: 1 | 2): ChoiceSpec {
+  return {
+    kind: 'ability',
+    subject: `origin-${String(bonus)}`,
+    title: `Où mettre ton +${String(bonus)} ?`,
+    help:
+      bonus === 2
+        ? 'Ton peuple te donne +2. C’est toi qui décides où : mets-le dans ce que ton personnage fera le plus souvent.'
+        : 'Un point de plus, dans une caractéristique qui n’a pas déjà reçu un bonus.',
+    pick: 1,
+    bonus,
+    from: ABILITIES,
+  };
+}
 
 const ANY_LANGUAGE = [
   'nain',
@@ -25,8 +50,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'nain',
     name: 'Nain',
     blurb: 'Solide, tenace, dur au mal. On ne le déplace pas facilement.',
-    facts: ['+2 Constitution', '7,50 m · taille moyenne', 'Vision dans le noir'],
-    abilityBonuses: { constitution: 2 },
+    facts: ['+2 au choix', '7,50 m · taille moyenne', 'Vision dans le noir'],
+    abilityBonuses: {},
     size: 'M',
     speed: 7.5,
     darkvision: 18,
@@ -54,6 +79,7 @@ export const RACE_ENTRIES: readonly Race[] = [
       },
     ],
     choices: [
+      originChoice(2),
       {
         kind: 'tool',
         subject: 'tools',
@@ -68,8 +94,8 @@ export const RACE_ENTRIES: readonly Race[] = [
         id: 'nain-des-collines',
         name: 'Nain des collines',
         blurb: 'Plus vif, plus endurant. Il encaisse ce que les autres esquivent.',
-        facts: ['+1 Sagesse', '7,50 m', '+1 point de vie par niveau'],
-        abilityBonuses: { sagesse: 1 },
+        facts: ['+1 au choix', '7,50 m', '+1 point de vie par niveau'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: NO_PROFICIENCIES,
         features: [
@@ -78,14 +104,14 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 1,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
       {
         id: 'nain-des-montagnes',
         name: 'Nain des montagnes',
         blurb: 'Élevé dans les hauteurs, habitué au poids de l’acier.',
-        facts: ['+2 Force', '7,50 m', 'Armures légères et intermédiaires'],
-        abilityBonuses: { force: 2 },
+        facts: ['+2 au choix', '7,50 m', 'Armures légères et intermédiaires'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: {
           armor: ['legere', 'intermediaire'],
@@ -102,7 +128,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(2)],
       },
     ],
   },
@@ -111,8 +137,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'elfe',
     name: 'Elfe',
     blurb: 'Vif et attentif. Il dort peu et remarque beaucoup.',
-    facts: ['+2 Dextérité', '9 m · taille moyenne', 'Perception, vision dans le noir'],
-    abilityBonuses: { dexterite: 2 },
+    facts: ['+2 au choix', '9 m · taille moyenne', 'Perception, vision dans le noir'],
+    abilityBonuses: {},
     size: 'M',
     speed: 9,
     darkvision: 18,
@@ -138,14 +164,14 @@ export const RACE_ENTRIES: readonly Race[] = [
         text: 'Quatre heures de méditation te valent huit heures de sommeil.',
       },
     ],
-    choices: [],
+    choices: [originChoice(2)],
     subraces: [
       {
         id: 'haut-elfe',
         name: 'Haut-elfe',
         blurb: 'Vif d’esprit, formé à l’épée comme au sortilège.',
-        facts: ['+1 Intelligence', '9 m', 'Un tour de magie de magicien'],
-        abilityBonuses: { intelligence: 1 },
+        facts: ['+1 au choix', '9 m', 'Un tour de magie de magicien'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: {
           armor: [],
@@ -163,6 +189,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         darkvision: null,
         speed: null,
         choices: [
+          originChoice(1),
           {
             kind: 'cantrip',
             subject: 'cantrip',
@@ -185,8 +212,8 @@ export const RACE_ENTRIES: readonly Race[] = [
         id: 'elfe-des-bois',
         name: 'Elfe des bois',
         blurb: 'Rapide et silencieux, à l’aise sous le couvert des arbres.',
-        facts: ['+1 Sagesse', '10,50 m', 'Se cacher dans la nature'],
-        abilityBonuses: { sagesse: 1 },
+        facts: ['+1 au choix', '10,50 m', 'Se cacher dans la nature'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: {
           armor: [],
@@ -207,15 +234,15 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: 10.5,
-        choices: [],
+        choices: [originChoice(1)],
       },
       {
         id: 'elfe-noir',
         name: 'Elfe noir',
         blurb:
           'Grandi sous la terre, à l’aise dans le noir complet — et mal à l’aise au grand jour.',
-        facts: ['+1 Charisme', 'Voit à 36 m dans le noir', 'Gêné en plein soleil'],
-        abilityBonuses: { charisme: 1 },
+        facts: ['+1 au choix', 'Voit à 36 m dans le noir', 'Gêné en plein soleil'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: {
           armor: [],
@@ -244,7 +271,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: 36,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
     ],
   },
@@ -253,8 +280,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'halfelin',
     name: 'Halfelin',
     blurb: 'Petit, chanceux, difficile à effrayer et encore plus à attraper.',
-    facts: ['+2 Dextérité', '7,50 m · petite taille', 'Chanceux, brave'],
-    abilityBonuses: { dexterite: 2 },
+    facts: ['+2 au choix', '7,50 m · petite taille', 'Chanceux, brave'],
+    abilityBonuses: {},
     size: 'P',
     speed: 7.5,
     darkvision: 0,
@@ -270,14 +297,14 @@ export const RACE_ENTRIES: readonly Race[] = [
         text: 'Tu traverses l’espace d’une créature plus grande que toi.',
       },
     ],
-    choices: [],
+    choices: [originChoice(2)],
     subraces: [
       {
         id: 'halfelin-pied-leger',
         name: 'Pied-léger',
         blurb: 'Sociable et discret : on l’aime bien, on ne le voit pas venir.',
-        facts: ['+1 Charisme', '7,50 m', 'Se cacher derrière plus grand'],
-        abilityBonuses: { charisme: 1 },
+        facts: ['+1 au choix', '7,50 m', 'Se cacher derrière plus grand'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: NO_PROFICIENCIES,
         features: [
@@ -289,14 +316,14 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
       {
         id: 'halfelin-robuste',
         name: 'Robuste',
         blurb: 'Un estomac solide et un sang qui pardonne beaucoup.',
-        facts: ['+1 Constitution', '7,50 m', 'Résistance au poison'],
-        abilityBonuses: { constitution: 1 },
+        facts: ['+1 au choix', '7,50 m', 'Résistance au poison'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: NO_PROFICIENCIES,
         features: [
@@ -308,7 +335,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
     ],
   },
@@ -356,8 +383,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'drakeide',
     name: 'Drakéide',
     blurb: 'Du sang de dragon, une fierté de clan et un souffle qui brûle.',
-    facts: ['+2 Force, +1 Charisme', '9 m · taille moyenne', 'Souffle de dragon'],
-    abilityBonuses: { force: 2, charisme: 1 },
+    facts: ['+2 et +1 au choix', '9 m · taille moyenne', 'Souffle de dragon'],
+    abilityBonuses: {},
     size: 'M',
     speed: 9,
     darkvision: 0,
@@ -376,6 +403,8 @@ export const RACE_ENTRIES: readonly Race[] = [
       },
     ],
     choices: [
+      originChoice(2),
+      originChoice(1),
       {
         kind: 'ancestry',
         subject: 'ancestry',
@@ -391,8 +420,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'gnome',
     name: 'Gnome',
     blurb: 'Curieux jusqu’à l’imprudence, inventif jusqu’à l’explosion.',
-    facts: ['+2 Intelligence', '7,50 m · petite taille', 'Ruse gnome'],
-    abilityBonuses: { intelligence: 2 },
+    facts: ['+2 au choix', '7,50 m · petite taille', 'Ruse gnome'],
+    abilityBonuses: {},
     size: 'P',
     speed: 7.5,
     darkvision: 18,
@@ -410,15 +439,15 @@ export const RACE_ENTRIES: readonly Race[] = [
         text: 'Tu as l’avantage sur toutes tes sauvegardes mentales contre la magie.',
       },
     ],
-    choices: [],
+    choices: [originChoice(2)],
     subraces: [
       {
         id: 'gnome-des-forets',
         name: 'Gnome des forêts',
         blurb:
           'Discret sous les feuilles, il parle aux bestioles et fait apparaître ce qui n’existe pas.',
-        facts: ['+1 Dextérité', '7,50 m', 'Illusion mineure, parle aux bêtes'],
-        abilityBonuses: { dexterite: 1 },
+        facts: ['+1 au choix', '7,50 m', 'Illusion mineure, parle aux bêtes'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: {
           armor: [],
@@ -439,14 +468,14 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
       {
         id: 'gnome-des-roches',
         name: 'Gnome des roches',
         blurb: 'Bricoleur né : il démonte tout, et remonte presque tout.',
-        facts: ['+1 Constitution', '7,50 m', 'Bricoleur'],
-        abilityBonuses: { constitution: 1 },
+        facts: ['+1 au choix', '7,50 m', 'Bricoleur'],
+        abilityBonuses: {},
         skills: [],
         proficiencies: { ...NO_PROFICIENCIES, tools: ['outils-de-bijoutier'] },
         features: [
@@ -462,7 +491,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         bonusHitPointsPerLevel: 0,
         darkvision: null,
         speed: null,
-        choices: [],
+        choices: [originChoice(1)],
       },
     ],
   },
@@ -471,8 +500,12 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'demi-elfe',
     name: 'Demi-elfe',
     blurb: 'À l’aise partout, chez lui nulle part. Il sait s’en servir.',
-    facts: ['+2 Charisme, +1 ×2', '9 m · taille moyenne', 'Deux compétences au choix'],
-    abilityBonuses: { charisme: 2 },
+    facts: [
+      '+2 et deux +1 au choix',
+      '9 m · taille moyenne',
+      'Deux compétences au choix',
+    ],
+    abilityBonuses: {},
     size: 'M',
     speed: 9,
     darkvision: 18,
@@ -492,14 +525,19 @@ export const RACE_ENTRIES: readonly Race[] = [
       },
     ],
     choices: [
+      originChoice(2),
       {
         kind: 'ability',
+        // Le SRD réservait ces deux +1 aux caractéristiques AUTRES que le
+        // Charisme, parce que le +2 y tombait d'office. Le +2 se plaçant
+        // maintenant librement, la restriction n'a plus d'objet : c'est le
+        // registre qui empêche deux bonus sur un même score.
         subject: 'ability',
-        title: 'Tes deux points de bonus',
-        help: 'Deux caractéristiques de ton choix gagnent +1, autres que le Charisme.',
+        title: 'Tes deux autres points',
+        help: 'Le demi-elfe apprend un peu de tout : deux caractéristiques de plus gagnent +1.',
         pick: 2,
         bonus: 1,
-        from: ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse'],
+        from: ABILITIES,
       },
       {
         kind: 'skill',
@@ -525,8 +563,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'demi-orc',
     name: 'Demi-orc',
     blurb: 'On le regarde de travers. Il tient debout plus longtemps que les autres.',
-    facts: ['+2 Force, +1 Constitution', '9 m · taille moyenne', 'Endurance implacable'],
-    abilityBonuses: { force: 2, constitution: 1 },
+    facts: ['+2 et +1 au choix', '9 m · taille moyenne', 'Endurance implacable'],
+    abilityBonuses: {},
     size: 'M',
     speed: 9,
     darkvision: 18,
@@ -549,7 +587,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         text: 'Sur un coup critique en corps à corps, tu ajoutes un dé de dégâts.',
       },
     ],
-    choices: [],
+    choices: [originChoice(2), originChoice(1)],
     subraces: [],
   },
 
@@ -557,8 +595,8 @@ export const RACE_ENTRIES: readonly Race[] = [
     id: 'tieffelin',
     name: 'Tieffelin',
     blurb: 'Un héritage infernal, un regard qui met mal à l’aise, et de l’aplomb.',
-    facts: ['+2 Charisme, +1 Intelligence', '9 m · taille moyenne', 'Résistance au feu'],
-    abilityBonuses: { charisme: 2, intelligence: 1 },
+    facts: ['+2 et +1 au choix', '9 m · taille moyenne', 'Résistance au feu'],
+    abilityBonuses: {},
     size: 'M',
     speed: 9,
     darkvision: 18,
@@ -580,7 +618,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         text: 'Tu connais le tour de magie Thaumaturgie ; d’autres sorts viendront plus tard.',
       },
     ],
-    choices: [],
+    choices: [originChoice(2), originChoice(1)],
     subraces: [],
   },
 ];

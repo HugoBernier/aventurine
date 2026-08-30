@@ -20,7 +20,7 @@ import type {
 } from './content';
 import { NO_PROFICIENCIES } from './content';
 import type { CharacterDraft } from './draft';
-import { openChoices } from './openChoices';
+import { chosenAbilityBonuses, openChoices } from './openChoices';
 import { ALL_SKILLS, skillAbility } from './skills';
 import type { SkillId } from './skills';
 
@@ -118,17 +118,23 @@ function pickedByKind(
   return picked;
 }
 
-/** Base + race + sous-race + créneaux `ability`. Aucun plafond au niveau 1. */
+/**
+ * Base + bonus fixes + bonus d'origine placés par le joueur. Aucun plafond au
+ * niveau 1. Les bonus fixes ne subsistent que là où il n'y a rien à placer —
+ * l'humain, qui monte les six scores de 1.
+ */
 function finalAbilities(draft: CharacterDraft, catalogue: Catalogue): AbilityScores {
   const race = findRace(catalogue, draft.raceId);
   const subrace = findSubrace(catalogue, draft.raceId, draft.subraceId);
-  const chosen = pickedByKind(draft, catalogue, ['ability']);
+  const chosen = chosenAbilityBonuses(draft, catalogue);
 
   return abilityScores((ability) => {
     const racial = race?.abilityBonuses[ability] ?? 0;
     const subracial = subrace?.abilityBonuses[ability] ?? 0;
-    const bonusCount = chosen.filter((id) => id === ability).length;
-    return draft.baseAbilities[ability] + racial + subracial + bonusCount;
+    const placed = chosen
+      .filter((entry) => entry.ability === ability)
+      .reduce((total, entry) => total + entry.bonus, 0);
+    return draft.baseAbilities[ability] + racial + subracial + placed;
   });
 }
 

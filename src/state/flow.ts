@@ -44,6 +44,11 @@ function stepFor(slot: ChoiceSlot): StepId | null {
   if (slot.kind === 'equipment') {
     return 'equipment';
   }
+  // Placer un +2 se fait en VOYANT ses six scores : le créneau rejoint donc
+  // l'étape des caractéristiques, jamais celle de la race qui l'a ouvert.
+  if (slot.kind === 'ability') {
+    return 'abilities';
+  }
   return slot.source === 'background' ? 'background' : slot.source;
 }
 
@@ -76,6 +81,7 @@ export function buildFlow(
 
     anchor('abilities', 'ability-method'),
     anchor('abilities', 'ability-assign'),
+    ...inStep('abilities'),
 
     anchor('background', 'background'),
     ...inStep('background'),

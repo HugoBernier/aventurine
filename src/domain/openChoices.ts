@@ -1,6 +1,7 @@
 import type { Catalogue } from './catalogue';
 import { slotId } from './choice';
 import type {
+  ChoiceSlotId,
   ChoiceKind,
   ChoiceOption,
   ChoiceSlot,
@@ -37,6 +38,11 @@ interface Granted {
   readonly skills: Map<string, ChoiceSource>;
   readonly languages: Map<string, ChoiceSource>;
   readonly tools: Map<string, ChoiceSource>;
+  /**
+   * Une caractéristique qui a déjà reçu un bonus d'origine. Deux bonus sur le
+   * même score le monteraient de plus de 2, ce que la règle interdit.
+   */
+  readonly abilities: Map<string, ChoiceSource>;
 }
 
 function grantAll(
@@ -53,7 +59,12 @@ function grantAll(
 
 /** Dotations fixes : elles l'emportent toujours sur les choix. */
 function fixedGrants(draft: CharacterDraft, catalogue: Catalogue): Granted {
-  const granted: Granted = { skills: new Map(), languages: new Map(), tools: new Map() };
+  const granted: Granted = {
+    skills: new Map(),
+    languages: new Map(),
+    tools: new Map(),
+    abilities: new Map(),
+  };
 
   const race = findRace(catalogue, draft.raceId);
   if (race !== null) {
@@ -161,9 +172,14 @@ function registerFor(
     case 'tool': {
       return granted.tools;
     }
+    // Un score déjà rehaussé ne peut pas l'être une seconde fois : le créneau
+    // suivant le montre grisé, avec la raison, plutôt que de l'accepter puis
+    // de produire un total illégal.
+    case 'ability': {
+      return granted.abilities;
+    }
     case 'cantrip':
     case 'spell':
-    case 'ability':
     case 'equipment':
     case 'ancestry':
     case 'fighting-style': {
@@ -360,4 +376,29 @@ export function openChoices(
   }
 
   return slots;
+}
+
+/** Un bonus d'origine posé par le joueur : où il va, d'où il vient, combien. */
+export interface ChosenAbilityBonus {
+  readonly ability: string;
+  readonly slotId: ChoiceSlotId;
+  /** La VALEUR du créneau. Compter chaque réponse pour 1 ferait d'un +2 un +1. */
+  readonly bonus: number;
+}
+
+export function chosenAbilityBonuses(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): readonly ChosenAbilityBonus[] {
+  const chosen: ChosenAbilityBonus[] = [];
+  for (const { spec, source, parentId } of specsInPriorityOrder(draft, catalogue)) {
+    if (spec.kind !== 'ability') {
+      continue;
+    }
+    const id = slotId(source, parentId, spec.subject);
+    for (const ability of pickedFor(draft, id)) {
+      chosen.push({ ability, slotId: id, bonus: spec.bonus });
+    }
+  }
+  return chosen;
 }

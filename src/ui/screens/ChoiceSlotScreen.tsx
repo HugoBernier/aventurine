@@ -35,6 +35,7 @@ export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
       )}
       <ChoiceGroup
         legend={slot.title}
+        legendHidden
         kind={slot.kind}
         fieldName={slot.id}
         pick={slot.pick}

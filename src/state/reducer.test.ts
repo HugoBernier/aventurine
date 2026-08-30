@@ -198,8 +198,9 @@ describe('choix', () => {
 
 describe('navigation', () => {
   it('avance dans le parcours', () => {
-    const next = run(from({ raceId: 'demi-elfe' }), { type: 'GO_NEXT' });
-    expect(next.currentScreenId).toBe('choice:race:demi-elfe:ability');
+    // Le nain porte des sous-races : l'écran suivant naît de son choix de race.
+    const next = run(from({ raceId: 'nain' }), { type: 'GO_NEXT' });
+    expect(next.currentScreenId).toBe('subrace');
   });
 
   it('laisse avancer avec un choix incomplet', () => {

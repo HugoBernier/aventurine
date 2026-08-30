@@ -222,12 +222,25 @@ Attribution SRD obligatoire dans l'interface, et mention **« non affilié à
 Wizards of the Coast »**. Aucun logo, illustration, police ou élément
 d'habillage n'est copié.
 
-Aucun contenu hors SRD, à une exception près, assumée et signalée dans
-l'interface : le SRD 5.1 ne contient qu'un seul historique (Acolyte), ce qui
-rend un créateur de personnage inutilisable. On ajoute un historique
-**« Personnalisé »** construit uniquement sur les règles génériques
-d'historique du SRD. C'est de l'assemblage de règles SRD, pas du contenu
-inventé.
+Aucun contenu hors SRD, à **deux** exceptions près, assumées et signalées dans
+l'interface.
+
+1. Le SRD 5.1 ne contient qu'un seul historique (Acolyte), ce qui rend un
+   créateur de personnage inutilisable. On ajoute un historique
+   **« Personnalisé »** construit uniquement sur les règles génériques
+   d'historique du SRD. C'est de l'assemblage de règles SRD, pas du contenu
+   inventé.
+
+2. **Origines personnalisées** : le joueur place lui-même les bonus de
+   caractéristique de son peuple (+2 et +1) au lieu de les recevoir imposés.
+   Le SRD 5.1 les fixe par race ; la règle optionnelle qui les libère est
+   postérieure, et les révisions de 2024 en ont fait le comportement par
+   défaut. C'est la pratique de la quasi-totalité des tables, et une
+   **mécanique**, pas du texte : rien n'est recopié, les libellés sont écrits
+   pour ce projet. Concrètement, `abilityBonuses` reste vide et chaque entrée
+   déclare un créneau `ability` par valeur à placer — sauf l'humain, dont les
+   six +1 ne laissent rien à choisir. Le registre des caractéristiques du
+   domaine interdit d'empiler deux bonus sur un même score.
 
 Règle de revue : toute entrée de `data/` doit pouvoir être pointée à une
 section du SRD 5.1. Si on ne sait pas dire où, l'entrée ne rentre pas.

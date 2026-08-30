@@ -92,6 +92,21 @@ describe('repère de progression', () => {
     expect(new Set(denominators).size).toBe(1);
   });
 
+  it('place les bonus d’origine après la répartition des scores', () => {
+    const flow = buildFlow(
+      draftWith({ raceId: 'nain', subraceId: 'nain-des-collines' }),
+      C,
+    );
+    const ids = flow.map((screen) => screen.id);
+    // On choisit où mettre son +2 en voyant ses six scores, pas avant.
+    expect(ids.indexOf('choice:race:nain:origin-2')).toBeGreaterThan(
+      ids.indexOf('ability-assign'),
+    );
+    expect(flow.find((screen) => screen.id === 'choice:race:nain:origin-2')?.step).toBe(
+      'abilities',
+    );
+  });
+
   it('mesure la barre fine en écrans, pas en étapes', () => {
     const flow = buildFlow(emptyDraft(), C);
     expect(progressOf(flow, 'race')?.screenCount).toBe(flow.length);
