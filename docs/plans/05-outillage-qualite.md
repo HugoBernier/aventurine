@@ -821,7 +821,7 @@ URL : `https://<compte>.github.io/D-DBeyondFranche/`.
 « GitHub Actions » comme source. Sans cela, la tâche `deploy` échoue avec un
 message obscur. À noter dans le README.
 
-### Le nom du dépôt survit au renommage du produit
+### Le nom du dépôt ne contraint plus rien (corrigé, §A29)
 
 Le produit s'appelle Aventurine ; le dépôt s'appelle toujours `D-DBeyondFranche`
 et il le restera, parce que le renommer changerait l'URL publiée (arbitrage §A18).

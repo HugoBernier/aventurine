@@ -1,18 +1,17 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-// ATTENTION — ne pas « corriger » cette base en la croyant obsolete.
-// Le produit s'appelle Aventurine, mais le depot GitHub s'appelle toujours
-// D-DBeyondFranche et le site est publie sur
-// https://<compte>.github.io/D-DBeyondFranche/. Renommer le depot casserait
-// l'URL de publication (docs/plans/00-arbitrage.md, §A18). C'est le seul
-// endroit du code ou l'ancien nom subsiste, et c'est volontaire.
-const REPOSITORY_PATH = '/D-DBeyondFranche/';
-
 export default defineConfig({
-  // Base fixee aussi en developpement : un bug de sous-chemin se voit alors
-  // des la premiere minute, pas au premier deploiement.
-  base: REPOSITORY_PATH,
+  // Chemins RELATIFS plutôt qu'une base codée en dur.
+  //
+  // Le site n'a aucun routage — c'est une décision de la charte — donc il n'y
+  // a qu'une seule page, et des liens relatifs suffisent. Conséquence : le
+  // site fonctionne à n'importe quelle adresse (racine de domaine, sous-chemin
+  // GitHub Pages, dossier local), et renommer le dépôt ne casse plus rien.
+  //
+  // C'est le périmètre réduit qui rend ce choix possible. Le jour où un
+  // routeur apparaîtrait, il faudrait revenir à une base explicite.
+  base: './',
   plugins: [react()],
   test: {
     environment: 'jsdom',

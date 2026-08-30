@@ -316,9 +316,8 @@ marques).
 **Le produit s'appelle « Aventurine ».** C'est un mot français existant — un
 quartz — qui contient « aventure », ne reprend aucune marque et se retient.
 
-- Le **dépôt GitHub garde son nom actuel** : le renommer casserait l'URL de
-  publication. `base: '/D-DBeyondFranche/'` reste donc inchangé dans la
-  configuration Vite (lot 5), et c'est le seul endroit où l'ancien nom subsiste.
+- Le **dépôt GitHub peut être renommé librement** : voir §A29, le site est
+  compilé en chemins relatifs et ne dépend plus de son adresse.
 - Le nom affiché, le `<title>`, le README, l'écran d'accueil et le pied de fiche
   disent « Aventurine ».
 - La référence « D&D 5e » reste employée pour **décrire** la compatibilité, ce
@@ -546,6 +545,31 @@ métaprogrammation.
 `explicit-module-boundary-types` est **portée** plutôt qu'écartée : exigée sur
 `domain/` et `state/`, qui sont des contrats entre lots ; muette sur les
 composants, dont le type de retour est toujours le même et n'apprend rien.
+
+### A29. Le site ne dépend plus de son adresse
+
+§A18 laissait `base: '/D-DBeyondFranche/'` codé en dur, au prix d'un commentaire
+de six lignes expliquant pourquoi la base ne correspondait pas au nom du
+produit — et d'un renommage de dépôt qui aurait cassé la production.
+
+**Tranché : `base: './'`, des chemins relatifs.**
+
+Ce n'est possible que grâce au périmètre : la charte exclut le routage, il n'y
+a donc qu'une seule page, et des liens relatifs suffisent. Le lot 5 avait
+raison de craindre le piège du sous-chemin ; la bonne réponse n'était pas de
+figer l'adresse mais de cesser d'en dépendre.
+
+Ce que cela supprime : le commentaire d'avertissement, la note « le dépôt
+s'appelle encore… » du README, et toute une classe de pannes — page blanche
+après un renommage, après un déplacement d'hébergement, ou en ouvrant `dist/`
+depuis un dossier local.
+
+Vérifié en servant le paquet compilé depuis `/un/sous/chemin/quelconque/` :
+index, JS et CSS répondent 200.
+
+**Condition de réouverture, écrite d'avance** : le jour où un routeur
+apparaîtrait — ce que la charte exclut aujourd'hui — les chemins relatifs
+casseraient sur une URL profonde, et il faudrait revenir à une base explicite.
 
 ---
 

@@ -4,8 +4,8 @@ Créateur de personnage **D&D 5e**, entièrement en français, pensé pour le
 téléphone. Site statique, sans compte et sans backend : tout reste sur ton
 appareil.
 
-> Le dépôt s'appelle encore `D-DBeyondFranche` et le produit s'appelle
-> **Aventurine**. C'est normal : renommer le dépôt casserait l'URL publiée.
+> Le site est compilé avec des chemins **relatifs** : il fonctionne à
+> n'importe quelle adresse, et renommer le dépôt ne casse rien.
 
 ## Démarrer
 
@@ -53,9 +53,9 @@ lots dans [`docs/plans/00-arbitrage.md`](docs/plans/00-arbitrage.md).
 2. **Aucune URL commençant par `/`** dans le code. Le site est publié sous un
    sous-chemin : un actif s'importe, une URL construite part de
    `import.meta.env.BASE_URL`.
-3. **Ne pas « corriger »** `base` dans `vite.config.ts`, ni `viewport-fit=cover`
-   et `color-scheme: light` dans `index.html`. Les trois sont commentés sur
-   place : leur absence ne se voit qu'en production.
+3. **Ne pas « corriger »** `viewport-fit=cover` ni `color-scheme: light` dans
+   `index.html`. Les deux sont commentés sur place : leur absence ne se voit
+   qu'en production, jamais sur un poste de développement.
 
 ## Budget de performance
 
@@ -72,6 +72,11 @@ La CI échoue si un budget est dépassé.
 Site statique sur GitHub Pages, publié par Actions depuis `main`, jamais sur un
 build rouge. **Réglage manuel à faire une fois** : Settings → Pages → source
 « GitHub Actions ».
+
+Les actifs sont référencés en relatif (`base: './'` dans `vite.config.ts`), donc
+le site s'ouvre aussi bien à la racine d'un domaine, sous un sous-chemin GitHub
+Pages, ou depuis un dossier local. Renommer le dépôt ne demande aucune
+modification de code. C'est l'absence de routage qui rend cela possible.
 
 ## Commits
 
