@@ -18,5 +18,8 @@ export function formatUnavailable(reason: UnavailableReason, kind: ChoiceKind): 
     case 'slot-full': {
       return 'Décoche-en une pour en changer';
     }
+    case 'max-ability': {
+      return `Déjà au maximum de ${String(reason.max)}`;
+    }
   }
 }

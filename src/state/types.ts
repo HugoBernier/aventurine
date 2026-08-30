@@ -6,6 +6,7 @@ export type StepId =
   | 'race'
   | 'class'
   | 'abilities'
+  | 'advancement'
   | 'background'
   | 'proficiencies'
   | 'spells'
@@ -16,6 +17,7 @@ export type AnchorId =
   | 'race'
   | 'subrace'
   | 'class'
+  | 'level'
   | 'ability-method'
   | 'ability-assign'
   | 'background'
@@ -76,6 +78,7 @@ export interface WizardState {
 }
 
 export type WizardAction =
+  | { readonly type: 'SET_LEVEL'; readonly level: number }
   | { readonly type: 'SELECT_RACE'; readonly raceId: string }
   | { readonly type: 'SELECT_SUBRACE'; readonly subraceId: string }
   | { readonly type: 'SELECT_CLASS'; readonly classId: string }

@@ -1,6 +1,7 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
+  ADVANCEMENTS,
   cantripChoice,
   equipmentChoice,
   equipmentOption,
@@ -89,11 +90,12 @@ export const BARD: CharacterClass = {
   ],
   spellcasting: {
     ability: 'charisme',
-    level1Slots: 2,
+    progression: 'full',
     preparation: 'known',
     ritual: true,
   },
   subclass: null,
+  advancements: ADVANCEMENTS,
 };
 
 export const CLERIC: CharacterClass = {
@@ -171,7 +173,7 @@ export const CLERIC: CharacterClass = {
   ],
   spellcasting: {
     ability: 'sagesse',
-    level1Slots: 2,
+    progression: 'full',
     preparation: 'prepared',
     ritual: true,
   },
@@ -195,6 +197,7 @@ export const CLERIC: CharacterClass = {
     bonusHitPointsPerLevel: 0,
     choices: [],
   },
+  advancements: ADVANCEMENTS,
 };
 
 export const DRUID: CharacterClass = {
@@ -276,11 +279,12 @@ export const DRUID: CharacterClass = {
   ],
   spellcasting: {
     ability: 'sagesse',
-    level1Slots: 2,
+    progression: 'full',
     preparation: 'prepared',
     ritual: true,
   },
   subclass: null,
+  advancements: ADVANCEMENTS,
 };
 
 export const SORCERER: CharacterClass = {
@@ -346,7 +350,7 @@ export const SORCERER: CharacterClass = {
   ],
   spellcasting: {
     ability: 'charisme',
-    level1Slots: 2,
+    progression: 'full',
     preparation: 'known',
     ritual: false,
   },
@@ -378,6 +382,7 @@ export const SORCERER: CharacterClass = {
       },
     ],
   },
+  advancements: ADVANCEMENTS,
 };
 
 export const WARLOCK: CharacterClass = {
@@ -446,7 +451,7 @@ export const WARLOCK: CharacterClass = {
   ],
   spellcasting: {
     ability: 'charisme',
-    level1Slots: 1,
+    progression: 'pact',
     preparation: 'known',
     ritual: false,
   },
@@ -466,6 +471,7 @@ export const WARLOCK: CharacterClass = {
     bonusHitPointsPerLevel: 0,
     choices: [],
   },
+  advancements: ADVANCEMENTS,
 };
 
 export const WIZARD: CharacterClass = {
@@ -528,9 +534,10 @@ export const WIZARD: CharacterClass = {
   ],
   spellcasting: {
     ability: 'intelligence',
-    level1Slots: 2,
+    progression: 'full',
     preparation: 'spellbook',
     ritual: true,
   },
   subclass: null,
+  advancements: ADVANCEMENTS,
 };

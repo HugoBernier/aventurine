@@ -33,6 +33,15 @@ export function formatMissing(missing: MissingChoice): string {
       ? 'Tes caractéristiques ne sont pas encore réparties'
       : `Il te reste ${counted(missing.remaining, 'point à répartir', 'points à répartir')}`;
   }
+  if (missing.kind === 'advancement') {
+    return 'Tu as un choix de progression à faire';
+  }
+  if (missing.kind === 'feat') {
+    return 'Il te reste un don à choisir';
+  }
+  if (missing.kind === 'improvement') {
+    return `Il te reste ${counted(missing.remaining, 'point de caractéristique à placer', 'points de caractéristique à placer')}`;
+  }
   if (missing.kind === 'ability') {
     // « à placer », pas « à choisir » : on ne choisit pas le bonus, on choisit
     // où il va. « Bonus » est invariable.

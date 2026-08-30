@@ -11,6 +11,7 @@ import { AbilityAssignScreen } from './screens/AbilityAssignScreen';
 import { AbilityMethodScreen } from './screens/AbilityMethodScreen';
 import { AlignmentScreen } from './screens/AlignmentScreen';
 import { ChoiceSlotScreen } from './screens/ChoiceSlotScreen';
+import { LevelScreen } from './screens/LevelScreen';
 import { NameScreen } from './screens/NameScreen';
 import { PersonalityScreen } from './screens/PersonalityScreen';
 import { SelectionScreen } from './screens/SelectionScreen';
@@ -20,6 +21,7 @@ const STEP_LABELS: Record<StepId, string> = {
   race: 'Ta race',
   class: 'Ta classe',
   abilities: 'Tes caractéristiques',
+  advancement: 'Ta progression',
   background: 'Ton historique',
   proficiencies: 'Ce que tu sais faire',
   spells: 'Tes sorts',
@@ -39,6 +41,10 @@ const ANCHOR_TITLES: Record<string, { readonly title: string; readonly lead: str
   class: {
     title: 'Choisis ta classe',
     lead: 'Ton métier d’aventurier : comment tu te bats, ce que tu sais faire.',
+  },
+  level: {
+    title: 'À quel niveau joues-tu ?',
+    lead: 'Le niveau 1 pour une nouvelle table. Sinon, monte jusqu’au tien.',
   },
   'ability-method': {
     title: 'Comment veux-tu tes scores ?',
@@ -76,6 +82,9 @@ function ScreenBody({ screen }: { readonly screen: Screen }): ReactNode {
     case 'class':
     case 'background': {
       return <SelectionScreen kind={screen.anchor} />;
+    }
+    case 'level': {
+      return <LevelScreen />;
     }
     case 'ability-method': {
       return <AbilityMethodScreen />;

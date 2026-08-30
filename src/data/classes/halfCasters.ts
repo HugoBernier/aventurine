@@ -1,6 +1,7 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
+  ADVANCEMENTS,
   equipmentChoice,
   equipmentOption,
   item,
@@ -80,6 +81,7 @@ export const PALADIN: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: ADVANCEMENTS,
 };
 
 export const RANGER: CharacterClass = {
@@ -171,4 +173,5 @@ export const RANGER: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: ADVANCEMENTS,
 };

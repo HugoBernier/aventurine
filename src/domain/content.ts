@@ -1,4 +1,5 @@
 import type { AbilityId, AbilityScores } from './abilities';
+import type { CastingProgression } from './progression';
 import type { ChoiceSpec } from './choiceSpec';
 import type { SkillId } from './skills';
 
@@ -188,7 +189,8 @@ export type PreparationMode = 'known' | 'prepared' | 'spellbook';
 
 export interface Spellcasting {
   readonly ability: AbilityId;
-  readonly level1Slots: number;
+  /** Rythme d'accès aux emplacements : les nombres se lisent dans une table. */
+  readonly progression: CastingProgression;
   readonly preparation: PreparationMode;
   readonly ritual: boolean;
 }
@@ -207,6 +209,31 @@ export interface Subclass extends Named {
   readonly choices: readonly ChoiceSpec[];
 }
 
+/**
+ * Un don. Le SRD 5.1 n'en publie qu'un, le Lutteur, et présente les dons comme
+ * une règle optionnelle : les autres sont écrits pour ce projet (CLAUDE.md,
+ * « Sources et droits »).
+ */
+export interface Feat extends Named {
+  readonly blurb: string;
+  readonly facts: Facts;
+  readonly text: string;
+  readonly fromSrd: boolean;
+}
+
+/**
+ * Ce qu'une classe gagne à un niveau d'amélioration : le choix amont, puis les
+ * trois suites possibles. Les quatre specs vivent dans `data/` parce qu'elles
+ * portent de la prose ; le domaine ne fait que choisir laquelle ouvrir.
+ */
+export interface Advancement {
+  readonly level: number;
+  readonly mode: ChoiceSpec;
+  readonly abilityMajor: ChoiceSpec;
+  readonly abilityMinor: ChoiceSpec;
+  readonly feat: ChoiceSpec;
+}
+
 export interface CharacterClass extends Named {
   readonly blurb: string;
   readonly facts: Facts;
@@ -220,6 +247,8 @@ export interface CharacterClass extends Named {
   readonly fixedEquipment: readonly ItemLine[];
   readonly spellcasting: Spellcasting | null;
   readonly subclass: Subclass | null;
+  /** Les niveaux où la classe améliore ses caractéristiques ou prend un don. */
+  readonly advancements: readonly Advancement[];
 }
 
 export interface SuggestedTraits {

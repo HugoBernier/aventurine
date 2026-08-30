@@ -197,6 +197,48 @@ export const ROGUE: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: [
+    {
+      level: 4,
+      mode: {
+        kind: 'advancement',
+        subject: 'niveau-4',
+        title: 'Niveau 4',
+        help: 'Améliorer ou apprendre.',
+        pick: 1,
+        from: [
+          { id: 'ability-2', label: '+2', blurb: 'Un score de deux points.' },
+          { id: 'ability-1-1', label: '+1 +1', blurb: 'Deux scores d’un point.' },
+          { id: 'feat', label: 'Un don', blurb: 'Une aptitude de plus.' },
+        ],
+      },
+      abilityMajor: {
+        kind: 'improvement',
+        subject: 'niveau-4-majeur',
+        title: 'Où mettre ton +2 ?',
+        help: 'Rien ne dépasse 20.',
+        pick: 1,
+        bonus: 2,
+        from: ABILITIES,
+      },
+      abilityMinor: {
+        kind: 'improvement',
+        subject: 'niveau-4-mineur',
+        title: 'Où mettre tes deux +1 ?',
+        help: 'Rien ne dépasse 20.',
+        pick: 2,
+        bonus: 1,
+        from: ABILITIES,
+      },
+      feat: {
+        kind: 'feat',
+        subject: 'niveau-4-don',
+        title: 'Quel don ?',
+        help: 'Un don remplace l’amélioration.',
+        pick: 1,
+      },
+    },
+  ],
 };
 
 const classes: readonly CharacterClass[] = [
@@ -255,7 +297,7 @@ const classes: readonly CharacterClass[] = [
     ],
     spellcasting: {
       ability: 'sagesse',
-      level1Slots: 2,
+      progression: 'full',
       preparation: 'prepared',
       ritual: true,
     },
@@ -270,6 +312,9 @@ const classes: readonly CharacterClass[] = [
       bonusHitPointsPerLevel: 0,
       choices: [],
     },
+    // Le clerc de la fixture n'a aucun palier : c'est le cas « une classe sans
+    // amélioration » que le domaine doit traverser sans rien ouvrir.
+    advancements: [],
   },
 ];
 
@@ -392,6 +437,24 @@ export const MINI_CATALOGUE: Catalogue = {
   races,
   classes,
   backgrounds,
+  feats: [
+    {
+      id: 'lutteur',
+      name: 'Lutteur',
+      blurb: 'Tu attrapes et tu ne lâches pas.',
+      facts: ['Force 13', 'Avantage', 'Immobilise'],
+      text: 'Avantage contre ce que tu agrippes.',
+      fromSrd: true,
+    },
+    {
+      id: 'pied-sur',
+      name: 'Pied sûr',
+      blurb: 'Le terrain ne te ralentit pas.',
+      facts: ['+1 Dextérité', 'Terrain difficile', 'Chutes'],
+      text: 'Tu ignores le terrain difficile.',
+      fromSrd: false,
+    },
+  ],
   alignments: [{ id: 'loyal-bon', name: 'Loyal bon', blurb: 'Tu tiens parole.' }],
   languages: [
     { id: 'commun', name: 'Commun', script: 'commun', exotic: false },

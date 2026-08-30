@@ -282,3 +282,29 @@ describe('texte libre et remise à zéro', () => {
     expect(cleared.notices).toEqual([]);
   });
 });
+
+describe('niveau', () => {
+  it('ramène un niveau hors bornes dans l’intervalle', () => {
+    expect(run(from(), { type: 'SET_LEVEL', level: 99 }).draft.level).toBe(20);
+    expect(run(from(), { type: 'SET_LEVEL', level: 0 }).draft.level).toBe(1);
+  });
+
+  it('ne recrée pas l’état quand le niveau ne change pas', () => {
+    const state = from();
+    expect(run(state, { type: 'SET_LEVEL', level: 1 })).toBe(state);
+  });
+
+  it('oublie le choix d’un palier quand on redescend sous son niveau', () => {
+    const atFour = run(from({ classId: 'roublard' }), { type: 'SET_LEVEL', level: 4 });
+    const chosen = run(atFour, {
+      type: 'TOGGLE_CHOICE',
+      slotId: 'class:roublard:niveau-4',
+      optionId: 'feat',
+    });
+    expect(chosen.draft.choices['class:roublard:niveau-4']).toEqual(['feat']);
+
+    const back = run(chosen, { type: 'SET_LEVEL', level: 3 });
+    // La purge retire la réponse d'un créneau refermé : aucun don fantôme.
+    expect(back.draft.choices['class:roublard:niveau-4']).toBeUndefined();
+  });
+});

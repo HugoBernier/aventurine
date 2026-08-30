@@ -1,0 +1,82 @@
+/* Deux cibles larges, le chiffre entre les deux : au pouce, sans viser. */
+.stepper {
+  display: grid;
+  grid-template-columns: 4rem 1fr 4rem;
+  gap: var(--space-3);
+  align-items: center;
+  margin-block: var(--space-4);
+}
+
+.step {
+  min-height: 64px;
+  font-size: var(--font-size-500);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  touch-action: manipulation;
+}
+
+.step:disabled {
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+}
+
+.value {
+  margin: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-size: var(--font-size-100);
+  color: var(--color-text-muted);
+}
+
+.number {
+  font-family: var(--font-title);
+  font-size: var(--font-size-500);
+  line-height: 1;
+}
+
+.effects {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.row + .row {
+  border-block-start: 1px solid var(--color-rule);
+}
+
+.term {
+  color: var(--color-text-muted);
+}
+
+.value2 {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  margin-block: var(--space-4) 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-selected);
+}

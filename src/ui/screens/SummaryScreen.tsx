@@ -170,6 +170,7 @@ export function SummaryScreen({ onNavigate }: SummaryScreenProps): ReactNode {
           label="Dés de vie"
           value={sheet.hitDice === null ? TO_CHOOSE : `1 d${String(sheet.hitDice.die)}`}
         />
+        <Tile label="Niveau" value={String(draft.level)} />
         <Tile label="Bonus de maîtrise" value={formatModifier(sheet.proficiencyBonus)} />
         {sheet.darkvisionMeters !== null && sheet.darkvisionMeters > 0 && (
           // Rien à annoncer pour qui voit comme un humain : la tuile n'apparaît

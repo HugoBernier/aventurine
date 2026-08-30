@@ -16,9 +16,19 @@ describe('lecture défensive d’un brouillon', () => {
   });
 
   it('ignore les champs inconnus', () => {
-    const parsed = parseDraft({ ...emptyDraft(), level: 12, xp: 9000 });
-    expect(parsed?.draft).not.toHaveProperty('level');
+    const parsed = parseDraft({ ...emptyDraft(), xp: 9000 });
     expect(parsed?.draft).not.toHaveProperty('xp');
+  });
+
+  it('relit le niveau et le ramène dans les bornes', () => {
+    expect(parseDraft({ ...emptyDraft(), level: 12 })?.draft.level).toBe(12);
+    expect(parseDraft({ ...emptyDraft(), level: 99 })?.draft.level).toBe(20);
+    expect(parseDraft({ ...emptyDraft(), level: 'trois' })?.draft.level).toBe(1);
+  });
+
+  it('donne le niveau 1 à une sauvegarde écrite avant que le niveau existe', () => {
+    const before = { name: 'Alric', raceId: 'nain', classId: 'roublard' };
+    expect(parseDraft(before)?.draft.level).toBe(1);
   });
 
   it('ignore une clé __proto__ présente dans le fichier', () => {

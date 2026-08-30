@@ -1,6 +1,9 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
+  ROGUE_ADVANCEMENTS,
+  FIGHTER_ADVANCEMENTS,
+  ADVANCEMENTS,
   equipmentChoice,
   equipmentOption,
   item,
@@ -71,6 +74,7 @@ export const BARBARIAN: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: ADVANCEMENTS,
 };
 
 export const FIGHTER: CharacterClass = {
@@ -164,6 +168,7 @@ export const FIGHTER: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: FIGHTER_ADVANCEMENTS,
 };
 
 export const MONK: CharacterClass = {
@@ -225,6 +230,7 @@ export const MONK: CharacterClass = {
   fixedEquipment: [item('flechette', 10), item('paquetage-d-explorateur')],
   spellcasting: null,
   subclass: null,
+  advancements: ADVANCEMENTS,
 };
 
 export const ROGUE: CharacterClass = {
@@ -311,4 +317,5 @@ export const ROGUE: CharacterClass = {
   ],
   spellcasting: null,
   subclass: null,
+  advancements: ROGUE_ADVANCEMENTS,
 };

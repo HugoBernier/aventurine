@@ -18,6 +18,7 @@ const missingOf = (draft: CharacterDraft, kind: string) =>
 
 const COMPLETE: CharacterDraft = {
   name: 'Alric',
+  level: 1,
   raceId: 'nain',
   subraceId: 'nain-des-collines',
   classId: 'roublard',

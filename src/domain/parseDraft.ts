@@ -1,4 +1,5 @@
 import { abilityScores } from './abilities';
+import { MIN_LEVEL, clampLevel } from './progression';
 import { isWellFormedSlotId } from './choice';
 import { emptyDraft } from './draft';
 import type { AbilityMethod, CharacterDraft, PersonalTraits } from './draft';
@@ -112,6 +113,7 @@ export function parseDraft(value: unknown): ParsedDraft | null {
     draft: {
       ...emptyDraft(),
       name,
+      level: clampLevel(typeof value.level === 'number' ? value.level : MIN_LEVEL),
       raceId: asNullableId(value.raceId),
       subraceId: asNullableId(value.subraceId),
       classId: asNullableId(value.classId),

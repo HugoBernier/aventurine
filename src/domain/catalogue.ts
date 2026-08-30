@@ -4,6 +4,7 @@ import type {
   Ancestry,
   Armor,
   Background,
+  Feat,
   CharacterClass,
   FightingStyle,
   Item,
@@ -27,6 +28,7 @@ export interface Catalogue {
   readonly races: readonly Race[];
   readonly classes: readonly CharacterClass[];
   readonly backgrounds: readonly Background[];
+  readonly feats: readonly Feat[];
   readonly alignments: readonly Alignment[];
   readonly languages: readonly Language[];
   readonly tools: readonly Tool[];

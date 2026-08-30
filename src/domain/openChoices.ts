@@ -1,3 +1,5 @@
+import { MAX_ABILITY, abilityScores } from './abilities';
+import type { AbilityScores } from './abilities';
 import type { Catalogue } from './catalogue';
 import { slotId } from './choice';
 import type {
@@ -8,7 +10,7 @@ import type {
   ChoiceSource,
   UnavailableReason,
 } from './choice';
-import type { ChoiceSpec } from './choiceSpec';
+import type { AdvancementMode, ChoiceSpec } from './choiceSpec';
 import {
   findAbility,
   findClass,
@@ -20,8 +22,9 @@ import {
   findBackground,
   spellsForClass,
 } from './catalogue';
-import type { EquipmentOption, Facts } from './content';
+import type { Advancement, EquipmentOption, Facts } from './content';
 import { pickedFor } from './draft';
+import { clampLevel } from './progression';
 import type { CharacterDraft } from './draft';
 
 const NO_FACT = '—';
@@ -99,6 +102,27 @@ function fixedGrants(draft: CharacterDraft, catalogue: Catalogue): Granted {
  * compétences déjà acquises — accrochée derrière la classe elle proposerait
  * une liste vide (docs/plans/00-arbitrage.md §A15).
  */
+/** La suite d'un palier dépend de la route retenue ; aucune tant qu'elle manque. */
+function advancementFollowUp(
+  step: Advancement,
+  mode: AdvancementMode | undefined,
+): readonly ChoiceSpec[] {
+  switch (mode) {
+    case 'ability-2': {
+      return [step.abilityMajor];
+    }
+    case 'ability-1-1': {
+      return [step.abilityMinor];
+    }
+    case 'feat': {
+      return [step.feat];
+    }
+    case undefined: {
+      return [];
+    }
+  }
+}
+
 function specsInPriorityOrder(
   draft: CharacterDraft,
   catalogue: Catalogue,
@@ -128,6 +152,22 @@ function specsInPriorityOrder(
   const characterClass = findClass(catalogue, draft.classId);
   push('class', draft.classId, characterClass?.choices ?? []);
   push('class', draft.classId, characterClass?.subclass?.choices ?? []);
+
+  // Un palier n'existe qu'une fois son niveau atteint, et sa suite dépend de
+  // la route choisie. Redescendre de niveau referme le palier : la purge
+  // retire alors la réponse, comme pour n'importe quel choix devenu caduc.
+  const advancements = characterClass?.advancements ?? [];
+  const reached = clampLevel(draft.level);
+  for (const step of advancements) {
+    const { classId } = draft;
+    if (classId === null || step.level > reached) {
+      continue;
+    }
+    push('class', classId, [step.mode]);
+    const [mode] = pickedFor(draft, slotId('class', classId, step.mode.subject));
+    // La réponse vient d'un JSON : on ne la croit que si elle est une route connue.
+    push('class', classId, advancementFollowUp(step, asAdvancementMode(mode)));
+  }
 
   const expertise = owners.filter((owner) => owner.spec.kind === 'expertise');
   const rest = owners.filter((owner) => owner.spec.kind !== 'expertise');
@@ -172,12 +212,15 @@ function registerFor(
     case 'tool': {
       return granted.tools;
     }
-    // Un score déjà rehaussé ne peut pas l'être une seconde fois : le créneau
-    // suivant le montre grisé, avec la raison, plutôt que de l'accepter puis
-    // de produire un total illégal.
+    // Un score déjà rehaussé À L'ORIGINE ne peut pas l'être une seconde fois.
+    // Une amélioration de NIVEAU, elle, peut retomber où elle veut : deux +1
+    // sur un même score y sont légitimes, seul le plafond de 20 l'arrête.
     case 'ability': {
       return granted.abilities;
     }
+    case 'improvement':
+    case 'feat':
+    case 'advancement':
     case 'cantrip':
     case 'spell':
     case 'equipment':
@@ -247,6 +290,33 @@ function buildOptions(
           null,
         );
       });
+    }
+    case 'improvement': {
+      const totals = abilityTotals(draft, catalogue);
+      return spec.from.map((id) => {
+        const ability = findAbility(catalogue, id);
+        const total = totals[id];
+        return option(
+          id,
+          ability?.name ?? id,
+          ability?.purpose ?? '',
+          [`${String(total)} actuellement`, ability?.purpose ?? NO_FACT, NO_FACT],
+          // On refuse AVANT de dépasser : afficher 22 puis corriger serait pire.
+          total + spec.bonus > MAX_ABILITY
+            ? { kind: 'max-ability', max: MAX_ABILITY }
+            : null,
+        );
+      });
+    }
+    case 'feat': {
+      return catalogue.feats.map((feat) =>
+        option(feat.id, feat.name, feat.blurb, feat.facts, null),
+      );
+    }
+    case 'advancement': {
+      return spec.from.map((entry) =>
+        option(entry.id, entry.label, entry.blurb, [entry.label, NO_FACT, NO_FACT], null),
+      );
     }
     case 'cantrip':
     case 'spell': {
@@ -386,19 +456,79 @@ export interface ChosenAbilityBonus {
   readonly bonus: number;
 }
 
+const ADVANCEMENT_MODES: readonly AdvancementMode[] = [
+  'ability-2',
+  'ability-1-1',
+  'feat',
+];
+
+function asAdvancementMode(value: string | undefined): AdvancementMode | undefined {
+  return ADVANCEMENT_MODES.find((mode) => mode === value);
+}
+
+/**
+ * Ce qu'un créneau pose dans une caractéristique, `null` s'il n'y pose rien.
+ * Le `switch` fait ce qu'une comparaison répétée ne ferait pas : il restreint
+ * le type, donc `spec.bonus` est lisible sans conversion.
+ */
+function abilityBonusOf(spec: ChoiceSpec): number | null {
+  switch (spec.kind) {
+    case 'ability':
+    case 'improvement': {
+      return spec.bonus;
+    }
+    case 'skill':
+    case 'language':
+    case 'tool':
+    case 'equipment':
+    case 'ancestry':
+    case 'fighting-style':
+    case 'feat':
+    case 'advancement':
+    case 'cantrip':
+    case 'spell':
+    case 'expertise': {
+      return null;
+    }
+  }
+}
+
 export function chosenAbilityBonuses(
   draft: CharacterDraft,
   catalogue: Catalogue,
 ): readonly ChosenAbilityBonus[] {
   const chosen: ChosenAbilityBonus[] = [];
   for (const { spec, source, parentId } of specsInPriorityOrder(draft, catalogue)) {
-    if (spec.kind !== 'ability') {
+    const bonus = abilityBonusOf(spec);
+    if (bonus === null) {
       continue;
     }
     const id = slotId(source, parentId, spec.subject);
     for (const ability of pickedFor(draft, id)) {
-      chosen.push({ ability, slotId: id, bonus: spec.bonus });
+      chosen.push({ ability, slotId: id, bonus });
     }
   }
   return chosen;
+}
+
+/**
+ * Les six scores finaux : base, bonus fixes, bonus d'origine et améliorations
+ * de niveau. La fiche s'en sert pour afficher, `openChoices` pour savoir ce
+ * qui a atteint 20 — un seul calcul, donc une seule règle.
+ */
+export function abilityTotals(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): AbilityScores {
+  const race = findRace(catalogue, draft.raceId);
+  const subrace = findSubrace(catalogue, draft.raceId, draft.subraceId);
+  const chosen = chosenAbilityBonuses(draft, catalogue);
+  return abilityScores((ability) => {
+    const fixed =
+      (race?.abilityBonuses[ability] ?? 0) + (subrace?.abilityBonuses[ability] ?? 0);
+    const placed = chosen
+      .filter((entry) => entry.ability === ability)
+      .reduce((total, entry) => total + entry.bonus, 0);
+    return draft.baseAbilities[ability] + fixed + placed;
+  });
 }

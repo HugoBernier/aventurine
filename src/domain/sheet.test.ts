@@ -289,7 +289,7 @@ describe('magie', () => {
   });
 
   it('donne 2 emplacements de sorts de niveau 1 à un clerc', () => {
-    expect(sheetOf({ classId: 'clerc' }).spellcasting?.level1Slots).toBe(2);
+    expect(sheetOf({ classId: 'clerc' }).spellcasting?.slots).toEqual([2]);
   });
 
   it('rend préparables mod. de Sagesse + 1 sorts, au minimum 1', () => {

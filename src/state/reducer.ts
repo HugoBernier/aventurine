@@ -1,4 +1,5 @@
 import { ABILITIES, abilityScores } from '../domain/abilities';
+import { clampLevel } from '../domain/progression';
 import type { AbilityId } from '../domain/abilities';
 import { findRace } from '../domain/catalogue';
 import type { Catalogue } from '../domain/catalogue';
@@ -258,6 +259,14 @@ export function createWizardReducer(
     const { draft } = state;
 
     switch (action.type) {
+      case 'SET_LEVEL': {
+        const level = clampLevel(action.level);
+        // `commit` purge : redescendre de niveau referme les paliers passés et
+        // retire leurs réponses, sans laisser de bonus fantôme sur la fiche.
+        return draft.level === level
+          ? state
+          : commit(state, { ...draft, level }, catalogue);
+      }
       case 'SELECT_RACE': {
         return selectRace(state, catalogue, action.raceId);
       }

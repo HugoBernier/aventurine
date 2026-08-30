@@ -1,6 +1,7 @@
 import { ABILITIES, abilityScores } from './abilities';
 import type { AbilityScores } from './abilities';
 import type { ChoiceSlotId } from './choice';
+import { MIN_LEVEL } from './progression';
 
 /** Les jets 4d6 sont hors périmètre v1 (docs/plans/00-arbitrage.md §B1). */
 export type AbilityMethod = 'point-buy' | 'standard-array';
@@ -26,6 +27,8 @@ export interface PersonalTraits {
  */
 export interface CharacterDraft {
   readonly name: string;
+  /** De 1 à 20. Tout le reste — maîtrise, points de vie, emplacements — en découle. */
+  readonly level: number;
   readonly raceId: string | null;
   readonly subraceId: string | null;
   readonly classId: string | null;
@@ -49,6 +52,7 @@ export const EMPTY_PERSONAL_TRAITS: PersonalTraits = {
 export function emptyDraft(): CharacterDraft {
   return {
     name: '',
+    level: MIN_LEVEL,
     raceId: null,
     subraceId: null,
     classId: null,

@@ -12,6 +12,9 @@ export const ABILITIES = [
 export type AbilityId = (typeof ABILITIES)[number];
 export type AbilityScores = Readonly<Record<AbilityId, number>>;
 
+/** SRD : aucune amélioration de niveau ne monte un score au-delà de 20. */
+export const MAX_ABILITY = 20;
+
 export function abilityModifier(score: number): number {
   return Math.floor((score - 10) / 2);
 }

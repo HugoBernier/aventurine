@@ -317,3 +317,59 @@ describe('expertise', () => {
     expect(opened).toBeUndefined();
   });
 });
+
+const at = (level: number, choices: Record<string, readonly string[]> = {}) =>
+  openChoices(draftWith({ classId: 'roublard', level, choices }), C);
+
+describe('paliers de niveau', () => {
+  it('n’ouvre aucun palier avant le niveau 4', () => {
+    expect(at(3).map((slot) => slot.id)).not.toContain('class:roublard:niveau-4');
+  });
+
+  it('ouvre le palier au niveau 4', () => {
+    expect(at(4).map((slot) => slot.id)).toContain('class:roublard:niveau-4');
+  });
+
+  it('n’ouvre la suite qu’une fois la route choisie', () => {
+    const ids = at(4).map((slot) => slot.id);
+    expect(ids).not.toContain('class:roublard:niveau-4-majeur');
+    expect(ids).not.toContain('class:roublard:niveau-4-don');
+  });
+
+  it('ouvre le +2 quand le joueur a choisi d’améliorer', () => {
+    const ids = at(4, { 'class:roublard:niveau-4': ['ability-2'] }).map((s) => s.id);
+    expect(ids).toContain('class:roublard:niveau-4-majeur');
+    expect(ids).not.toContain('class:roublard:niveau-4-don');
+  });
+
+  it('ouvre les dons quand le joueur a choisi un don', () => {
+    const slot = at(4, { 'class:roublard:niveau-4': ['feat'] }).find(
+      (entry) => entry.id === 'class:roublard:niveau-4-don',
+    );
+    expect(slot?.options.map((option) => option.id)).toContain('lutteur');
+  });
+
+  it('laisse deux +1 tomber sur des scores différents sans s’exclure', () => {
+    const slot = at(4, { 'class:roublard:niveau-4': ['ability-1-1'] }).find(
+      (entry) => entry.id === 'class:roublard:niveau-4-mineur',
+    );
+    expect(slot?.pick).toBe(2);
+    expect(slot?.options.every((option) => option.unavailable === null)).toBe(true);
+  });
+
+  it('refuse de monter un score au-delà de 20', () => {
+    const draft = {
+      ...draftWith({
+        classId: 'roublard',
+        level: 4,
+        choices: { 'class:roublard:niveau-4': ['ability-2'] },
+      }),
+      baseAbilities: { ...emptyDraft().baseAbilities, force: 19 },
+    };
+    const slot = openChoices(draft, C).find(
+      (entry) => entry.id === 'class:roublard:niveau-4-majeur',
+    );
+    const force = slot?.options.find((option) => option.id === 'force');
+    expect(force?.unavailable).toEqual({ kind: 'max-ability', max: 20 });
+  });
+});

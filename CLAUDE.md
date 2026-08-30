@@ -10,14 +10,16 @@ statique, sans backend, **pensé pour le téléphone d'abord**.
 
 ## 1. Périmètre
 
-**Dans le périmètre :** création de personnage **de niveau 1** pas-à-pas
-(assistant), fiche consultable, sauvegarde locale, import/export JSON,
-impression. Caractéristiques par **répartition de points ou tableau standard**.
+**Dans le périmètre :** création de personnage **du niveau 1 au niveau 20**
+pas-à-pas (assistant), fiche consultable, sauvegarde locale, import/export
+JSON, impression. Caractéristiques par **répartition de points ou tableau
+standard**. Le niveau pilote le bonus de maîtrise, les points de vie, les dés
+de vie, les emplacements de sorts et les paliers d'amélioration — un choix
+entre monter ses caractéristiques et prendre un don.
 
 **Hors périmètre (YAGNI — ne pas anticiper) :** comptes utilisateurs, backend,
 base de données, multijoueur, gestion de campagne, compendium complet,
-boutique, montée de niveau au-delà du niveau 1, multiclassage, dons, homebrew,
-mobile natif, thème sombre, annulation/rétablissement, brouillons multiples,
+boutique, multiclassage, homebrew, mobile natif, thème sombre, annulation/rétablissement, brouillons multiples,
 routage.
 
 **Reporté, pas abandonné** (à rouvrir quand la v1 tourne) : jets de dés 4d6
@@ -222,7 +224,7 @@ Attribution SRD obligatoire dans l'interface, et mention **« non affilié à
 Wizards of the Coast »**. Aucun logo, illustration, police ou élément
 d'habillage n'est copié.
 
-Aucun contenu hors SRD, à **deux** exceptions près, assumées et signalées dans
+Aucun contenu hors SRD, à **trois** exceptions près, assumées et signalées dans
 l'interface.
 
 1. **Historiques.** Le SRD 5.1 n'en publie qu'un seul, l'Acolyte, ce qui rend
@@ -238,7 +240,14 @@ l'interface.
    Trois tests d'intégrité vérifient que chaque entrée respecte la forme
    générique du SRD.
 
-2. **Origines personnalisées** : le joueur place lui-même les bonus de
+2. **Dons.** Le SRD 5.1 n'en publie qu'un, le Lutteur, et présente les dons
+   comme une règle optionnelle. Les autres appartiennent au *Player's
+   Handbook* : **on ne les recopie pas**. `data/feats.ts` reprend le Lutteur
+   tel quel (`fromSrd: true`) et ajoute des dons **originaux**, écrits ici,
+   sur la même forme courte : un titre, une phrase, trois repères, une règle.
+   Aucun ne reprend un don du PHB.
+
+3. **Origines personnalisées** : le joueur place lui-même les bonus de
    caractéristique de son peuple (+2 et +1) au lieu de les recevoir imposés.
    Le SRD 5.1 les fixe par race ; la règle optionnelle qui les libère est
    postérieure, et les révisions de 2024 en ont fait le comportement par

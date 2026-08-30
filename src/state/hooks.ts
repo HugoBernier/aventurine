@@ -1,4 +1,5 @@
 import { use, useCallback, useMemo } from 'react';
+import { MAX_LEVEL, MIN_LEVEL } from '../domain/progression';
 import type { Dispatch } from 'react';
 import { abilityRows } from '../domain/abilityRows';
 import type { AbilityRow } from '../domain/abilityRows';
@@ -264,5 +265,30 @@ export function useDraftText(field: 'name' | keyof PersonalTraits): DraftTextFie
   return {
     initial: field === 'name' ? state.draft.name : state.draft.personalTraits[field],
     commit,
+  };
+}
+
+export interface LevelView {
+  readonly level: number;
+  readonly canDecrease: boolean;
+  readonly canIncrease: boolean;
+  readonly setLevel: (level: number) => void;
+}
+
+export function useLevel(): LevelView {
+  const { state } = useWizardContext();
+  const dispatch = useWizardDispatch();
+  const setLevel = useCallback(
+    (level: number) => {
+      dispatch({ type: 'SET_LEVEL', level });
+    },
+    [dispatch],
+  );
+  const { level } = state.draft;
+  return {
+    level,
+    canDecrease: level > MIN_LEVEL,
+    canIncrease: level < MAX_LEVEL,
+    setLevel,
   };
 }

@@ -11,6 +11,7 @@ export const STEPS: readonly StepId[] = [
   'race',
   'class',
   'abilities',
+  'advancement',
   'background',
   'proficiencies',
   'spells',
@@ -34,6 +35,9 @@ const choiceScreen = (step: StepId, slot: ChoiceSlot): Screen => ({
 
 const SPELL_KINDS = new Set<ChoiceKind>(['cantrip', 'spell']);
 
+/** Ce qu'on gagne en montant de niveau, dans son propre chapitre. */
+const ADVANCEMENT_KINDS = new Set<ChoiceKind>(['advancement', 'improvement', 'feat']);
+
 function stepFor(slot: ChoiceSlot): StepId | null {
   if (isDeferredKind(slot.kind)) {
     return 'proficiencies';
@@ -48,6 +52,11 @@ function stepFor(slot: ChoiceSlot): StepId | null {
   // l'étape des caractéristiques, jamais celle de la race qui l'a ouvert.
   if (slot.kind === 'ability') {
     return 'abilities';
+  }
+  // Ce qu'on gagne en montant de niveau : sa propre étape, parce qu'un
+  // guerrier de niveau 20 y passe sept écrans.
+  if (ADVANCEMENT_KINDS.has(slot.kind)) {
+    return 'advancement';
   }
   return slot.source === 'background' ? 'background' : slot.source;
 }
@@ -77,11 +86,16 @@ export function buildFlow(
     ...inStep('race'),
 
     anchor('class', 'class'),
+    // Le niveau se choisit juste après la classe : il décide des points de vie,
+    // du bonus de maîtrise, des emplacements de sorts et des paliers ouverts.
+    anchor('class', 'level'),
     ...inStep('class'),
 
     anchor('abilities', 'ability-method'),
     anchor('abilities', 'ability-assign'),
     ...inStep('abilities'),
+
+    ...inStep('advancement'),
 
     anchor('background', 'background'),
     ...inStep('background'),

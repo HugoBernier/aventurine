@@ -20,11 +20,17 @@ import type {
 } from './content';
 import { NO_PROFICIENCIES } from './content';
 import type { CharacterDraft } from './draft';
-import { chosenAbilityBonuses, openChoices } from './openChoices';
+import { abilityTotals, openChoices } from './openChoices';
+import {
+  clampLevel,
+  maxHitPoints,
+  pactMagic,
+  proficiencyBonus,
+  spellSlots,
+} from './progression';
+import type { PactMagic, SpellSlots } from './progression';
 import { ALL_SKILLS, skillAbility } from './skills';
 import type { SkillId } from './skills';
-
-export const PROFICIENCY_BONUS_LEVEL_1 = 2;
 
 function sum(parts: readonly BreakdownPart[]): number {
   let total = 0;
@@ -67,7 +73,10 @@ export interface SpellcastingSheet {
   readonly ability: AbilityId;
   readonly saveDc: number;
   readonly attackBonus: number;
-  readonly level1Slots: number;
+  /** Emplacements par niveau de sort, index 0 = niveau 1. Vide pour un pacte. */
+  readonly slots: SpellSlots;
+  /** Occultiste seulement : peu d'emplacements, tous du même niveau. */
+  readonly pact: PactMagic | null;
   readonly preparation: PreparationMode;
   readonly preparedCount: number | null;
   readonly cantripIds: readonly string[];
@@ -123,20 +132,7 @@ function pickedByKind(
  * niveau 1. Les bonus fixes ne subsistent que là où il n'y a rien à placer —
  * l'humain, qui monte les six scores de 1.
  */
-function finalAbilities(draft: CharacterDraft, catalogue: Catalogue): AbilityScores {
-  const race = findRace(catalogue, draft.raceId);
-  const subrace = findSubrace(catalogue, draft.raceId, draft.subraceId);
-  const chosen = chosenAbilityBonuses(draft, catalogue);
-
-  return abilityScores((ability) => {
-    const racial = race?.abilityBonuses[ability] ?? 0;
-    const subracial = subrace?.abilityBonuses[ability] ?? 0;
-    const placed = chosen
-      .filter((entry) => entry.ability === ability)
-      .reduce((total, entry) => total + entry.bonus, 0);
-    return draft.baseAbilities[ability] + racial + subracial + placed;
-  });
-}
+const finalAbilities = abilityTotals;
 
 function mergeProficiencies(
   parts: readonly (Proficiencies | null | undefined)[],
@@ -386,14 +382,18 @@ function spellcastingSheet(
   const modifier = modifiers[casting.ability];
   const isPrepared =
     casting.preparation === 'prepared' || casting.preparation === 'spellbook';
+  const bonus = proficiencyBonus(draft.level);
+  const isPact = casting.progression === 'pact';
 
   return {
     ability: casting.ability,
-    saveDc: 8 + PROFICIENCY_BONUS_LEVEL_1 + modifier,
-    attackBonus: PROFICIENCY_BONUS_LEVEL_1 + modifier,
-    level1Slots: casting.level1Slots,
+    saveDc: 8 + bonus + modifier,
+    attackBonus: bonus + modifier,
+    slots: isPact ? [] : spellSlots(casting.progression, draft.level),
+    pact: isPact ? pactMagic(draft.level) : null,
     preparation: casting.preparation,
-    preparedCount: isPrepared ? Math.max(1, modifier + 1) : null,
+    // Sorts préparés : modificateur + niveau, jamais moins de un.
+    preparedCount: isPrepared ? Math.max(1, modifier + draft.level) : null,
     cantripIds: pickedByKind(draft, catalogue, ['cantrip']),
     spellIds: pickedByKind(draft, catalogue, ['spell']),
     alwaysPreparedIds: characterClass.subclass?.alwaysPreparedSpells ?? [],
@@ -405,6 +405,7 @@ function attacks(
   catalogue: Catalogue,
   modifiers: AbilityScores,
   proficiencies: Proficiencies,
+  proficiency: number,
 ): readonly Attack[] {
   const result: Attack[] = [];
   for (const line of lines) {
@@ -420,7 +421,7 @@ function attacks(
       proficiencies.weapons.includes(weapon.id);
     result.push({
       weaponId: weapon.id,
-      attackBonus: modifier + (isProficient ? PROFICIENCY_BONUS_LEVEL_1 : 0),
+      attackBonus: modifier + (isProficient ? proficiency : 0),
       damageDice: weapon.damageDice,
       damageBonus: modifier,
       damageType: weapon.damageType,
@@ -457,6 +458,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     (subrace?.bonusHitPointsPerLevel ?? 0) +
     (characterClass?.subclass?.bonusHitPointsPerLevel ?? 0);
 
+  const proficiency = proficiencyBonus(draft.level);
   const { proficient, expert } = grantedSkills(draft, catalogue);
   const { armor } = wornArmor(lines, catalogue);
   const speed = subrace?.speed ?? race?.speed ?? null;
@@ -473,7 +475,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
       ability,
       proficient: isProficient,
       expert: false,
-      bonus: modifiers[ability] + (isProficient ? PROFICIENCY_BONUS_LEVEL_1 : 0),
+      bonus: modifiers[ability] + (isProficient ? proficiency : 0),
     };
   });
 
@@ -492,7 +494,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
       ability,
       proficient: isProficient,
       expert: isExpert,
-      bonus: modifiers[ability] + multiplier * PROFICIENCY_BONUS_LEVEL_1,
+      bonus: modifiers[ability] + multiplier * proficiency,
     };
   });
 
@@ -507,17 +509,33 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     ...(background?.feature == null
       ? []
       : [{ source: 'background' as const, ...background.feature }]),
+    // Un don se lit sur la fiche comme n'importe quelle autre aptitude : le
+    // joueur ne se demande pas d'où elle vient au moment de s'en servir.
+    ...pickedByKind(draft, catalogue, ['feat']).flatMap((id) => {
+      const feat = catalogue.feats.find((entry) => entry.id === id);
+      return feat === undefined
+        ? []
+        : [{ source: 'class' as const, name: feat.name, text: feat.text }];
+    }),
   ];
 
   return {
     abilities,
     modifiers,
-    proficiencyBonus: PROFICIENCY_BONUS_LEVEL_1,
+    proficiencyBonus: proficiency,
     maxHitPoints:
       characterClass === null
         ? null
-        : characterClass.hitDie + modifiers.constitution + bonusHitPoints,
-    hitDice: characterClass === null ? null : { count: 1, die: characterClass.hitDie },
+        : maxHitPoints(
+            draft.level,
+            characterClass.hitDie,
+            modifiers.constitution,
+            bonusHitPoints,
+          ),
+    hitDice:
+      characterClass === null
+        ? null
+        : { count: clampLevel(draft.level), die: characterClass.hitDie },
     armorClass: armorClass(draft, catalogue, modifiers, lines),
     initiative: modifiers.dexterite,
     speedMeters: speed,
@@ -525,7 +543,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     darkvisionMeters: darkvision,
     saves,
     skills,
-    attacks: attacks(lines, catalogue, modifiers, proficiencies),
+    attacks: attacks(lines, catalogue, modifiers, proficiencies, proficiency),
     spellcasting: spellcastingSheet(draft, catalogue, modifiers),
     proficiencies: characterClass === null ? NO_PROFICIENCIES : proficiencies,
     languageIds: race?.languages ?? [],

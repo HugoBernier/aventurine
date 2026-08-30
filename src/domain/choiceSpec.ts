@@ -50,11 +50,36 @@ export interface FightingStyleSpec extends BaseSpec {
   readonly kind: 'fighting-style';
 }
 
-/** Demi-elfe : +1 à deux caractéristiques autres que le Charisme. */
+/**
+ * Deux façons de monter un score, distinguées par leur genre.
+ *
+ * `ability` est un bonus d'ORIGINE : le registre du domaine empêche d'en poser
+ * deux sur le même score. `improvement` est une amélioration de NIVEAU : deux
+ * +1 sur un même score y sont légitimes, mais rien ne dépasse 20.
+ */
 export interface AbilitySpec extends BaseSpec {
-  readonly kind: 'ability';
+  readonly kind: 'ability' | 'improvement';
   readonly bonus: number;
   readonly from: readonly AbilityId[];
+}
+
+/** Un don, pris à la place d'une amélioration de caractéristique. */
+export interface FeatSpec extends BaseSpec {
+  readonly kind: 'feat';
+}
+
+/** Le choix AMONT : améliorer ses scores, ou prendre un don. */
+export interface AdvancementSpec extends BaseSpec {
+  readonly kind: 'advancement';
+  readonly from: readonly AdvancementOption[];
+}
+
+export type AdvancementMode = 'ability-2' | 'ability-1-1' | 'feat';
+
+export interface AdvancementOption {
+  readonly id: AdvancementMode;
+  readonly label: string;
+  readonly blurb: string;
 }
 
 /** La liste de sorts n'est jamais recopiée : on référence celle d'une classe. */
@@ -77,6 +102,8 @@ export type ChoiceSpec =
   | AncestrySpec
   | FightingStyleSpec
   | AbilitySpec
+  | FeatSpec
+  | AdvancementSpec
   | SpellSpec
   | ExpertiseSpec;
 

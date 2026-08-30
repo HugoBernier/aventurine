@@ -18,6 +18,9 @@ export type ChoiceKind =
   | 'cantrip'
   | 'spell'
   | 'ability'
+  | 'improvement'
+  | 'feat'
+  | 'advancement'
   | 'equipment'
   | 'ancestry'
   | 'fighting-style'
@@ -26,7 +29,9 @@ export type ChoiceKind =
 /** Structuré, jamais rédigé : `ui/format/` compose la phrase française. */
 export type UnavailableReason =
   | { readonly kind: 'already-granted'; readonly source: ChoiceSource }
-  | { readonly kind: 'slot-full' };
+  | { readonly kind: 'slot-full' }
+  /** Un score au maximum : la règle interdit de dépasser 20 par progression. */
+  | { readonly kind: 'max-ability'; readonly max: number };
 
 export interface ChoiceDetail {
   readonly title: string;

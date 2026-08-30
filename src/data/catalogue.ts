@@ -8,6 +8,7 @@ import { ALIGNMENT_ENTRIES } from './alignments';
 import { ANCESTRY_ENTRIES } from './ancestries';
 import { ARMOR_ENTRIES } from './armor';
 import { BACKGROUND_ENTRIES } from './backgrounds';
+import { FEAT_ENTRIES } from './feats';
 import { CLASS_ENTRIES } from './classes/index';
 import { FIGHTING_STYLE_ENTRIES } from './fightingStyles';
 import { ITEM_ENTRIES } from './gear';
@@ -24,6 +25,7 @@ export const CATALOGUE: Catalogue = {
   races: RACE_ENTRIES,
   classes: CLASS_ENTRIES,
   backgrounds: BACKGROUND_ENTRIES,
+  feats: FEAT_ENTRIES,
   alignments: ALIGNMENT_ENTRIES,
   languages: LANGUAGE_ENTRIES,
   tools: TOOL_ENTRIES,
