@@ -102,6 +102,34 @@ describe('parcours de création', () => {
     expect(screen.getAllByText(/Il te reste .* monter/).length).toBeGreaterThan(0);
   });
 
+  it('donne une étiquette à chaque champ de saisie', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /n’a pas encore de nom/ }));
+    // `getByLabelText` échouerait sur un champ sans <label> associé.
+    expect(screen.getByLabelText('Le nom de ton personnage')).toBeInTheDocument();
+  });
+
+  it('n’utilise aucun élément cliquable sans rôle', () => {
+    render(<App />);
+    // Un `div` avec un `onClick` n'a ni rôle, ni focus, ni activation clavier.
+    // C'est la régression que `eslint-plugin-jsx-a11y` aurait signalée ; il est
+    // incompatible avec ESLint 10, donc le test tient ce rôle.
+    // Accès direct au DOM assumé : on audite une propriété STRUCTURELLE
+    // qu'aucune requête de Testing Library ne sait exprimer — l'absence d'un
+    // motif, pas la présence d'un élément.
+    // eslint-disable-next-line testing-library/no-node-access
+    const clickable = document.querySelectorAll('div[onclick], span[onclick]');
+    expect(clickable).toHaveLength(0);
+  });
+
+  it('groupe les options dans un ensemble nommé', () => {
+    render(<App />);
+    // `fieldset` + `legend` natifs : le nom du groupe est annoncé sans ARIA.
+    expect(screen.getByRole('group', { name: 'Choisis ta race' })).toBeInTheDocument();
+  });
+
   it('liste ce qui manque sur le récapitulatif et y renvoie en un geste', async () => {
     const user = userEvent.setup();
     render(<App />);

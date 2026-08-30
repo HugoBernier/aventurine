@@ -571,6 +571,48 @@ index, JS et CSS répondent 200.
 apparaîtrait — ce que la charte exclut aujourd'hui — les chemins relatifs
 casseraient sur une URL profonde, et il faudrait revenir à une base explicite.
 
+### A30. `jsx-a11y` retiré — incompatibilité irréductible, trouvée par la CI
+
+§A28 activait `eslint-plugin-jsx-a11y` en mode strict. **La première exécution
+de la CI a échoué** sur `npm ci`, et la cause est structurelle :
+
+| Greffon | Exige d'ESLint |
+|---|---|
+| `eslint-plugin-unicorn@74` | **≥ 10.4** |
+| `eslint-plugin-jsx-a11y@6.10.2` | **≤ 9** |
+
+Les deux sont **mutuellement exclusifs**. Aucune configuration ne les
+réconcilie ; seul un `--legacy-peer-deps` le masque.
+
+**Tranché : on garde `unicorn`, on retire `jsx-a11y`.** Sur ce dépôt, unicorn a
+attrapé de vrais défauts — un `sort` mutant, un `reduce` sans valeur initiale
+qui aurait levé sur un tableau vide, deux fonctions au-delà du seuil de
+complexité. `jsx-a11y`, lui, ne couvre presque rien de ce que la charte demande
+en accessibilité : cibles de 44 px, contraste AA, navigation clavier, aucune
+icône sans libellé — rien de tout cela n'est analysable statiquement. C'est
+exactement l'argument que le lot 5 avait avancé et que §A28 avait écarté ;
+l'incompatibilité lui donne raison.
+
+**Compensation, écrite et testée** : trois tests reprennent ce que le greffon
+aurait signalé — chaque bouton porte un nom accessible, chaque champ porte une
+étiquette, et aucun `div` ou `span` ne porte de gestionnaire de clic. À rouvrir
+dès que `jsx-a11y` accepte ESLint 10.
+
+### A31. La leçon : « ça marche chez moi » est entré par un drapeau non consigné
+
+`jsx-a11y` avait été installé avec `--legacy-peer-deps` pour contourner le
+conflit de pair. Le drapeau n'a été écrit nulle part : `package-lock.json` a
+gardé une résolution que `npm ci` refuse, et l'écart n'est apparu qu'en CI.
+
+C'est précisément ce que le lot 5 voulait empêcher en exigeant que la CI lance
+**exactement** ce que lance le développeur.
+
+**Règle ajoutée :** aucune dépendance ne s'installe avec `--legacy-peer-deps`
+ni `--force`. Un conflit de pair est une information, pas un obstacle à
+contourner : soit on choisit entre les deux greffons, soit on attend. Et la
+vérification qui compte n'est pas `npm install` mais **`npm ci` sur un
+`node_modules` supprimé** — c'est la seule qui reproduise la CI.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)

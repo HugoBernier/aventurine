@@ -47,6 +47,11 @@ spéculative, pas de couche de plugins.
 dépendance = du poids, des failles, une mise à jour. Si 30 lignes suffisent,
 on écrit les 30 lignes.
 
+**Jamais `--legacy-peer-deps` ni `--force`.** Un conflit de pair est une
+information : soit on tranche entre les deux paquets, soit on attend. Le
+contourner déplace la panne dans la CI, où elle coûte plus cher. La
+vérification qui compte est `npm ci` sur un `node_modules` supprimé.
+
 ---
 
 ## 3. Principes non négociables

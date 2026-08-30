@@ -6,7 +6,6 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import regexp from 'eslint-plugin-regexp';
 import vitest from '@vitest/eslint-plugin';
 import testingLibrary from 'eslint-plugin-testing-library';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
 import prettier from 'eslint-config-prettier';
 
 const REACT = ['react', 'react/*', 'react-dom', 'react-dom/*'];
@@ -77,11 +76,17 @@ export default tseslint.config(
   regexp.configs['flat/recommended'],
 
   { ...reactHooks.configs.flat.recommended, files: ['src/**/*.{ts,tsx}'] },
-  {
-    files: ['src/**/*.tsx'],
-    plugins: { 'jsx-a11y': jsxA11y },
-    rules: jsxA11y.flatConfigs.strict.rules,
-  },
+  // `eslint-plugin-jsx-a11y` est absent, et c'est un choix contraint : il
+  // plafonne à ESLint 9 alors qu'`unicorn` exige ESLint 10.4 ou plus. Les deux
+  // sont donc mutuellement exclusifs.
+  //
+  // On garde unicorn, parce que ce que la charte demande en accessibilité —
+  // cibles de 44 px, contraste AA, navigation clavier, libellé sur chaque
+  // cible — n'est presque pas analysable statiquement. Notre vrai analyseur
+  // d'accessibilité, ce sont les tests : `getByRole` échoue sur un `div`
+  // cliquable sans libellé, et src/tests/parcours.test.tsx balaie tous les
+  // boutons pour vérifier qu'ils portent un nom accessible.
+  // À rouvrir dès que jsx-a11y accepte ESLint 10.
 
   {
     files: ['**/*.{ts,tsx}'],
