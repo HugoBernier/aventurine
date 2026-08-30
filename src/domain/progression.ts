@@ -20,23 +20,40 @@ export function proficiencyBonus(level: number): number {
   return 2 + Math.floor((clampLevel(level) - 1) / 4);
 }
 
+/** Un jet venu d'un fichier n'est pas de confiance : il doit tenir sur le dé. */
+function isPlausibleRoll(roll: number | undefined, hitDie: number): roll is number {
+  return roll !== undefined && Number.isSafeInteger(roll) && roll >= 1 && roll <= hitDie;
+}
+
+/** Ce que le joueur a lancé, par niveau. Une clé absente vaut « moyenne fixe ». */
+export type HitPointRolls = Readonly<Record<string, number>>;
+
 /**
- * Niveau 1 : le maximum du dé. Ensuite la moyenne fixe, `dé / 2 + 1`, qui est
- * l'option sans jet du SRD — les jets sont hors périmètre (§B1). La
- * Constitution compte à chaque niveau, y compris le premier.
+ * Niveau 1 : le maximum du dé, toujours — la règle ne le fait jamais lancer.
+ * Ensuite, au choix du joueur : la moyenne fixe `dé / 2 + 1`, ou le dé qu'il a
+ * lancé à sa table et saisi ici. La Constitution s'ajoute à chaque niveau,
+ * premier compris.
  */
 export function maxHitPoints(
   level: number,
   hitDie: number,
   constitutionModifier: number,
   bonusPerLevel: number,
+  rolls: HitPointRolls = {},
 ): number {
   const levels = clampLevel(level);
   const perLevel = constitutionModifier + bonusPerLevel;
-  const afterFirst = (levels - 1) * (Math.floor(hitDie / 2) + 1 + perLevel);
+  const average = Math.floor(hitDie / 2) + 1;
+
+  let total = hitDie + perLevel;
+  for (let at = 2; at <= levels; at++) {
+    const rolled = rolls[String(at)];
+    const gained = isPlausibleRoll(rolled, hitDie) ? rolled : average;
+    total += gained + perLevel;
+  }
   // Un personnage ne tombe jamais sous 1 point de vie par niveau, même avec
   // une Constitution désastreuse.
-  return Math.max(hitDie + perLevel + afterFirst, levels);
+  return Math.max(total, levels);
 }
 
 /** Emplacements du niveau 1 au niveau 9, index 0 = sorts de niveau 1. */

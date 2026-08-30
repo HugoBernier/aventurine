@@ -54,6 +54,21 @@ function asScores(value: unknown): CharacterDraft['baseAbilities'] {
   });
 }
 
+/** Les clés viennent d'un fichier : on ne garde que des niveaux et des dés plausibles. */
+function asRolls(value: unknown): Readonly<Record<string, number>> {
+  if (!isRecord(value)) {
+    return {};
+  }
+  const rolls: Record<string, number> = {};
+  for (const [level, roll] of Object.entries(value)) {
+    const at = Number(level);
+    if (typeof roll === 'number' && Number.isSafeInteger(at) && at >= 2 && at <= 20) {
+      rolls[String(at)] = Math.trunc(roll);
+    }
+  }
+  return rolls;
+}
+
 function asTraits(value: unknown): PersonalTraits {
   const source = isRecord(value) ? value : {};
   return {
@@ -120,6 +135,8 @@ export function parseDraft(value: unknown): ParsedDraft | null {
       backgroundId: asNullableId(value.backgroundId),
       alignmentId: asNullableId(value.alignmentId),
       abilityMethod: asMethod(value.abilityMethod),
+      hitPointMethod: value.hitPointMethod === 'rolled' ? 'rolled' : 'average',
+      hitPointRolls: asRolls(value.hitPointRolls),
       baseAbilities: asScores(value.baseAbilities),
       choices,
       personalTraits: asTraits(value.personalTraits),

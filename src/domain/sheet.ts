@@ -459,6 +459,9 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     (characterClass?.subclass?.bonusHitPointsPerLevel ?? 0);
 
   const proficiency = proficiencyBonus(draft.level);
+  // « Moyenne fixe » ignore les jets sans les effacer : le joueur bascule d'un
+  // mode à l'autre sans retaper ce qu'il a lancé.
+  const rolls = draft.hitPointMethod === 'rolled' ? draft.hitPointRolls : {};
   const { proficient, expert } = grantedSkills(draft, catalogue);
   const { armor } = wornArmor(lines, catalogue);
   const speed = subrace?.speed ?? race?.speed ?? null;
@@ -534,6 +537,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
             characterClass.hitDie,
             modifiers.constitution,
             bonusHitPoints,
+            rolls,
           ),
     hitDice:
       characterClass === null

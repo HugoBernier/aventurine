@@ -1,6 +1,11 @@
 import type { AbilityId } from '../domain/abilities';
 import type { ChoiceSlotId, ChoiceSource } from '../domain/choice';
-import type { AbilityMethod, CharacterDraft, PersonalTraits } from '../domain/draft';
+import type {
+  AbilityMethod,
+  HitPointMethod,
+  CharacterDraft,
+  PersonalTraits,
+} from '../domain/draft';
 
 export type StepId =
   | 'race'
@@ -79,6 +84,12 @@ export interface WizardState {
 
 export type WizardAction =
   | { readonly type: 'SET_LEVEL'; readonly level: number }
+  | { readonly type: 'SET_HIT_POINT_METHOD'; readonly method: HitPointMethod }
+  | {
+      readonly type: 'SET_HIT_POINT_ROLL';
+      readonly level: number;
+      readonly roll: number | null;
+    }
   | { readonly type: 'SELECT_RACE'; readonly raceId: string }
   | { readonly type: 'SELECT_SUBRACE'; readonly subraceId: string }
   | { readonly type: 'SELECT_CLASS'; readonly classId: string }

@@ -25,6 +25,8 @@ const COMPLETE: CharacterDraft = {
   backgroundId: 'acolyte',
   alignmentId: 'loyal-bon',
   abilityMethod: 'standard-array',
+  hitPointMethod: 'average',
+  hitPointRolls: {},
   baseAbilities: {
     force: 15,
     dexterite: 14,
@@ -80,6 +82,8 @@ describe('ce qui manque', () => {
       STANDARD_ARRAY;
     const draft = draftWith({
       abilityMethod: 'standard-array',
+      hitPointMethod: 'average',
+      hitPointRolls: {},
       baseAbilities: {
         force,
         dexterite,

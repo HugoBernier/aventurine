@@ -80,3 +80,85 @@
   border-radius: var(--radius-md);
   background: var(--color-surface-selected);
 }
+
+/* Le choix du mode de points de vie, puis un champ par niveau — seulement
+   quand le joueur a dit qu'il lançait les dés. */
+.group {
+  border: 0;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.legend {
+  padding: 0;
+  font-weight: 600;
+  margin-block-end: var(--space-2);
+}
+
+.method {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.method + .method {
+  margin-block-start: var(--space-2);
+}
+
+.method:has(input:checked) {
+  border-width: 2px;
+  border-color: var(--color-accent);
+  background: var(--color-surface-selected);
+  padding: calc(var(--space-3) - 1px);
+}
+
+.methodName {
+  display: block;
+  font-weight: 600;
+}
+
+.methodHelp {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.rolls {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.roll {
+  display: grid;
+  grid-template-columns: 1fr 5rem auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.rollInput {
+  min-height: var(--touch-target);
+  /* 16 px au moins : en dessous, iOS zoome sur le champ. */
+  font-size: var(--font-size-200);
+  text-align: center;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.die {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}

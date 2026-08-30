@@ -6,7 +6,12 @@ import type { AbilityRow } from '../domain/abilityRows';
 import type { AbilityId } from '../domain/abilities';
 import type { Catalogue } from '../domain/catalogue';
 import type { ChoiceSlot, ChoiceSlotId } from '../domain/choice';
-import type { AbilityMethod, CharacterDraft, PersonalTraits } from '../domain/draft';
+import type {
+  AbilityMethod,
+  HitPointMethod,
+  CharacterDraft,
+  PersonalTraits,
+} from '../domain/draft';
 import { pickedFor } from '../domain/draft';
 import { draftIssues } from '../domain/issues';
 import type { Issue } from '../domain/issues';
@@ -273,6 +278,10 @@ export interface LevelView {
   readonly canDecrease: boolean;
   readonly canIncrease: boolean;
   readonly setLevel: (level: number) => void;
+  readonly hitPointMethod: HitPointMethod;
+  readonly hitPointRolls: Readonly<Record<string, number>>;
+  readonly setHitPointMethod: (method: HitPointMethod) => void;
+  readonly setHitPointRoll: (level: number, roll: number | null) => void;
 }
 
 export function useLevel(): LevelView {
@@ -284,11 +293,27 @@ export function useLevel(): LevelView {
     },
     [dispatch],
   );
+  const setHitPointMethod = useCallback(
+    (method: HitPointMethod) => {
+      dispatch({ type: 'SET_HIT_POINT_METHOD', method });
+    },
+    [dispatch],
+  );
+  const setHitPointRoll = useCallback(
+    (level: number, roll: number | null) => {
+      dispatch({ type: 'SET_HIT_POINT_ROLL', level, roll });
+    },
+    [dispatch],
+  );
   const { level } = state.draft;
   return {
     level,
     canDecrease: level > MIN_LEVEL,
     canIncrease: level < MAX_LEVEL,
     setLevel,
+    hitPointMethod: state.draft.hitPointMethod,
+    hitPointRolls: state.draft.hitPointRolls,
+    setHitPointMethod,
+    setHitPointRoll,
   };
 }

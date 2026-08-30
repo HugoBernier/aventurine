@@ -10,8 +10,26 @@ import styles from './LevelScreen.module.css';
  * cartes se cherchent au défilement, deux boutons se trouvent au pouce. Ce
  * que le niveau change s'affiche à côté, pour que le chiffre ait un sens.
  */
+/** Un champ vidé efface le jet ; tout ce qui n'est pas un entier est ignoré. */
+function asRoll(value: string): number | null {
+  if (value === '') {
+    return null;
+  }
+  const roll = Number(value);
+  return Number.isSafeInteger(roll) ? roll : null;
+}
+
 export function LevelScreen(): ReactNode {
-  const { level, canDecrease, canIncrease, setLevel } = useLevel();
+  const {
+    level,
+    canDecrease,
+    canIncrease,
+    setLevel,
+    hitPointMethod,
+    hitPointRolls,
+    setHitPointMethod,
+    setHitPointRoll,
+  } = useLevel();
   const sheet = useCharacterSheet();
   const draft = useDraft();
   const catalogue = useCatalogue();
@@ -85,6 +103,67 @@ export function LevelScreen(): ReactNode {
           <dd className={styles.value2}>{openAdvancements}</dd>
         </div>
       </dl>
+
+      {characterClass !== null && level > 1 && (
+        <>
+          <fieldset className={styles.group}>
+            <legend className={styles.legend}>Comment tes points de vie montent</legend>
+            {(
+              [
+                [
+                  'average',
+                  'La moyenne du dé',
+                  'Le calcul se fait tout seul. C’est le choix par défaut.',
+                ],
+                [
+                  'rolled',
+                  'J’ai lancé les dés',
+                  'Tu lances chez toi, tu saisis le résultat ici.',
+                ],
+              ] as const
+            ).map(([id, label, help]) => (
+              <label className={styles.method} key={id}>
+                <input
+                  type="radio"
+                  name="hit-point-method"
+                  checked={hitPointMethod === id}
+                  onChange={() => {
+                    setHitPointMethod(id);
+                  }}
+                />
+                <span>
+                  <span className={styles.methodName}>{label}</span>
+                  <span className={styles.methodHelp}>{help}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+
+          {hitPointMethod === 'rolled' && (
+            <ul className={styles.rolls}>
+              {Array.from({ length: level - 1 }, (_, index) => index + 2).map((at) => (
+                <li className={styles.roll} key={at}>
+                  <label htmlFor={`roll-${String(at)}`}>Niveau {at}</label>
+                  <input
+                    id={`roll-${String(at)}`}
+                    className={styles.rollInput}
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={characterClass.hitDie}
+                    placeholder={String(Math.floor(characterClass.hitDie / 2) + 1)}
+                    value={hitPointRolls[String(at)] ?? ''}
+                    onChange={(event) => {
+                      setHitPointRoll(at, asRoll(event.target.value));
+                    }}
+                  />
+                  <span className={styles.die}>sur d{characterClass.hitDie}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
 
       {nextAdvancement !== undefined && (
         <p className={styles.hint}>

@@ -6,6 +6,9 @@ import { MIN_LEVEL } from './progression';
 /** Les jets 4d6 sont hors périmètre v1 (docs/plans/00-arbitrage.md §B1). */
 export type AbilityMethod = 'point-buy' | 'standard-array';
 
+/** Moyenne fixe, ou le dé que le joueur a lancé à sa table et saisi ici. */
+export type HitPointMethod = 'average' | 'rolled';
+
 export interface PersonalTraits {
   readonly trait: string;
   readonly ideal: string;
@@ -35,6 +38,9 @@ export interface CharacterDraft {
   readonly backgroundId: string | null;
   readonly alignmentId: string | null;
   readonly abilityMethod: AbilityMethod;
+  readonly hitPointMethod: HitPointMethod;
+  /** Niveau (en clé) vers le dé lancé. Une clé absente vaut la moyenne fixe. */
+  readonly hitPointRolls: Readonly<Record<string, number>>;
   /** Scores AVANT bonus raciaux. Les six clés sont toujours présentes. */
   readonly baseAbilities: AbilityScores;
   /** Un dictionnaire unique. Clé absente = créneau jamais touché. */
@@ -59,6 +65,8 @@ export function emptyDraft(): CharacterDraft {
     backgroundId: null,
     alignmentId: null,
     abilityMethod: 'point-buy',
+    hitPointMethod: 'average',
+    hitPointRolls: {},
     baseAbilities: abilityScores(() => 8),
     choices: {},
     personalTraits: EMPTY_PERSONAL_TRAITS,

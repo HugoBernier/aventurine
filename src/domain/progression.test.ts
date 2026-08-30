@@ -53,6 +53,29 @@ describe('points de vie', () => {
     expect(maxHitPoints(4, 8, 0, 1)).toBe(8 + 1 + 3 * (5 + 1));
   });
 
+  it('remplace la moyenne par le dé que le joueur a lancé', () => {
+    // d10, Constitution +0 : 10 au niveau 1, puis le jet au lieu des 6 fixes.
+    expect(maxHitPoints(3, 10, 0, 0, { 2: 9, 3: 2 })).toBe(10 + 9 + 2);
+  });
+
+  it('ne prend un jet en compte que pour les niveaux atteints', () => {
+    expect(maxHitPoints(2, 10, 0, 0, { 2: 9, 3: 10 })).toBe(10 + 9);
+  });
+
+  it('retombe sur la moyenne fixe pour un niveau sans jet saisi', () => {
+    expect(maxHitPoints(3, 10, 0, 0, { 2: 9 })).toBe(10 + 9 + 6);
+  });
+
+  it('ignore un jet impossible pour le dé de la classe', () => {
+    // Un fichier importé peut annoncer 12 sur un d8 : on retombe sur la moyenne.
+    expect(maxHitPoints(2, 8, 0, 0, { 2: 12 })).toBe(8 + 5);
+    expect(maxHitPoints(2, 8, 0, 0, { 2: 0 })).toBe(8 + 5);
+  });
+
+  it('ajoute la Constitution au jet comme à la moyenne', () => {
+    expect(maxHitPoints(2, 8, 2, 0, { 2: 7 })).toBe(8 + 2 + 7 + 2);
+  });
+
   it('ne descend jamais sous un point de vie par niveau', () => {
     expect(maxHitPoints(5, 6, -5, 0)).toBe(5);
   });

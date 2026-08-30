@@ -168,6 +168,18 @@ function toggle(
   return { ...draft, choices: { ...draft.choices, [slot.id]: [...picked, optionId] } };
 }
 
+/** Un jet effacé retire sa clé : « pas de jet » et « jet de 0 » ne sont pas la même chose. */
+function withRoll(
+  rolls: Readonly<Record<string, number>>,
+  level: number,
+  roll: number | null,
+): Readonly<Record<string, number>> {
+  const rest = Object.fromEntries(
+    Object.entries(rolls).filter(([at]) => at !== String(level)),
+  );
+  return roll === null ? rest : { ...rest, [String(level)]: roll };
+}
+
 function selectRace(
   state: WizardState,
   catalogue: Catalogue,
@@ -266,6 +278,17 @@ export function createWizardReducer(
         return draft.level === level
           ? state
           : commit(state, { ...draft, level }, catalogue);
+      }
+      case 'SET_HIT_POINT_METHOD': {
+        return draft.hitPointMethod === action.method
+          ? state
+          : withDraft(state, { ...draft, hitPointMethod: action.method });
+      }
+      case 'SET_HIT_POINT_ROLL': {
+        return withDraft(state, {
+          ...draft,
+          hitPointRolls: withRoll(draft.hitPointRolls, action.level, action.roll),
+        });
       }
       case 'SELECT_RACE': {
         return selectRace(state, catalogue, action.raceId);

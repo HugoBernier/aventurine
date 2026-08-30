@@ -308,3 +308,25 @@ describe('niveau', () => {
     expect(back.draft.choices['class:roublard:niveau-4']).toBeUndefined();
   });
 });
+
+describe('points de vie lancés', () => {
+  it('retient le dé saisi pour un niveau', () => {
+    const next = run(from(), { type: 'SET_HIT_POINT_ROLL', level: 2, roll: 7 });
+    expect(next.draft.hitPointRolls).toEqual({ '2': 7 });
+  });
+
+  it('efface le jet plutôt que d’enregistrer un zéro quand le champ est vidé', () => {
+    const filled = run(from(), { type: 'SET_HIT_POINT_ROLL', level: 2, roll: 7 });
+    const cleared = run(filled, { type: 'SET_HIT_POINT_ROLL', level: 2, roll: null });
+    // « Pas de jet » et « jet de 0 » ne veulent pas dire la même chose : le
+    // premier retombe sur la moyenne, le second serait un total faux.
+    expect(cleared.draft.hitPointRolls).toEqual({});
+  });
+
+  it('garde les jets quand on revient à la moyenne fixe', () => {
+    const rolled = run(from(), { type: 'SET_HIT_POINT_ROLL', level: 2, roll: 7 });
+    const back = run(rolled, { type: 'SET_HIT_POINT_METHOD', method: 'average' });
+    expect(back.draft.hitPointRolls).toEqual({ '2': 7 });
+    expect(back.draft.hitPointMethod).toBe('average');
+  });
+});
