@@ -36,7 +36,7 @@
   border-block-start: 1px solid var(--color-rule);
 }
 
-/* La ligne ENTIÈRE est tactile — pas une icône, pas un lien de 12 px. */
+/* La ligne ENTIÈRE est tactile : pas une icône, pas un lien de 12 px. */
 .jump {
   display: grid;
   grid-template-columns: 1fr auto;

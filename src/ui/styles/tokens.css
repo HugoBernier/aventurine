@@ -1,4 +1,4 @@
-/* Jetons de design — Aventurine.
+/* Jetons de design d'Aventurine.
    Source : docs/plans/03-ui-mobile.md. Les ratios de contraste sont calculés,
    pas estimés. Aucun module CSS n'écrit une couleur en dur : tout passe par
    une variable de ce fichier. */
@@ -16,11 +16,11 @@
   --color-text-muted: #57534c; /* 7,03 */
   --color-text-subtle: #6e6960; /* 5,01 */
 
-  /* Accent 1 — interactif. Le seul bleu : aucune ambiguïté sur où appuyer. */
+  /* Accent 1, interactif. Le seul bleu : aucune ambiguïté sur où appuyer. */
   --color-accent: #1f4e79; /* 7,96 ; blanc dessus 8,66 */
   --color-accent-pressed: #173c5c; /* blanc dessus 11,43 */
 
-  /* Accent 2 — acquis. Jamais cliquable : pas de confusion avec l'accent 1. */
+  /* Accent 2, acquis. Jamais cliquable : pas de confusion avec l'accent 1. */
   --color-acquired: #3f6b3f; /* 5,70 ; 5,36 sur surface-selected */
 
   /* Pas un accent : n'apparaît qu'avec le mot « Erreur ». */
@@ -28,7 +28,7 @@
 
   /* Filets décoratifs uniquement (1,23) : toujours redondants avec du texte. */
   --color-rule: #e3ded5;
-  /* Contour de tout élément interactif : 3,49 — au-dessus du 3:1 exigé. */
+  /* Contour de tout élément interactif : 3,49, au-dessus du 3:1 exigé. */
   --color-control-border: #8a8275;
   /* Anneau de focus en encre, pas en accent : un anneau bleu sur un bouton
      bleu tomberait à 2,01. C'est outline-offset qui le pose sur la page. */
@@ -45,11 +45,11 @@
     'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
     'Noto Serif', serif;
 
-  --font-size-100: 0.875rem; /* 14 px — méta */
-  --font-size-200: 1rem; /* 16 px — plancher absolu des champs */
+  --font-size-100: 0.875rem; /* 14 px : méta */
+  --font-size-200: 1rem; /* 16 px : plancher absolu des champs */
   --font-size-300: 1.125rem; /* 18 px */
-  --font-size-400: 1.375rem; /* 22 px — h1 */
-  --font-size-500: 1.75rem; /* 28 px — grand chiffre */
+  --font-size-400: 1.375rem; /* 22 px : h1 */
+  --font-size-500: 1.75rem; /* 28 px : grand chiffre */
 
   --line-height-body: 1.5;
   --line-height-title: 1.25;
