@@ -29,12 +29,69 @@ export const BARBARIAN: CharacterClass = {
   },
   features: [
     {
+      level: 1,
       name: 'Rage',
-      text: 'Deux fois par jour, tu frappes plus fort et encaisses mieux.',
+      text: 'En action bonus : avantage en Force, dégâts de mêlée en plus, et résistance aux coups, perforations et tranchants.',
     },
     {
+      level: 1,
       name: 'Défense sans armure',
-      text: 'Sans armure, ta classe d’armure vaut 10 + Dextérité + Constitution.',
+      text: 'Sans armure, ta classe d’armure vaut 10 + Dextérité + Constitution. Le bouclier reste permis.',
+    },
+    {
+      level: 2,
+      name: 'Instinct du danger',
+      text: 'Avantage aux sauvegardes de Dextérité contre ce que tu vois venir : pièges, sorts, souffles.',
+    },
+    {
+      level: 2,
+      name: 'Attaque téméraire',
+      text: 'Tu attaques avec l’avantage — et on t’attaque avec l’avantage jusqu’à ton tour suivant.',
+    },
+    {
+      level: 3,
+      name: 'Voie primitive',
+      text: 'Tu choisis ce que ta rage fait de toi — berserker, guerrier totémique.',
+    },
+    {
+      level: 5,
+      name: 'Attaque supplémentaire',
+      text: 'Tu attaques deux fois quand tu prends l’action d’attaque.',
+    },
+    {
+      level: 5,
+      name: 'Déplacement accéléré',
+      text: 'Ta vitesse augmente de 3 mètres tant que tu ne portes pas d’armure lourde.',
+    },
+    {
+      level: 7,
+      name: 'Instinct sauvage',
+      text: 'Avantage à l’initiative, et tu peux agir même surpris si tu entres en rage aussitôt.',
+    },
+    {
+      level: 9,
+      name: 'Critique brutal',
+      text: 'Un dé de dégâts supplémentaire sur un critique en mêlée. Deux au niveau 13, trois au niveau 17.',
+    },
+    {
+      level: 11,
+      name: 'Rage implacable',
+      text: 'Tombé à 0 point de vie en rage, tu tiens debout avec 1 point si tu réussis une sauvegarde.',
+    },
+    {
+      level: 15,
+      name: 'Rage persistante',
+      text: 'Ta rage ne s’arrête plus que si tu tombes inconscient ou si tu y mets fin.',
+    },
+    {
+      level: 18,
+      name: 'Puissance indomptable',
+      text: 'Un test de Force inférieur à ton score de Force est remplacé par ce score.',
+    },
+    {
+      level: 20,
+      name: 'Champion primitif',
+      text: 'Ta Force et ta Constitution montent de 4, jusqu’à un maximum de 24.',
     },
   ],
   choices: [
@@ -91,6 +148,7 @@ export const FIGHTER: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Second souffle',
       text: 'Une fois par repos, tu récupères 1d10 + 1 points de vie en action bonus.',
     },
@@ -189,10 +247,12 @@ export const MONK: CharacterClass = {
   },
   features: [
     {
+      level: 1,
       name: 'Arts martiaux',
       text: 'Tu frappes à mains nues avec ta Dextérité, et tu enchaînes en action bonus.',
     },
     {
+      level: 1,
       name: 'Défense sans armure',
       text: 'Sans armure ni bouclier, ta classe d’armure vaut 10 + Dextérité + Sagesse.',
     },
@@ -249,12 +309,59 @@ export const ROGUE: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Attaque sournoise',
-      text: 'Une fois par tour, tu ajoutes 1d6 quand tu as l’avantage ou un allié au contact.',
+      text: 'Une fois par tour, tu ajoutes 1d6 quand tu as l’avantage ou qu’un allié est au contact. Le dé grandit d’un cran tous les deux niveaux.',
     },
     {
+      level: 1,
       name: 'Argot des voleurs',
       text: 'Un code secret qui passe pour une conversation ordinaire.',
+    },
+    {
+      level: 2,
+      name: 'Ruse',
+      text: 'Tu peux te précipiter, te désengager ou te cacher en action bonus, à chaque tour.',
+    },
+    {
+      level: 3,
+      name: 'Archétype de roublard',
+      text: 'Tu choisis la voie qui affine ta manière de faire — voleur, assassin, escroc arcanique.',
+    },
+    {
+      level: 5,
+      name: 'Esquive instinctive',
+      text: 'En réaction, tu réduis de moitié les dégâts d’une attaque que tu vois venir.',
+    },
+    {
+      level: 7,
+      name: 'Évasion',
+      text: 'Les effets de zone à sauvegarde de Dextérité ne te font plus rien si tu réussis, et moitié moins si tu rates.',
+    },
+    {
+      level: 11,
+      name: 'Talent fiable',
+      text: 'Sur un test où tu ajoutes ta maîtrise, tout dé inférieur à 10 compte comme un 10.',
+    },
+    {
+      level: 14,
+      name: 'Perception aveugle',
+      text: 'Si tu entends, tu sais où se trouve toute créature cachée ou invisible à 3 mètres.',
+    },
+    {
+      level: 15,
+      name: 'Esprit insaisissable',
+      text: 'Tu maîtrises les jets de sauvegarde de Sagesse.',
+    },
+    {
+      level: 18,
+      name: 'Insaisissable',
+      text: 'Aucune attaque ne bénéficie de l’avantage contre toi, sauf si tu es neutralisé.',
+    },
+    {
+      level: 20,
+      name: 'Coup de chance',
+      text: 'Une fois par repos, tu transformes un raté en réussite, ou un test manqué en 20.',
     },
   ],
   choices: [

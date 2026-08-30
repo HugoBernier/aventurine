@@ -28,10 +28,12 @@ export const PALADIN: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Sens divin',
       text: 'Tu repères les célestes, les fiélons et les morts-vivants à 18 mètres.',
     },
     {
+      level: 1,
       name: 'Imposition des mains',
       text: 'Une réserve de soins de 5 points, que tu distribues comme tu veux.',
     },
@@ -98,10 +100,12 @@ export const RANGER: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Ennemi juré',
       text: 'Tu pistes un type de créature avec l’avantage, et tu parles sa langue.',
     },
     {
+      level: 1,
       name: 'Explorateur né',
       text: 'Un terrain que tu connais ne te ralentit pas et ne t’égare pas.',
     },

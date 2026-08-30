@@ -11,6 +11,11 @@ export interface Feature {
   readonly text: string;
 }
 
+/** Une aptitude de classe, acquise à un niveau précis. */
+export interface LeveledFeature extends Feature {
+  readonly level: number;
+}
+
 export type ArmorCategory = 'legere' | 'intermediaire' | 'lourde' | 'bouclier';
 export type WeaponCategory = 'courantes' | 'de-guerre';
 export type DamageType =
@@ -244,7 +249,8 @@ export interface CharacterClass extends Named {
   readonly saves: readonly [AbilityId, AbilityId];
   readonly proficiencies: Proficiencies;
   readonly unarmoredDefense: UnarmoredDefense | null;
-  readonly features: readonly Feature[];
+  /** Rangées par niveau : la fiche n'affiche que celles déjà atteintes. */
+  readonly features: readonly LeveledFeature[];
   readonly choices: readonly ChoiceSpec[];
   readonly equipmentOptions: readonly EquipmentOption[];
   readonly fixedEquipment: readonly ItemLine[];

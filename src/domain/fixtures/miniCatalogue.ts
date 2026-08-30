@@ -148,7 +148,15 @@ export const ROGUE: CharacterClass = {
     tools: ['outils-de-voleur'],
   },
   unarmoredDefense: null,
-  features: [{ name: 'Attaque sournoise', text: '1d6 de dégâts en plus.' }],
+  features: [
+    { level: 1, name: 'Attaque sournoise', text: '1d6 de dégâts en plus.' },
+    // Une aptitude que seul un roublard de niveau 5 ou plus doit voir.
+    {
+      level: 5,
+      name: 'Esquive instinctive',
+      text: 'Tu réduis de moitié un coup encaissé.',
+    },
+  ],
   choices: [
     {
       kind: 'skill',

@@ -501,7 +501,10 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
   const features: readonly SheetFeature[] = [
     ...(race?.features ?? []).map((f) => ({ source: 'race' as const, ...f })),
     ...(subrace?.features ?? []).map((f) => ({ source: 'race' as const, ...f })),
-    ...(characterClass?.features ?? []).map((f) => ({ source: 'class' as const, ...f })),
+    // Une aptitude de niveau 5 n'apparaît pas sur la fiche d'un niveau 3.
+    ...(characterClass?.features ?? [])
+      .filter((f) => f.level <= clampLevel(draft.level))
+      .map(({ level: _level, ...f }) => ({ source: 'class' as const, ...f })),
     ...(characterClass?.subclass?.features ?? []).map((f) => ({
       source: 'class' as const,
       ...f,

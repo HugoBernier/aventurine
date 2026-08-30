@@ -359,3 +359,20 @@ describe('vision dans le noir', () => {
     expect(sheetOf({}).darkvisionMeters).toBeNull();
   });
 });
+
+describe('aptitudes par niveau', () => {
+  it('n’affiche pas une aptitude que le niveau n’a pas encore ouverte', () => {
+    const names = sheetOf({ classId: 'roublard' }).features.map(
+      (feature) => feature.name,
+    );
+    expect(names).toContain('Attaque sournoise');
+    expect(names).not.toContain('Esquive instinctive');
+  });
+
+  it('l’affiche une fois le niveau atteint', () => {
+    const names = sheetOf({ classId: 'roublard', level: 5 }).features.map(
+      (feature) => feature.name,
+    );
+    expect(names).toContain('Esquive instinctive');
+  });
+});

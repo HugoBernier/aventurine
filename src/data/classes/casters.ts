@@ -27,6 +27,7 @@ export const BARD: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Inspiration bardique',
       text: 'Tu donnes un d6 à un allié, qu’il ajoute à un jet de son choix.',
     },
@@ -112,6 +113,7 @@ export const CLERIC: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Incantation divine',
       text: 'Tu prépares chaque jour tes sorts parmi toute la liste du clerc.',
     },
@@ -226,10 +228,12 @@ export const DRUID: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Druidique',
       text: 'La langue secrète des druides, que seuls les initiés remarquent.',
     },
     {
+      level: 1,
       name: 'Incantation naturelle',
       text: 'Tu prépares chaque jour tes sorts parmi toute la liste du druide.',
     },
@@ -300,6 +304,7 @@ export const SORCERER: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Magie innée',
       text: 'Tes sorts viennent de ton sang : tu les connais, tu ne les prépares pas.',
     },
@@ -399,6 +404,7 @@ export const WARLOCK: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Magie de pacte',
       text: 'Peu d’emplacements, mais ils reviennent après un repos court.',
     },
@@ -487,10 +493,12 @@ export const WIZARD: CharacterClass = {
   unarmoredDefense: null,
   features: [
     {
+      level: 1,
       name: 'Grimoire',
       text: 'Six sorts y sont copiés ; tu en prépares une partie chaque jour.',
     },
     {
+      level: 1,
       name: 'Récupération arcanique',
       text: 'Un repos court par jour te rend un emplacement de sort.',
     },
