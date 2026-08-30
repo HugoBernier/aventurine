@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { Armor } from '../domain/content';
 
 const light = (id: string, name: string, base: number): Armor => ({

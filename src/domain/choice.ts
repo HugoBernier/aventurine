@@ -1,6 +1,6 @@
 /**
  * Identifiant d'un créneau de choix, sous la forme `source:parentId:subject`
- * — par exemple `class:roublard:skills`.
+ * Par exemple `class:roublard:skills`.
  *
  * Le parent est TOUJOURS un identifiant que le joueur a choisi lui-même. C'est
  * ce qui rend l'invalidation en cascade gratuite : passer de roublard à clerc

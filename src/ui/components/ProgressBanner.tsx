@@ -12,8 +12,8 @@ export interface ProgressBannerProps {
 }
 
 /**
- * Le texte annonce l'ÉTAPE — stable, encourageant. La barre fine mesure les
- * ÉCRANS — précise. Annoncer « écran 7 sur 19 » découragerait.
+ * Le texte annonce l'ÉTAPE, stable et encourageant. La barre fine mesure les
+ * ÉCRANS, précise. Annoncer « écran 7 sur 19 » découragerait.
  */
 export function ProgressBanner({
   stepLabel,

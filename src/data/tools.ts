@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { Tool } from '../domain/content';
 
 export const TOOL_ENTRIES: readonly Tool[] = [

@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 // Voir src/data/attribution.ts.
 import type { AbilityEntry } from '../domain/content';
 

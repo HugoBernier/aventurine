@@ -9,7 +9,7 @@ export interface NoticeProps {
 }
 
 /**
- * Le ton se lit dans le TEXTE avant la couleur — « Erreur : … » — et un filet
+ * Le ton se lit dans le TEXTE avant la couleur, « Erreur : … », et un filet
  * de 4 px double l'information sans dépendre de la teinte.
  */
 export function Notice({ tone, children, live, onDismiss }: NoticeProps): ReactNode {

@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import { ABILITIES } from '../../domain/abilities';
 import type { ChoiceSpec, SkillSpec, SpellSpec } from '../../domain/choiceSpec';
 import type {
@@ -77,7 +77,7 @@ export function equipmentChoice(
 
 /**
  * Un palier d'amélioration : le choix amont, puis les trois suites possibles.
- * Le domaine n'ouvre que celle que le joueur a désignée — c'est pourquoi les
+ * Le domaine n'ouvre que celle que le joueur a désignée, et c'est pourquoi les
  * quatre specs sont écrites ici, où la prose française a sa place.
  */
 export function advancement(level: number): Advancement {

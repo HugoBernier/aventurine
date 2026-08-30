@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { Item } from '../domain/content';
 import { ARMOR_ENTRIES } from './armor';
 import { TOOL_ENTRIES } from './tools';

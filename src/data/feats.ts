@@ -83,7 +83,7 @@ export const FEAT_ENTRIES: readonly Feat[] = [
     name: 'Geste sûr',
     blurb: 'Ta magie ne tremble pas, même sous les coups.',
     facts: ['+1 dans une carac.', 'Concentration protégée', 'Incantation d’une main'],
-    text: 'Tu gagnes +1 en Intelligence, Sagesse ou Charisme — celle qui porte tes sorts. Tu as l’avantage aux jets de concentration, et tu incantes une main occupée.',
+    text: 'Tu gagnes +1 en Intelligence, Sagesse ou Charisme, celle qui porte tes sorts. Tu as l’avantage aux jets de concentration, et tu incantes une main occupée.',
     fromSrd: false,
   },
 ];

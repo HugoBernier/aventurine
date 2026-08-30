@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
   ADVANCEMENTS,
@@ -14,7 +14,7 @@ import {
 export const BARD: CharacterClass = {
   id: 'barde',
   name: 'Barde',
-  blurb: 'Tu parles, tu joues, tu inspires — et parfois tu lances un sort.',
+  blurb: 'Tu parles, tu joues, tu inspires, et parfois tu lances un sort.',
   facts: ['Dé de vie d8', 'Dextérité + Charisme', 'Trois compétences au choix'],
   hitDie: 8,
   saves: ['dexterite', 'charisme'],
@@ -148,7 +148,7 @@ export const CLERIC: CharacterClass = {
     equipmentOption(
       'marteau-clerc',
       'Un marteau de guerre',
-      'Plus lourd — encore faut-il le maîtriser.',
+      'Plus lourd, encore faut-il le maîtriser.',
       ['1d8 contondant', 'Polyvalente (1d10)', 'Arme de guerre'],
       [item('marteau-de-guerre')],
     ),

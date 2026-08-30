@@ -129,7 +129,7 @@ function pickedByKind(
 
 /**
  * Base + bonus fixes + bonus d'origine placés par le joueur. Aucun plafond au
- * niveau 1. Les bonus fixes ne subsistent que là où il n'y a rien à placer —
+ * niveau 1. Les bonus fixes ne subsistent que là où il n'y a rien à placer :
  * l'humain, qui monte les six scores de 1.
  */
 const finalAbilities = abilityTotals;
@@ -433,7 +433,7 @@ function attacks(
 
 /**
  * Seul producteur de valeurs dérivées. Tolère un brouillon incomplet : ce qui
- * n'est pas encore calculable vaut `null`, jamais zéro — un zéro se confondrait
+ * n'est pas encore calculable vaut `null`, jamais zéro : un zéro se confondrait
  * avec un vrai résultat.
  */
 export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): CharacterSheet {

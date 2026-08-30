@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 //
 // Module d'agrégation À L'INTÉRIEUR de la couche `data` : autorisé par la
 // charte, qui n'interdit que les barils à la racine de `src/` ou d'une couche.

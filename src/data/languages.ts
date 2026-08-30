@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { Language } from '../domain/content';
 
 export const LANGUAGE_ENTRIES: readonly Language[] = [

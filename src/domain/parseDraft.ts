@@ -107,7 +107,7 @@ function asChoices(value: unknown): {
 }
 
 /**
- * Reconstruit un brouillon champ par champ depuis une valeur non fiable —
+ * Reconstruit un brouillon champ par champ depuis une valeur non fiable :
  * `localStorage` ou un fichier importé.
  *
  * Jamais de `spread` ni d'`Object.assign` : les champs inconnus sont ignorés

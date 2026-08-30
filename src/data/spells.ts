@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { MagicSchool, Spell, SpellLevel } from '../domain/content';
 
 interface Draft {
@@ -644,7 +644,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     time: '10 minutes',
     range: '9 mètres',
     summary:
-      'Tu lies à toi une monture d’esprit — cheval de guerre, poney, élan — intelligente et loyale.',
+      'Tu lies à toi une monture d’esprit intelligente et loyale : cheval de guerre, poney, élan.',
     classes: ['paladin'],
   }),
   level2({
@@ -793,7 +793,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: '18 mètres',
     s: false,
     summary:
-      'Une serrure s’ouvre, une barre saute, des menottes tombent — dans un claquement qu’on entend à 90 mètres.',
+      'Une serrure s’ouvre, une barre saute, des menottes tombent, dans un claquement qu’on entend à 90 mètres.',
     classes: ['barde', 'ensorceleur', 'magicien'],
   }),
   level2({
@@ -937,7 +937,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     m: 'une paire d’anneaux de platine valant au moins 50 po chacun',
     duration: '1 heure',
     summary:
-      'La cible gagne +1 en classe d’armure et aux sauvegardes et résiste à tout — mais tu subis les mêmes dégâts qu’elle.',
+      'La cible gagne +1 en classe d’armure et aux sauvegardes et résiste à tout, mais tu subis les mêmes dégâts qu’elle.',
     classes: ['clerc'],
   }),
   level2({
@@ -1300,7 +1300,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     m: 'de l’encens qui brûle',
     duration: '10 minutes',
     summary:
-      'Un cadavre répond à cinq questions, avec ce qu’il savait de son vivant — et ce qu’il veut bien dire.',
+      'Un cadavre répond à cinq questions, avec ce qu’il savait de son vivant, et ce qu’il veut bien dire.',
     classes: ['barde', 'clerc'],
   }),
   level3({
@@ -1341,7 +1341,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     school: 'transmutation',
     range: '45 mètres',
     summary:
-      'Les plantes s’épaississent et rendent la zone deux fois plus lente à traverser — ou nourrissent une récolte entière.',
+      'Les plantes s’épaississent et rendent la zone deux fois plus lente à traverser, ou nourrissent une récolte entière.',
     classes: ['barde', 'druide', 'rodeur'],
   }),
   level3({
@@ -2091,7 +2091,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     duration: '1 minute',
     ritual: true,
     summary:
-      'Tu poses trois questions par oui ou non à ta divinité, qui répond juste — dans les limites de ce qu’elle sait.',
+      'Tu poses trois questions par oui ou non à ta divinité, qui répond juste, dans les limites de ce qu’elle sait.',
     classes: ['clerc'],
   }),
   level5({
@@ -2253,7 +2253,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     duration: '1 heure',
     concentration: true,
     summary:
-      'Tu appelles un élémentaire d’air, de terre, de feu ou d’eau. Il t’obéit — tant que ta concentration tient.',
+      'Tu appelles un élémentaire d’air, de terre, de feu ou d’eau. Il t’obéit tant que ta concentration tient.',
     classes: ['druide', 'magicien'],
   }),
   level5({
@@ -2300,7 +2300,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     duration: '10 minutes',
     concentration: true,
     summary:
-      'Un mur invisible que rien ne traverse — ni objet, ni créature, ni sort. Seule la dissipation l’ouvre.',
+      'Un mur invisible que rien ne traverse : ni objet, ni créature, ni sort. Seule la dissipation l’ouvre.',
     classes: ['magicien'],
   }),
   level5({
@@ -2377,7 +2377,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: 'contact',
     m: 'des huiles et des onguents rares valant au moins 1 000 po, consumés',
     summary:
-      'Tu rends l’âme d’un humanoïde mort à un corps neuf — d’un peuple tiré au hasard.',
+      'Tu rends l’âme d’un humanoïde mort à un corps neuf, d’un peuple tiré au hasard.',
     classes: ['druide'],
   }),
   level5({
@@ -2422,7 +2422,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     m: 'une poignée de sable, une goutte d’encre et une plume d’oiseau de nuit',
     duration: '8 heures',
     summary:
-      'Tu entres dans le rêve de quelqu’un pour lui parler — ou pour le hanter et lui voler son repos.',
+      'Tu entres dans le rêve de quelqu’un pour lui parler, ou pour le hanter et lui voler son repos.',
     classes: ['barde', 'magicien', 'occultiste'],
   }),
   level5({
@@ -2456,7 +2456,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     time: '10 minutes',
     range: '18 mètres',
     summary:
-      'Tu appelles une entité d’un autre plan. Elle vient — et elle négocie son prix.',
+      'Tu appelles une entité d’un autre plan. Elle vient, et elle négocie son prix.',
     classes: ['clerc'],
   }),
   level6({
@@ -2633,7 +2633,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     duration: '1 heure',
     concentration: true,
     summary:
-      'Tu appelles une créature féerique puissante. Elle t’obéit — sauf si ta concentration cède.',
+      'Tu appelles une créature féerique puissante. Elle t’obéit, sauf si ta concentration cède.',
     classes: ['druide', 'occultiste'],
   }),
   level6({
@@ -2926,7 +2926,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: 'à vue',
     duration: '10 jours',
     summary:
-      'Un kilomètre carré de terrain change d’aspect, de son, d’odeur — et se laisse toucher.',
+      'Un kilomètre carré de terrain change d’aspect, de son, d’odeur, et se laisse toucher.',
     classes: ['barde', 'druide', 'magicien'],
   }),
   level7({
@@ -2949,7 +2949,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     m: 'un moulin à prières et de l’eau bénite',
     duration: '1 heure',
     summary:
-      '4d8+15 points de vie, puis 1 par tour pendant une heure — et les membres perdus repoussent.',
+      '4d8+15 points de vie, puis 1 par tour pendant une heure, et les membres perdus repoussent.',
     classes: ['barde', 'clerc', 'druide'],
   }),
   level7({
@@ -3003,7 +3003,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: '3 mètres',
     s: false,
     summary:
-      'Toi et huit compagnons franchissez n’importe quelle distance sur le même plan — plus ou moins juste.',
+      'Toi et huit compagnons franchissez n’importe quelle distance sur le même plan, plus ou moins juste.',
     classes: ['barde', 'ensorceleur', 'magicien'],
   }),
   level7({
@@ -3141,7 +3141,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: 'contact',
     duration: '24 heures',
     summary:
-      'La cible devient immunisée au psychique, aux charmes et à toute divination — même à un Souhait.',
+      'La cible devient immunisée au psychique, aux charmes et à toute divination, même à un Souhait.',
     classes: ['barde', 'magicien'],
   }),
   level8({
@@ -3230,7 +3230,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     m: 'une effigie de la cible et un composant précieux valant 500 po par niveau de la cible',
     duration: 'jusqu’à dissipation',
     summary:
-      'Tu enfermes une créature — sous terre, dans une gemme, dans un sommeil sans fin — jusqu’à ce qu’on l’en délivre.',
+      'Tu enfermes une créature jusqu’à ce qu’on l’en délivre : sous terre, dans une gemme, dans un sommeil sans fin.',
     classes: ['magicien', 'occultiste'],
   }),
   level9({
@@ -3282,7 +3282,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     duration: '1 heure',
     concentration: true,
     summary:
-      'Tu changes une créature en une autre, ou en objet, ou un objet en créature — définitivement si tu tiens une heure.',
+      'Tu changes une créature en une autre, ou en objet, ou un objet en créature, définitivement si tu tiens une heure.',
     classes: ['barde', 'magicien', 'occultiste'],
   }),
   level9({

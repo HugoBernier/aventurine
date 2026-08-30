@@ -24,13 +24,13 @@ export interface PersonalTraits {
  * depuis `buildSheet`. Une valeur calculable stockée serait une seconde source
  * de vérité, donc une divergence à venir.
  *
- * Tout est JSON pur — ni `Map`, ni `Set`, ni `Date`, ni instance de classe.
+ * Tout est JSON pur : ni `Map`, ni `Set`, ni `Date`, ni instance de classe.
  * C'est cette propriété, et elle seule, qui fait marcher `localStorage` et
  * l'import/export sans une ligne de sérialisation.
  */
 export interface CharacterDraft {
   readonly name: string;
-  /** De 1 à 20. Tout le reste — maîtrise, points de vie, emplacements — en découle. */
+  /** De 1 à 20. Tout le reste en découle : maîtrise, points de vie, emplacements. */
   readonly level: number;
   readonly raceId: string | null;
   readonly subraceId: string | null;

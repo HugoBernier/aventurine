@@ -6,7 +6,7 @@ import styles from './ChoiceGroup.module.css';
 /**
  * Intitulés des trois repères, par genre de choix. Ils vivent ici et non dans
  * le domaine : ce sont des libellés d'affichage. Un genre absent de cette
- * table n'affiche pas de bande de repères — elle n'informerait pas.
+ * table n'affiche pas de bande de repères, elle n'informerait pas.
  */
 const FACT_LABELS: Partial<Record<ChoiceKind, readonly [string, string, string]>> = {
   cantrip: ['Portée', 'Durée', 'Incantation'],
@@ -60,7 +60,7 @@ function Facts({
 /**
  * `fieldset` + `legend` + `input` natifs, sans un seul rôle ARIA : le natif
  * fournit le regroupement, le nom du groupe, `aria-checked`, les flèches et
- * Home/End — correctement, sur tous les lecteurs d'écran. Un `radiogroup`
+ * Home/End, correctement, sur tous les lecteurs d'écran. Un `radiogroup`
  * fait main serait plus de code ET moins fiable.
  */
 export function ChoiceGroup({

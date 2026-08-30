@@ -34,7 +34,7 @@ export function AppShell({
     // le défilement vient d'être remis à zéro juste au-dessus : laisser le
     // navigateur « révéler » le titre le referait bouger.
     titleRef.current?.focus({ preventScroll: true });
-    document.title = `${title} — Aventurine`;
+    document.title = `${title} · Aventurine`;
   }, [screenKey, title]);
 
   return (

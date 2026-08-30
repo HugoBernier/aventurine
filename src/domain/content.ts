@@ -54,7 +54,7 @@ export interface Named {
 
 export interface AbilityEntry extends Named {
   readonly id: AbilityId;
-  /** « Frapper, porter, briser. » — pour qui n'a jamais joué. */
+  /** « Frapper, porter, briser. » Pour qui n'a jamais joué. */
   readonly purpose: string;
 }
 

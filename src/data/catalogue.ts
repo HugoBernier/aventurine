@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 //
 // Module d'agrégation à l'intérieur de la couche `data` : il compose le
 // contenu, il ne ré-exporte aucune autre couche.

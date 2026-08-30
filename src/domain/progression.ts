@@ -29,7 +29,7 @@ function isPlausibleRoll(roll: number | undefined, hitDie: number): roll is numb
 export type HitPointRolls = Readonly<Record<string, number>>;
 
 /**
- * Niveau 1 : le maximum du dé, toujours — la règle ne le fait jamais lancer.
+ * Niveau 1 : le maximum du dé, toujours : la règle ne le fait jamais lancer.
  * Ensuite, au choix du joueur : la moyenne fixe `dé / 2 + 1`, ou le dé qu'il a
  * lancé à sa table et saisi ici. La Constitution s'ajoute à chaque niveau,
  * premier compris.

@@ -86,7 +86,7 @@ function standardArrayIssues(draft: CharacterDraft): readonly Issue[] {
 
 /**
  * Un créneau qui porte plus de réponses qu'il n'accepte. Inatteignable par un
- * geste — le reducer refuse — mais atteignable en relisant une sauvegarde
+ * geste (le reducer refuse), mais atteignable en relisant une sauvegarde
  * ancienne ou modifiée à la main. On préfère rendre l'invalide irreprésentable
  * plutôt que le détecter ; le niveau existe parce qu'une sauvegarde n'est pas
  * une entrée de confiance.

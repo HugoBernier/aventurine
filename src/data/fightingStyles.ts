@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { FightingStyle } from '../domain/content';
 
 export const FIGHTING_STYLE_ENTRIES: readonly FightingStyle[] = [

@@ -3,7 +3,7 @@
  * durs, pas pour ressembler au SRD :
  *
  * - `nain` porte une sous-race, `demi-elfe` un choix de caractéristiques et un
- *   choix de compétences — donc deux sources de créneaux de race ;
+ *   choix de compétences, donc deux sources de créneaux de race ;
  * - `roublard` a des compétences ET une expertise (dont les options sont les
  *   compétences déjà acquises), `clerc` lance des sorts et a une sous-classe ;
  * - `acolyte` donne Perception d'office, ce qui crée le doublon avec la classe ;

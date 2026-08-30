@@ -389,7 +389,7 @@ const slug = (name: string) =>
 
 describe('sorts', () => {
   it('donne à chaque sort un identifiant qui découle de son nom', () => {
-    // Six entrées portaient un identifiant sans rapport avec leur nom —
+    // Six entrées portaient un identifiant sans rapport avec leur nom,
     // « toucher-du-vampire » pour Contact glacial. Le nom est la source.
     for (const spell of C.spells) {
       expect(spell.id).toBe(slug(spell.name));

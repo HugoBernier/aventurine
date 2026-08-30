@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import { ABILITIES } from '../domain/abilities';
 import type { ChoiceSpec } from '../domain/choiceSpec';
 import type { Race } from '../domain/content';
@@ -7,7 +7,7 @@ import { ALL_SKILLS } from '../domain/skills';
 
 /**
  * Origines personnalisées : le joueur PLACE le bonus de son peuple au lieu de
- * le subir. C'est la seule règle de ce dépôt qui ne vient pas du SRD 5.1 —
+ * le subir. C'est la seule règle de ce dépôt qui ne vient pas du SRD 5.1 :
  * exception assumée, voir CLAUDE.md, « Sources et droits ».
  *
  * Le registre des caractéristiques du domaine interdit d'empiler deux bonus
@@ -240,7 +240,7 @@ export const RACE_ENTRIES: readonly Race[] = [
         id: 'elfe-noir',
         name: 'Elfe noir',
         blurb:
-          'Grandi sous la terre, à l’aise dans le noir complet — et mal à l’aise au grand jour.',
+          'Grandi sous la terre, à l’aise dans le noir complet, et mal à l’aise au grand jour.',
         facts: ['+1 au choix', 'Voit à 36 m dans le noir', 'Gêné en plein soleil'],
         abilityBonuses: {},
         skills: [],

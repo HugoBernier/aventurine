@@ -1,5 +1,5 @@
 /**
- * Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+ * Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
  *
  * La licence impose une mention exacte et l'indication que l'œuvre a été
  * modifiée. La version anglaise est la mention légale : on ne la traduit pas.

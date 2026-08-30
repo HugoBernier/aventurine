@@ -11,7 +11,7 @@ export interface ExplainerProps {
  * Seul mécanisme d'aide du site, et volontairement natif : `<details>` gère
  * l'ouverture, le clavier et l'exposition aux lecteurs d'écran gratuitement.
  * Une feuille glissante coûterait un piège de focus, un verrou de défilement
- * — un nid à bugs connu sur iOS — et masquerait le contexte qu'on explique.
+ * (un nid à bugs connu sur iOS) et masquerait le contexte qu'on explique.
  */
 export function Explainer({ label, children }: ExplainerProps): ReactNode {
   const [isOpen, setIsOpen] = useState(false);

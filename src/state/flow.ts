@@ -65,7 +65,7 @@ function stepFor(slot: ChoiceSlot): StepId | null {
  * Le parcours n'est jamais stocké : il se recalcule depuis le brouillon.
  *
  * Un écran de créneau naît d'`openChoices`, donc ajouter une race à sous-races
- * n'ajoute aucun code ici — seulement une entrée de données. Une étape sans
+ * n'ajoute aucun code ici, seulement une entrée de données. Une étape sans
  * écran (les sorts d'un roublard) disparaît du parcours au lieu d'apparaître
  * grisée.
  */
@@ -133,7 +133,7 @@ export function progressOf(flow: readonly Screen[], screenId: ScreenId): Progres
     step: screen.step,
     // Le dénominateur compte les huit chapitres, PAS ceux que le brouillon a
     // déjà ouverts. Compter les étapes applicables le faisait grandir à chaque
-    // choix — « étape 1 sur 5 », puis « sur 6 », puis « sur 7 » — donc avancer
+    // choix, « étape 1 sur 5 », puis « sur 6 », puis « sur 7 », donc avancer
     // donnait l'impression de reculer. Un roublard saute le numéro des sorts :
     // un chapitre passé se voit, un but qui recule se subit.
     stepIndex: STEPS.indexOf(screen.step) + 1,

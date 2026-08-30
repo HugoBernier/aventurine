@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
   ROGUE_ADVANCEMENTS,
@@ -46,12 +46,12 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 2,
       name: 'Attaque téméraire',
-      text: 'Tu attaques avec l’avantage — et on t’attaque avec l’avantage jusqu’à ton tour suivant.',
+      text: 'Tu attaques avec l’avantage, et on t’attaque avec l’avantage jusqu’à ton tour suivant.',
     },
     {
       level: 3,
       name: 'Voie primitive',
-      text: 'Tu choisis ce que ta rage fait de toi — berserker, guerrier totémique.',
+      text: 'Tu choisis ce que ta rage fait de toi : berserker, guerrier totémique.',
     },
     {
       level: 5,
@@ -326,7 +326,7 @@ export const ROGUE: CharacterClass = {
     {
       level: 3,
       name: 'Archétype de roublard',
-      text: 'Tu choisis la voie qui affine ta manière de faire — voleur, assassin, escroc arcanique.',
+      text: 'Tu choisis la voie qui affine ta manière de faire : voleur, assassin, escroc arcanique.',
     },
     {
       level: 5,

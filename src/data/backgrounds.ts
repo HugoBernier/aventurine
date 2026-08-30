@@ -1,4 +1,4 @@
-// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+// Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { Background } from '../domain/content';
 import { NO_PROFICIENCIES } from '../domain/content';
 import { ALL_SKILLS } from '../domain/skills';

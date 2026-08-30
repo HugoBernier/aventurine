@@ -32,7 +32,7 @@ interface SelectionConfig {
 /**
  * Race, sous-race, classe et historique se choisissent de la même façon :
  * quatre usages réels, donc un seul composant piloté par une table plutôt que
- * quatre presque identiques — ou une cascade de ternaires.
+ * quatre presque identiques, ou une cascade de ternaires.
  */
 const CONFIG: Record<SelectionKind, SelectionConfig> = {
   race: {

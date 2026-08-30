@@ -99,12 +99,12 @@ function fixedGrants(draft: CharacterDraft, catalogue: Catalogue): Granted {
 /**
  * L'ordre de résolution EST la priorité d'exclusion : race, puis historique,
  * puis classe. L'expertise passe en dernier, parce que ses options sont les
- * compétences déjà acquises — accrochée derrière la classe elle proposerait
+ * compétences déjà acquises : accrochée derrière la classe elle proposerait
  * une liste vide (docs/plans/00-arbitrage.md §A15).
  */
 /**
  * Le plus haut niveau de sort que les emplacements du personnage ouvrent.
- * Zéro tant qu'aucune classe n'est choisie — la liste est alors vide.
+ * Zéro tant qu'aucune classe n'est choisie, la liste est alors vide.
  */
 function highestSpellLevel(draft: CharacterDraft, catalogue: Catalogue): number {
   const casting = findClass(catalogue, draft.classId)?.spellcasting;
@@ -427,7 +427,7 @@ export function openChoices(
     const options = buildOptions(owner, draft, catalogue, granted).map(
       (entry): ChoiceOption => {
         const isChosen = picked.includes(entry.id);
-        // Le registre ne contient jamais les réponses de CE créneau — elles y
+        // Le registre ne contient jamais les réponses de CE créneau : elles y
         // sont versées après. Une option marquée ici l'est donc par une source
         // antérieure, et le fait qu'on l'ait cochée n'y change rien : c'est ce
         // qui permet à la purge de retirer un doublon apparu après coup.
@@ -532,7 +532,7 @@ export function chosenAbilityBonuses(
 /**
  * Les six scores finaux : base, bonus fixes, bonus d'origine et améliorations
  * de niveau. La fiche s'en sert pour afficher, `openChoices` pour savoir ce
- * qui a atteint 20 — un seul calcul, donc une seule règle.
+ * qui a atteint 20 : un seul calcul, donc une seule règle.
  */
 export function abilityTotals(
   draft: CharacterDraft,
