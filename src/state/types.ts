@@ -1,5 +1,6 @@
 import type { AbilityId } from '../domain/abilities';
 import type { ChoiceSlotId, ChoiceSource } from '../domain/choice';
+import type { PersistedCharacter } from './persistence/DraftStorage';
 import type {
   AbilityMethod,
   HitPointMethod,
@@ -80,9 +81,16 @@ export interface WizardState {
   readonly currentScreenId: ScreenId;
   readonly notices: readonly Notice[];
   readonly storage: StorageStatus;
+  /** Le personnage sur lequel on travaille. */
+  readonly currentId: string;
+  /** Les AUTRES personnages rangés. Le courant vit dans `draft`. */
+  readonly others: readonly PersistedCharacter[];
 }
 
 export type WizardAction =
+  | { readonly type: 'NEW_CHARACTER' }
+  | { readonly type: 'SWITCH_CHARACTER'; readonly id: string }
+  | { readonly type: 'DELETE_CHARACTER'; readonly id: string }
   | { readonly type: 'SET_LEVEL'; readonly level: number }
   | { readonly type: 'SET_HIT_POINT_METHOD'; readonly method: HitPointMethod }
   | {

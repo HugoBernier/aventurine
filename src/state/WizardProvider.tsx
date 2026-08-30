@@ -29,12 +29,18 @@ function restore(storage: DraftStorage, catalogue: Catalogue): WizardState {
     const status: StorageStatus = result.kind === 'unavailable' ? 'memory' : 'ok';
     return { ...initialState(), storage: status };
   }
+  const { characters, currentId } = result.session;
+  const current = characters.find((entry) => entry.id === currentId) ?? characters[0];
+  if (current === undefined) {
+    return { ...initialState(), storage: 'ok' };
+  }
   // L'écran mémorisé peut avoir disparu si le contenu a changé de version.
-  const flow = buildFlow(result.session.draft, catalogue);
-  const isKnown = flow.some((screen) => screen.id === result.session.currentScreenId);
+  const flow = buildFlow(current.draft, catalogue);
+  const isKnown = flow.some((screen) => screen.id === current.currentScreenId);
   return {
-    ...initialState(result.session.draft),
-    currentScreenId: isKnown ? result.session.currentScreenId : (flow[0]?.id ?? 'race'),
+    ...initialState(current.draft, current.id),
+    currentScreenId: isKnown ? current.currentScreenId : (flow[0]?.id ?? 'race'),
+    others: characters.filter((entry) => entry.id !== current.id),
   };
 }
 
@@ -58,7 +64,7 @@ export function WizardProvider({
     restore(store, catalogue),
   );
 
-  const { draft, currentScreenId, storage: storageStatus } = state;
+  const { draft, currentScreenId, currentId, others, storage: storageStatus } = state;
   // L'état du stockage suffit à savoir qu'il ne sert à rien de réessayer :
   // une ref de plus serait une seconde source de vérité.
   const hasStorageFailed = storageStatus === 'quota' || storageStatus === 'memory';
@@ -71,8 +77,8 @@ export function WizardProvider({
       const result = store.save({
         version: SCHEMA_VERSION,
         savedAt: new Date().toISOString(),
-        draft,
-        currentScreenId,
+        characters: [...others, { id: currentId, draft, currentScreenId }],
+        currentId,
       });
       if (result.kind !== 'ok') {
         // On cesse d'insister : réessayer à chaque frappe consommerait du
@@ -92,7 +98,7 @@ export function WizardProvider({
       globalThis.clearTimeout(timer);
       globalThis.removeEventListener('pagehide', flush);
     };
-  }, [draft, currentScreenId, store, hasStorageFailed]);
+  }, [draft, currentScreenId, currentId, others, store, hasStorageFailed]);
 
   const value = useMemo<WizardContextValue>(
     () => ({ state, catalogue }),

@@ -4,6 +4,7 @@ import type { Dispatch } from 'react';
 import { abilityRows } from '../domain/abilityRows';
 import type { AbilityRow } from '../domain/abilityRows';
 import type { AbilityId } from '../domain/abilities';
+import { findClass, findRace } from '../domain/catalogue';
 import type { Catalogue } from '../domain/catalogue';
 import type { ChoiceSlot, ChoiceSlotId } from '../domain/choice';
 import type {
@@ -315,5 +316,73 @@ export function useLevel(): LevelView {
     hitPointRolls: state.draft.hitPointRolls,
     setHitPointMethod,
     setHitPointRoll,
+  };
+}
+
+export interface CharacterEntry {
+  readonly id: string;
+  readonly name: string;
+  readonly summary: string;
+  readonly isCurrent: boolean;
+}
+
+export interface LibraryView {
+  readonly characters: readonly CharacterEntry[];
+  readonly create: () => void;
+  readonly switchTo: (id: string) => void;
+  readonly remove: (id: string) => void;
+}
+
+/** Le personnage courant en tête, puis les autres : l'ordre ne saute pas. */
+export function useLibrary(): LibraryView {
+  const { state, catalogue } = useWizardContext();
+  const dispatch = useWizardDispatch();
+
+  const describe = useCallback(
+    (draft: CharacterDraft): string => {
+      const race = findRace(catalogue, draft.raceId)?.name;
+      const characterClass = findClass(catalogue, draft.classId)?.name;
+      const parts = [race, characterClass].filter((part) => part !== undefined);
+      const level = `niveau ${String(draft.level)}`;
+      return parts.length === 0 ? level : `${parts.join(' ')} · ${level}`;
+    },
+    [catalogue],
+  );
+
+  const characters = useMemo(
+    () => [
+      {
+        id: state.currentId,
+        name: state.draft.name === '' ? 'Sans nom' : state.draft.name,
+        summary: describe(state.draft),
+        isCurrent: true,
+      },
+      ...state.others.map((entry) => ({
+        id: entry.id,
+        name: entry.draft.name === '' ? 'Sans nom' : entry.draft.name,
+        summary: describe(entry.draft),
+        isCurrent: false,
+      })),
+    ],
+    [state.currentId, state.draft, state.others, describe],
+  );
+
+  return {
+    characters,
+    create: useCallback(() => {
+      dispatch({ type: 'NEW_CHARACTER' });
+    }, [dispatch]),
+    switchTo: useCallback(
+      (id: string) => {
+        dispatch({ type: 'SWITCH_CHARACTER', id });
+      },
+      [dispatch],
+    ),
+    remove: useCallback(
+      (id: string) => {
+        dispatch({ type: 'DELETE_CHARACTER', id });
+      },
+      [dispatch],
+    ),
   };
 }

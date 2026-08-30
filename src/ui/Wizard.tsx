@@ -12,6 +12,7 @@ import { AbilityMethodScreen } from './screens/AbilityMethodScreen';
 import { AlignmentScreen } from './screens/AlignmentScreen';
 import { ChoiceSlotScreen } from './screens/ChoiceSlotScreen';
 import { LevelScreen } from './screens/LevelScreen';
+import { LibraryScreen } from './screens/LibraryScreen';
 import { NameScreen } from './screens/NameScreen';
 import { PersonalityScreen } from './screens/PersonalityScreen';
 import { SelectionScreen } from './screens/SelectionScreen';
@@ -109,7 +110,7 @@ function ScreenBody({ screen }: { readonly screen: Screen }): ReactNode {
 
 export function Wizard(): ReactNode {
   const { screen, progress, canGoBack, canGoNext, goNext, goBack } = useWizard();
-  // Le titre d'un écran de créneau EST sa question — « Où mettre ton +2 ? » —
+  // Le titre d'un écran de créneau EST sa question, « Où mettre ton +2 ? »,
   // et non le générique « Un choix à faire », identique sur vingt écrans.
   const slotView = useChoiceSlot(screen.kind === 'choice' ? screen.slotId : null);
   const { notices, dismiss } = useNotices();
@@ -117,6 +118,49 @@ export function Wizard(): ReactNode {
   // Le récapitulatif n'est pas une étape : il s'ouvre par « Ma fiche » et se
   // referme. C'est de l'état d'affichage, il reste donc dans l'interface.
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+
+  if (isLibraryOpen) {
+    return (
+      <AppShell
+        screenKey="library"
+        title="Tes personnages"
+        lead="Passe de l’un à l’autre, ou commence-en un nouveau."
+        header={
+          <ProgressBanner
+            stepLabel="Tes personnages"
+            stepIndex={1}
+            stepCount={1}
+            screenIndex={1}
+            screenCount={1}
+            onBack={() => {
+              setIsLibraryOpen(false);
+            }}
+            onOpenSummary={() => {
+              setIsLibraryOpen(false);
+              setIsSummaryOpen(true);
+            }}
+          />
+        }
+        actions={
+          <ActionBar
+            primary={{
+              label: 'Revenir à l’assistant',
+              onClick: () => {
+                setIsLibraryOpen(false);
+              },
+            }}
+          />
+        }
+      >
+        <LibraryScreen
+          onLeave={() => {
+            setIsLibraryOpen(false);
+          }}
+        />
+      </AppShell>
+    );
+  }
 
   if (isSummaryOpen) {
     return (
@@ -154,6 +198,10 @@ export function Wizard(): ReactNode {
         <SummaryScreen
           onNavigate={() => {
             setIsSummaryOpen(false);
+          }}
+          onOpenLibrary={() => {
+            setIsSummaryOpen(false);
+            setIsLibraryOpen(true);
           }}
         />
       </AppShell>

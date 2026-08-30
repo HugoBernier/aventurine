@@ -8,6 +8,7 @@ import type { ChoiceSlot } from '../domain/choice';
 import { emptyDraft, pickedFor } from '../domain/draft';
 import type { AbilityMethod, CharacterDraft } from '../domain/draft';
 import { openChoices } from '../domain/openChoices';
+import type { PersistedCharacter } from './persistence/DraftStorage';
 import {
   POINT_BUY_BUDGET,
   POINT_BUY_MAX,
@@ -23,8 +24,36 @@ import type { Notice, NoticeReason, WizardAction, WizardState } from './types';
 /** Les avis les plus anciens disparaissent : on n'empile pas les bandeaux. */
 const MAX_NOTICES = 3;
 
-export function initialState(draft: CharacterDraft = emptyDraft()): WizardState {
-  return { draft, currentScreenId: 'race', notices: [], storage: 'ok' };
+/**
+ * Identifiant local, jamais partagé ni deviné. L'horodatage à la milliseconde
+ * suffit : deux personnages ne naissent pas dans la même milliseconde, et le
+ * suffixe aléatoire d'un générateur cryptographique serait ici du décorum.
+ */
+export function newCharacterId(): string {
+  return `perso-${String(Date.now())}`;
+}
+
+export function initialState(
+  draft: CharacterDraft = emptyDraft(),
+  id: string = newCharacterId(),
+): WizardState {
+  return {
+    draft,
+    currentScreenId: 'race',
+    notices: [],
+    storage: 'ok',
+    currentId: id,
+    others: [],
+  };
+}
+
+/** Le personnage courant, sous la forme qu'on range dans la bibliothèque. */
+function packed(state: WizardState): PersistedCharacter {
+  return {
+    id: state.currentId,
+    draft: state.draft,
+    currentScreenId: state.currentScreenId,
+  };
 }
 
 function noticeFor(removed: RemovedChoice): NoticeReason {
@@ -72,6 +101,7 @@ function commit(
   const fallback = flow[0]?.id ?? 'race';
 
   return {
+    ...state,
     draft: pruned,
     currentScreenId: isStillThere ? state.currentScreenId : fallback,
     notices: withNotices(state.notices, [
@@ -278,6 +308,50 @@ export function createWizardReducer(
         return draft.level === level
           ? state
           : commit(state, { ...draft, level }, catalogue);
+      }
+      case 'NEW_CHARACTER': {
+        // Le personnage courant rejoint la bibliothèque : « recommencer » ne
+        // doit jamais vouloir dire « perdre ce que j'avais ».
+        return {
+          ...initialState(),
+          storage: state.storage,
+          others: [...state.others, packed(state)],
+        };
+      }
+      case 'SWITCH_CHARACTER': {
+        const target = state.others.find((entry) => entry.id === action.id);
+        if (target === undefined || action.id === state.currentId) {
+          return state;
+        }
+        return {
+          ...initialState(target.draft, target.id),
+          currentScreenId: target.currentScreenId,
+          storage: state.storage,
+          others: [
+            ...state.others.filter((entry) => entry.id !== action.id),
+            packed(state),
+          ],
+        };
+      }
+      case 'DELETE_CHARACTER': {
+        if (action.id !== state.currentId) {
+          return {
+            ...state,
+            others: state.others.filter((entry) => entry.id !== action.id),
+          };
+        }
+        // On supprime celui qu'on regarde : un autre prend sa place, ou on
+        // repart d'une feuille blanche s'il était le dernier.
+        const [next, ...rest] = state.others;
+        if (next === undefined) {
+          return { ...initialState(), storage: state.storage };
+        }
+        return {
+          ...initialState(next.draft, next.id),
+          currentScreenId: next.currentScreenId,
+          storage: state.storage,
+          others: rest,
+        };
       }
       case 'SET_HIT_POINT_METHOD': {
         return draft.hitPointMethod === action.method

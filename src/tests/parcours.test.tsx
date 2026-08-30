@@ -117,7 +117,7 @@ describe('parcours de création', () => {
     // C'est la régression que `eslint-plugin-jsx-a11y` aurait signalée ; il est
     // incompatible avec ESLint 10, donc le test tient ce rôle.
     // Accès direct au DOM assumé : on audite une propriété STRUCTURELLE
-    // qu'aucune requête de Testing Library ne sait exprimer — l'absence d'un
+    // qu'aucune requête de Testing Library ne sait exprimer : l'absence d'un
     // motif, pas la présence d'un élément.
     // eslint-disable-next-line testing-library/no-node-access
     const clickable = document.querySelectorAll('div[onclick], span[onclick]');
@@ -195,6 +195,24 @@ describe('parcours de création', () => {
     const main = within(document.body);
     expect(main.getByText(/System Reference Document/)).toBeInTheDocument();
     expect(main.getByText(/non affilié à Wizards of the Coast/)).toBeInTheDocument();
+  });
+
+  it('garde le premier personnage quand on en commence un second', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+    await user.click(screen.getByRole('button', { name: /Nouveau personnage/ }));
+
+    // Le nouveau part d'une feuille blanche.
+    expect(screen.getByRole('radio', { name: /Nain/ })).not.toBeChecked();
+
+    // Et l'ancien est toujours là, rangé.
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+    expect(screen.getAllByText(/Nain/).length).toBeGreaterThan(0);
   });
 
   it('permet de monter de niveau depuis la fiche', async () => {

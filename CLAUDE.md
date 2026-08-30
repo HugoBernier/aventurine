@@ -1,6 +1,6 @@
-# CLAUDE.md — Aventurine
+# CLAUDE.md · Aventurine
 
-**Aventurine** — créateur de personnage D&D 5e, **entièrement en français**. Site web
+**Aventurine** est un créateur de personnage D&D 5e, **entièrement en français**. Site web
 statique, sans backend, **pensé pour le téléphone d'abord**.
 
 > Ce fichier est la source de vérité pour tout agent (humain ou IA) qui
@@ -10,17 +10,18 @@ statique, sans backend, **pensé pour le téléphone d'abord**.
 
 ## 1. Périmètre
 
-**Dans le périmètre :** création de personnage **du niveau 1 au niveau 20**
+**Dans le périmètre :** **plusieurs personnages** rangés sur l'appareil, avec
+création **du niveau 1 au niveau 20**
 pas-à-pas (assistant), fiche consultable, sauvegarde locale, import/export
 JSON, impression. Caractéristiques par **répartition de points ou tableau
 standard**. Le niveau pilote le bonus de maîtrise, les points de vie, les dés
-de vie, les emplacements de sorts et les paliers d'amélioration — un choix
+de vie, les emplacements de sorts et les paliers d'amélioration, un choix
 entre monter ses caractéristiques et prendre un don.
 
-**Hors périmètre (YAGNI — ne pas anticiper) :** comptes utilisateurs, backend,
+**Hors périmètre (YAGNI, ne pas anticiper) :** comptes utilisateurs, backend,
 base de données, multijoueur, gestion de campagne, compendium complet,
-boutique, multiclassage, homebrew, mobile natif, thème sombre, annulation/rétablissement, brouillons multiples,
-routage.
+boutique, multiclassage, homebrew, mobile natif, thème sombre,
+annulation/rétablissement, routage.
 
 **Reporté, pas abandonné** (à rouvrir quand la v1 tourne) : jets de dés 4d6
 garde-3, prose longue des sorts.
@@ -58,7 +59,7 @@ vérification qui compte est `npm ci` sur un `node_modules` supprimé.
 
 ## 3. Principes non négociables
 
-### KISS — la solution la plus simple qui marche
+### KISS : la solution la plus simple qui marche
 
 - Une fonction fait une chose et tient à l'écran (< 40 lignes).
 - Pas de généricité tant qu'il n'y a pas **trois** cas réels.
@@ -66,7 +67,7 @@ vérification qui compte est `npm ci` sur un `node_modules` supprimé.
   acrobatiques.
 - Un nom clair vaut mieux qu'un commentaire.
 
-### YAGNI — on n'écrit que ce qui sert aujourd'hui
+### YAGNI : on n'écrit que ce qui sert aujourd'hui
 
 - Pas de paramètre « pour plus tard », pas de champ inutilisé, pas de
   `TODO: quand on aura…`.
@@ -74,7 +75,7 @@ vérification qui compte est `npm ci` sur un `node_modules` supprimé.
   (persistance, aléatoire, horloge).
 - Supprimer du code mort est une amélioration, pas une perte.
 
-### XP — boucles courtes et retours rapides
+### XP : boucles courtes et retours rapides
 
 - **Test d'abord** sur toute la logique métier (règles, calculs, validation).
 - Petits commits, chacun laissant l'appli verte.
@@ -83,7 +84,7 @@ vérification qui compte est `npm ci` sur un `node_modules` supprimé.
 - Simplicité avant élégance ; on livre une tranche verticale utilisable, puis
   on l'étoffe.
 
-### SOLID — appliqué avec mesure
+### SOLID, appliqué avec mesure
 
 - **S** : un module = une raison de changer. Les règles D&D ne connaissent pas
   React ; les composants ne calculent pas de règles.
@@ -142,7 +143,7 @@ bureau est l'élargissement du mobile, jamais l'inverse.
 
 ```
 src/
-  domain/      règles et types D&D — TypeScript pur, ZÉRO import React
+  domain/      règles et types D&D, TypeScript pur, ZÉRO import React
   data/        contenu SRD 5.1 en français (races, classes, historiques…)
   state/       reducer de l'assistant + persistance
   ui/          composants React (présentation)
@@ -178,7 +179,7 @@ domain  →  rien
   variables CSS, noms de fichiers et de dossiers, messages de commit.
   `abilityModifier`, `useRaceChoice`, `--color-text`.
   Seule exception : les identifiants de contenu D&D restent en français
-  (`'demi-orc'`, `'roublard'`) — ce sont des données, pas du code.
+  (`'demi-orc'`, `'roublard'`) : ce sont des données, pas du code.
 - **Le domaine ne rédige jamais de phrase.** Une raison structurée
   (`{ kind: 'not-enough-points', required: 3, remaining: 2 }`) remonte du domaine ;
   la phrase française se compose dans `ui/format/`. La prose de contenu (noms,
@@ -214,7 +215,7 @@ domain  →  rien
 ## 9. Sources et droits
 
 Contenu dérivé du **SRD 5.1**, publié par Wizards of the Coast sous licence
-**CC BY 4.0**, traduit en français pour ce projet — traduction écrite à neuf
+**CC BY 4.0**, traduit en français pour ce projet, traduction écrite à neuf
 depuis l'anglais, jamais reprise d'une traduction commerciale ou communautaire,
 qui sont protégées séparément.
 
@@ -228,8 +229,8 @@ Aucun contenu hors SRD, à **trois** exceptions près, assumées et signalées d
 l'interface.
 
 1. **Historiques.** Le SRD 5.1 n'en publie qu'un seul, l'Acolyte, ce qui rend
-   un créateur de personnage inutilisable. Les autres — Soldat, Criminel,
-   Ermite, Noble… — appartiennent au *Player's Handbook* et ne sont pas
+   un créateur de personnage inutilisable. Les autres, Soldat, Criminel,
+   Ermite, Noble, appartiennent au *Player's Handbook* et ne sont pas
    ouverts : **on ne les recopie pas**. On écrit à la place un jeu
    d'historiques **originaux**, montés sur les règles génériques d'historique
    du SRD : deux compétences, deux outils ou langues, un équipement de départ,
@@ -254,7 +255,7 @@ l'interface.
    défaut. C'est la pratique de la quasi-totalité des tables, et une
    **mécanique**, pas du texte : rien n'est recopié, les libellés sont écrits
    pour ce projet. Concrètement, `abilityBonuses` reste vide et chaque entrée
-   déclare un créneau `ability` par valeur à placer — sauf l'humain, dont les
+   déclare un créneau `ability` par valeur à placer, sauf l'humain, dont les
    six +1 ne laissent rien à choisir. Le registre des caractéristiques du
    domaine interdit d'empiler deux bonus sur un même score.
 
@@ -263,7 +264,7 @@ section du SRD 5.1. Si on ne sait pas dire où, l'entrée ne rentre pas.
 
 ---
 
-## 10. Revue — questions à se poser avant de proposer du code
+## 10. Revue : questions à se poser avant de proposer du code
 
 1. Puis-je supprimer quelque chose ? (KISS)
 2. Est-ce que ça sert **maintenant** ? (YAGNI)

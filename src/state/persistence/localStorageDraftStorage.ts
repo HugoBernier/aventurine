@@ -1,11 +1,11 @@
-import { STORAGE_KEY } from './DraftStorage';
+import { LEGACY_KEY, STORAGE_KEY } from './DraftStorage';
 import type {
   DraftStorage,
   LoadResult,
   PersistedSession,
   SaveResult,
 } from './DraftStorage';
-import { parseSession } from './parseSession';
+import { parseLegacySession, parseSession } from './parseSession';
 
 /**
  * `localStorage` peut lever à la simple lecture de `window.localStorage` :
@@ -31,6 +31,25 @@ function isQuotaError(error: unknown): boolean {
   );
 }
 
+/**
+ * Pas de bibliothèque, mais peut-être une sauvegarde de la v1 : on la reprend
+ * plutôt que d'accueillir un ancien joueur avec une feuille blanche. La clé
+ * d'origine est retirée aussitôt, pour ne pas relire deux fois.
+ */
+function migrate(storage: Storage): LoadResult {
+  const raw = storage.getItem(LEGACY_KEY);
+  if (raw === null) {
+    return { kind: 'empty' };
+  }
+  storage.removeItem(LEGACY_KEY);
+  try {
+    const session = parseLegacySession(JSON.parse(raw));
+    return session === null ? { kind: 'empty' } : { kind: 'session', session };
+  } catch {
+    return { kind: 'empty' };
+  }
+}
+
 export function localStorageDraftStorage(): DraftStorage {
   return {
     load(): LoadResult {
@@ -40,7 +59,7 @@ export function localStorageDraftStorage(): DraftStorage {
       }
       const raw = storage.getItem(STORAGE_KEY);
       if (raw === null) {
-        return { kind: 'empty' };
+        return migrate(storage);
       }
       let parsed: unknown;
       try {

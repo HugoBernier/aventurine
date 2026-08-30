@@ -47,9 +47,13 @@ export interface SummaryScreenProps {
    * lieu, mais le joueur ne verrait rien changer.
    */
   readonly onNavigate?: (() => void) | undefined;
+  readonly onOpenLibrary?: (() => void) | undefined;
 }
 
-export function SummaryScreen({ onNavigate }: SummaryScreenProps): ReactNode {
+export function SummaryScreen({
+  onNavigate,
+  onOpenLibrary,
+}: SummaryScreenProps): ReactNode {
   const catalogue = useCatalogue();
   const draft = useDraft();
   const sheet = useCharacterSheet();
@@ -109,6 +113,13 @@ export function SummaryScreen({ onNavigate }: SummaryScreenProps): ReactNode {
             ))}
           </ul>
         </>
+      )}
+
+      {onOpenLibrary !== undefined && (
+        <button type="button" className={styles.library} onClick={onOpenLibrary}>
+          <span>Tes personnages</span>
+          <span className={styles.chevron}>Changer ou en créer un</span>
+        </button>
       )}
 
       <h2 className={styles.heading}>Tes choix</h2>

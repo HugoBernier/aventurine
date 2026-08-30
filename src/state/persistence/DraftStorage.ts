@@ -1,14 +1,22 @@
 import type { CharacterDraft } from '../../domain/draft';
 import type { ScreenId } from '../types';
 
-export const STORAGE_KEY = 'aventurine:draft:v1';
-export const SCHEMA_VERSION = 1;
+export const STORAGE_KEY = 'aventurine:library:v2';
+/** La v1 ne gardait qu'un personnage. On la relit une fois, puis on l'oublie. */
+export const LEGACY_KEY = 'aventurine:draft:v1';
+export const SCHEMA_VERSION = 2;
+
+export interface PersistedCharacter {
+  readonly id: string;
+  readonly draft: CharacterDraft;
+  readonly currentScreenId: ScreenId;
+}
 
 export interface PersistedSession {
   readonly version: number;
   readonly savedAt: string;
-  readonly draft: CharacterDraft;
-  readonly currentScreenId: ScreenId;
+  readonly characters: readonly PersistedCharacter[];
+  readonly currentId: string;
 }
 
 export type LoadResult =
@@ -22,7 +30,7 @@ export type SaveResult =
 
 /**
  * Seule interface du lot, et la charte l'autorise nommément : la persistance
- * est une frontière réelle. Deux implémentations, pas une — celle en mémoire
+ * est une frontière réelle. Deux implémentations, pas une : celle en mémoire
  * sert aux tests et à la navigation privée, où `localStorage` peut lever.
  */
 export interface DraftStorage {

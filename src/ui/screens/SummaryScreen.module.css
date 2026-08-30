@@ -97,3 +97,23 @@
   color: var(--color-text-subtle);
   font-size: var(--font-size-100);
 }
+
+/* L'accès à la bibliothèque, au-dessus des choix : c'est là qu'on revient
+   quand on veut changer de personnage ou en commencer un autre. */
+.library {
+  width: 100%;
+  min-height: var(--touch-target);
+  margin-block-start: var(--space-5);
+  padding: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-300);
+  font-weight: 600;
+  touch-action: manipulation;
+}
