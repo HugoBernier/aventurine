@@ -36,9 +36,11 @@ export function AbilityStepper({
   onIncrease,
   onDecrease,
 }: AbilityStepperProps): ReactNode {
+  // Sans bonus, « 8 = 8 » n'apprend rien et se lit comme une coquille : on
+  // n'affiche le calcul que quand il y a un calcul.
   const bonusText =
     racialBonus === 0
-      ? `${String(score)} = ${String(total)}`
+      ? String(total)
       : `${String(score)} + ${String(racialBonus)} (${bonusSourceLabel ?? 'bonus'}) = ${String(total)}`;
 
   return (

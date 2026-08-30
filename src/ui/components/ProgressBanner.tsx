@@ -30,15 +30,16 @@ export function ProgressBanner({
   return (
     <>
       <div className={styles.row}>
-        <button
-          type="button"
-          className={styles.link}
-          onClick={onBack}
-          disabled={onBack === undefined}
-          aria-hidden={onBack === undefined}
-        >
-          ‹ Retour
-        </button>
+        {onBack === undefined ? (
+          // Une case vide plutôt qu'un bouton désactivé peint en transparent :
+          // la grille garde ses trois colonnes, et il ne reste dans la page
+          // aucune commande invisible à contraste nul.
+          <span />
+        ) : (
+          <button type="button" className={styles.link} onClick={onBack}>
+            ‹ Retour
+          </button>
+        )}
         <span className={styles.step}>
           {label} · {stepLabel}
         </span>

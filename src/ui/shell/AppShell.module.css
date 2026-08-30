@@ -31,8 +31,12 @@
   margin-block-end: var(--space-2);
 }
 
-.title:focus-visible {
-  outline-offset: 4px;
+/* Le titre n'est PAS atteignable au clavier (`tabindex=-1`) : on ne l'obtient
+   qu'en changeant d'écran, où le focus sert à l'annoncer aux lecteurs d'écran,
+   pas à montrer où l'on est. Un cadre épais à chaque écran serait du bruit —
+   et se lirait comme une erreur. */
+.title:focus {
+  outline: none;
 }
 
 .lead {

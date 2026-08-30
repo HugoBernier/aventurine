@@ -22,10 +22,6 @@
   touch-action: manipulation;
 }
 
-.link:disabled {
-  color: transparent;
-}
-
 /* Rail volontairement sous 3:1 : il est strictement redondant avec
    « Étape 3 sur 8 » et ne porte aucune information à lui seul. */
 .rail {

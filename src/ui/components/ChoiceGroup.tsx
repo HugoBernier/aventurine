@@ -17,6 +17,12 @@ const FACT_LABELS: Partial<Record<ChoiceKind, readonly [string, string, string]>
 
 export interface ChoiceGroupProps {
   readonly legend: string;
+  /**
+   * Le groupe occupe tout l'écran et le titre `h1` le nomme déjà : la légende
+   * reste dans le DOM pour nommer le `fieldset`, mais ne se répète pas à
+   * l'écran, où elle coûterait une ligne sur les six qu'un téléphone montre.
+   */
+  readonly legendHidden?: boolean | undefined;
   readonly kind: ChoiceKind;
   readonly fieldName: string;
   readonly pick: number;
@@ -59,6 +65,7 @@ function Facts({
  */
 export function ChoiceGroup({
   legend,
+  legendHidden = false,
   kind,
   fieldName,
   pick,
@@ -79,7 +86,9 @@ export function ChoiceGroup({
 
   return (
     <fieldset className={styles.group}>
-      <legend className={styles.legend}>{legend}</legend>
+      <legend className={legendHidden ? styles.legendHidden : styles.legend}>
+        {legend}
+      </legend>
       {pick > 1 && (
         <p className={styles.counter} role="status">
           {picked.length} sur {pick} choisis

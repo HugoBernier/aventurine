@@ -95,11 +95,6 @@ export function findScreen(flow: readonly Screen[], screenId: ScreenId): Screen 
   return flow.find((screen) => screen.id === screenId) ?? null;
 }
 
-/** Les étapes réellement présentes : un roublard n'a pas d'étape « sorts ». */
-export function applicableSteps(flow: readonly Screen[]): readonly StepId[] {
-  return STEPS.filter((step) => flow.some((screen) => screen.step === step));
-}
-
 export interface Progress {
   readonly step: StepId;
   readonly stepIndex: number;
@@ -114,11 +109,15 @@ export function progressOf(flow: readonly Screen[], screenId: ScreenId): Progres
   if (screen === undefined) {
     return null;
   }
-  const steps = applicableSteps(flow);
   return {
     step: screen.step,
-    stepIndex: steps.indexOf(screen.step) + 1,
-    stepCount: steps.length,
+    // Le dénominateur compte les huit chapitres, PAS ceux que le brouillon a
+    // déjà ouverts. Compter les étapes applicables le faisait grandir à chaque
+    // choix — « étape 1 sur 5 », puis « sur 6 », puis « sur 7 » — donc avancer
+    // donnait l'impression de reculer. Un roublard saute le numéro des sorts :
+    // un chapitre passé se voit, un but qui recule se subit.
+    stepIndex: STEPS.indexOf(screen.step) + 1,
+    stepCount: STEPS.length,
     screenIndex: screenIndex + 1,
     screenCount: flow.length,
   };

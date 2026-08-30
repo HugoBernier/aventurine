@@ -2,13 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyDraft } from '../domain/draft';
 import type { CharacterDraft } from '../domain/draft';
 import { MINI_CATALOGUE as C } from '../domain/fixtures/miniCatalogue';
-import {
-  applicableSteps,
-  buildFlow,
-  progressOf,
-  screenForField,
-  screenForSlot,
-} from './flow';
+import { buildFlow, progressOf, STEPS, screenForField, screenForSlot } from './flow';
 
 const draftWith = (parts: Partial<CharacterDraft>): CharacterDraft => ({
   ...emptyDraft(),
@@ -36,11 +30,6 @@ describe('construction du parcours', () => {
     );
     const rogue = buildFlow(draftWith({ classId: 'roublard' }), C);
     expect(rogue.some((screen) => screen.step === 'spells')).toBe(false);
-  });
-
-  it('retire du parcours une étape sans écran plutôt que de la griser', () => {
-    const steps = applicableSteps(buildFlow(draftWith({ classId: 'roublard' }), C));
-    expect(steps).not.toContain('spells');
   });
 
   it('regroupe les compétences de toutes les sources dans l’étape des maîtrises', () => {
@@ -87,10 +76,20 @@ describe('repère de progression', () => {
   it('annonce l’étape sur le nombre d’étapes applicables', () => {
     const flow = buildFlow(draftWith({ classId: 'roublard' }), C);
     const progress = progressOf(flow, 'race');
-    const steps = applicableSteps(flow);
     expect(progress?.step).toBe('race');
     expect(progress?.stepIndex).toBe(1);
-    expect(progress?.stepCount).toBe(steps.length);
+    expect(progress?.stepCount).toBe(STEPS.length);
+  });
+
+  it('garde le même nombre d’étapes quels que soient les choix déjà faits', () => {
+    const denominators = [
+      emptyDraft(),
+      draftWith({ raceId: 'nain' }),
+      draftWith({ raceId: 'elfe', classId: 'roublard' }),
+      draftWith({ raceId: 'nain', classId: 'clerc' }),
+    ].map((draft) => progressOf(buildFlow(draft, C), 'race')?.stepCount);
+
+    expect(new Set(denominators).size).toBe(1);
   });
 
   it('mesure la barre fine en écrans, pas en étapes', () => {

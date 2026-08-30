@@ -11,6 +11,18 @@
   margin-block-end: var(--space-1);
 }
 
+/* Masquée à l'œil, présente pour les lecteurs d'écran : le `fieldset` garde
+   son nom. */
+.legendHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .counter {
   color: var(--color-text-muted);
   font-size: var(--font-size-100);
@@ -27,6 +39,12 @@
 
 .card {
   display: block;
+  /* Bloc de positionnement du champ caché ci-dessous. SANS ce `relative`, le
+     champ se positionne par rapport au BODY : il ne suit plus le défilement de
+     la colonne, il allonge la zone défilable du document de plusieurs centaines
+     de pixels, et le focus au tap fait glisser tout le cadre de l'application.
+     Ce n'est pas de la coquetterie : c'est ce qui casse le défilement au tap. */
+  position: relative;
   min-height: var(--touch-target);
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-md);
@@ -39,11 +57,18 @@
 }
 
 /* Jamais `display: none` : cela retirerait le champ de l'ordre de tabulation
-   et des lecteurs d'écran. */
+   et des lecteurs d'écran. Il reste donc dans la page, invisible, ancré sur sa
+   carte (`.card` est `position: relative`) et calé en haut à gauche : le
+   navigateur qui le révèle au focus n'a alors rien à faire défiler. */
 .input {
   position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
   width: 1px;
+  /* `min-height` du reset s'appliquerait sinon et rendrait ce champ invisible
+     haut de 44 px, qui débordait la page. */
   height: 1px;
+  min-height: 0;
   clip-path: inset(50%);
   overflow: hidden;
 }

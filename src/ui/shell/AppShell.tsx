@@ -20,7 +20,7 @@ export function AppShell({
   lead,
   children,
 }: AppShellProps): ReactNode {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -30,8 +30,10 @@ export function AppShell({
       contentRef.current.scrollTop = 0;
     }
     // Le déplacement de focus EST l'annonce du changement d'écran : une région
-    // live en plus provoquerait une double lecture.
-    titleRef.current?.focus();
+    // live en plus provoquerait une double lecture. `preventScroll` parce que
+    // le défilement vient d'être remis à zéro juste au-dessus : laisser le
+    // navigateur « révéler » le titre le referait bouger.
+    titleRef.current?.focus({ preventScroll: true });
     document.title = `${title} — Aventurine`;
   }, [screenKey, title]);
 
@@ -41,7 +43,7 @@ export function AppShell({
         <div className={styles.inner}>{header}</div>
       </header>
 
-      <div className={styles.content} ref={contentRef}>
+      <main className={styles.content} ref={contentRef}>
         <div className={styles.inner}>
           <h1 className={styles.title} tabIndex={-1} ref={titleRef}>
             {title}
@@ -49,7 +51,7 @@ export function AppShell({
           {lead === undefined ? null : <p className={styles.lead}>{lead}</p>}
           {children}
         </div>
-      </div>
+      </main>
 
       <div className={styles.actions} data-print="hide">
         <div className={styles.inner}>{actions}</div>

@@ -31,6 +31,7 @@ export function EntityChoiceScreen({
       <Explainer label={help.label}>{help.body}</Explainer>
       <ChoiceGroup
         legend={legend}
+        legendHidden
         kind={kind}
         fieldName={fieldName}
         pick={1}
