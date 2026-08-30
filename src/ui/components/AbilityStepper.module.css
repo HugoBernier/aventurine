@@ -1,0 +1,70 @@
+.row {
+  display: grid;
+  /* Colonne de commande fixée à 56 px : il reste 260 px de texte, qui peut
+     passer sur deux lignes sans rien casser à 360 px ni à 200 % de zoom. */
+  grid-template-columns: 1fr 56px;
+  gap: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3);
+  margin-block-end: var(--space-3);
+}
+
+.name {
+  font-size: var(--font-size-300);
+  font-weight: 600;
+}
+
+.purpose {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+  margin-block: var(--space-1) var(--space-2);
+}
+
+.maths {
+  font-variant-numeric: tabular-nums;
+}
+
+.modifier {
+  font-size: var(--font-size-500);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.blocked {
+  margin-block: var(--space-2) 0;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-100);
+}
+
+.controls {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: var(--space-1);
+}
+
+.step {
+  min-height: 56px;
+  font-size: var(--font-size-300);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  touch-action: manipulation;
+}
+
+.step:disabled {
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+}
+
+.select {
+  width: 100%;
+  min-height: var(--touch-target);
+  font-size: var(--font-size-200);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}

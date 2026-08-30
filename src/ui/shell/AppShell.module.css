@@ -1,0 +1,59 @@
+/* Le cadre : trois rangées de grille, et la page elle-même ne défile jamais.
+   La barre d'actions est une RANGÉE, pas un élément fixe — ce qui supprime
+   d'un coup le contenu masqué, le padding magique à maintenir, et les bugs de
+   repositionnement de `position: fixed` pendant le défilement élastique d'iOS. */
+.app {
+  height: 100vh; /* repli pour les navigateurs sans dvh */
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+.header {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-header);
+  padding-block-start: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px));
+}
+
+.content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: var(--space-4) var(--space-5);
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px));
+}
+
+.title {
+  font-size: var(--font-size-400);
+  margin-block-end: var(--space-2);
+}
+
+.title:focus-visible {
+  outline-offset: 4px;
+}
+
+.lead {
+  color: var(--color-text-muted);
+  margin-block: 0 var(--space-4);
+}
+
+.actions {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-actions);
+  /* Les insets latéraux comptent en PAYSAGE : sans eux, l'encoche mange le
+     bouton « Précédent ». */
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px));
+  padding-block: var(--space-3);
+  padding-block-end: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 600px) {
+  .inner {
+    max-width: var(--content-max);
+    margin-inline: auto;
+  }
+}

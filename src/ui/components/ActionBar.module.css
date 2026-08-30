@@ -1,0 +1,37 @@
+.bar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.note {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-block-start: var(--space-2);
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-100);
+}
+
+.button {
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding-inline: var(--space-4);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.primary {
+  composes: button;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.primary:active {
+  background: var(--color-accent-pressed);
+  border-color: var(--color-accent-pressed);
+}

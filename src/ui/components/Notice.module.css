@@ -1,0 +1,31 @@
+.notice {
+  border-inline-start: 4px solid var(--color-control-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.error {
+  composes: notice;
+  border-inline-start-color: var(--color-error);
+  background: var(--color-surface-error);
+  color: var(--color-error);
+}
+
+.body {
+  margin: 0;
+}
+
+.dismiss {
+  min-height: var(--touch-target);
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-weight: 600;
+  padding-inline: var(--space-2);
+}
