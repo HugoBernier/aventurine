@@ -1,0 +1,15 @@
+/* Le budget est le seul élément collant de l'assistant : on ajuste le Charisme
+   tout en bas en voyant toujours ce qu'il reste. */
+.budget {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border-block-end: 1px solid var(--color-rule);
+  margin-block-end: var(--space-3);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

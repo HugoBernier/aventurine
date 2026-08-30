@@ -4,8 +4,8 @@ import styles from './Notice.module.css';
 export interface NoticeProps {
   readonly tone: 'error' | 'reminder';
   readonly children: ReactNode;
-  readonly live?: boolean;
-  readonly onDismiss?: () => void;
+  readonly live?: boolean | undefined;
+  readonly onDismiss?: (() => void) | undefined;
 }
 
 /**

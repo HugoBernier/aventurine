@@ -8,7 +8,7 @@ export interface AppShellProps {
   /** Change à chaque écran : remet le défilement en haut et déplace le focus. */
   readonly screenKey: string;
   readonly title: string;
-  readonly lead?: string;
+  readonly lead?: string | undefined;
   readonly children: ReactNode;
 }
 
@@ -24,7 +24,11 @@ export function AppShell({
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    contentRef.current?.scrollTo({ top: 0 });
+    // `scrollTop` plutôt que `scrollTo` : même effet, et pas d'API à simuler
+    // dans les tests.
+    if (contentRef.current !== null) {
+      contentRef.current.scrollTop = 0;
+    }
     // Le déplacement de focus EST l'annonce du changement d'écran : une région
     // live en plus provoquerait une double lecture.
     titleRef.current?.focus();

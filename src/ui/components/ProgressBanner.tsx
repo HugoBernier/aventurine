@@ -7,7 +7,7 @@ export interface ProgressBannerProps {
   readonly stepCount: number;
   readonly screenIndex: number;
   readonly screenCount: number;
-  readonly onBack?: () => void;
+  readonly onBack?: (() => void) | undefined;
   readonly onOpenSummary: () => void;
 }
 

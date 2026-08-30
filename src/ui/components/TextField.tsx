@@ -7,14 +7,14 @@ export interface TextFieldProps {
   readonly defaultValue: string;
   /** Remonte au `blur` et à la validation, jamais à chaque touche. */
   readonly onCommit: (value: string) => void;
-  readonly onInput?: (value: string) => void;
-  readonly type?: 'text' | 'search';
-  readonly hint?: string;
-  readonly error?: string;
-  readonly placeholder?: string;
-  readonly enterKeyHint?: 'next' | 'done' | 'search';
-  readonly maxLength?: number;
-  readonly multiline?: boolean;
+  readonly onInput?: ((value: string) => void) | undefined;
+  readonly type?: 'text' | 'search' | undefined;
+  readonly hint?: string | undefined;
+  readonly error?: string | undefined;
+  readonly placeholder?: string | undefined;
+  readonly enterKeyHint?: 'next' | 'done' | 'search' | undefined;
+  readonly maxLength?: number | undefined;
+  readonly multiline?: boolean | undefined;
 }
 
 /**

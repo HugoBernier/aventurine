@@ -40,7 +40,7 @@ function restore(storage: DraftStorage, catalogue: Catalogue): WizardState {
 
 export interface WizardProviderProps {
   readonly catalogue: Catalogue;
-  readonly storage?: DraftStorage;
+  readonly storage?: DraftStorage | undefined;
   readonly children: ReactNode;
 }
 

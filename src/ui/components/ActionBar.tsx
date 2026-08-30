@@ -2,13 +2,13 @@ import type { ReactNode } from 'react';
 import styles from './ActionBar.module.css';
 
 export interface ActionBarProps {
-  readonly back?: { readonly label: string; readonly onClick: () => void };
+  readonly back?: { readonly label: string; readonly onClick: () => void } | undefined;
   readonly primary: {
     readonly label: string;
-    readonly onClick?: () => void;
-    readonly type?: 'button' | 'submit';
+    readonly onClick?: (() => void) | undefined;
+    readonly type?: 'button' | 'submit' | undefined;
   };
-  readonly note?: string;
+  readonly note?: string | undefined;
 }
 
 /**

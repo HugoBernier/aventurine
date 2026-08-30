@@ -23,7 +23,7 @@ export interface ChoiceGroupProps {
   readonly options: readonly ChoiceOption[];
   readonly picked: readonly string[];
   readonly onToggle: (optionId: string) => void;
-  readonly empty?: ReactNode;
+  readonly empty?: ReactNode | undefined;
 }
 
 function Facts({
