@@ -268,11 +268,12 @@ describe('garde-fous de la charte', () => {
   );
 
   // Un mot peut désigner À LA FOIS un genre de règle et un contenu. « bouclier »
-  // est une catégorie d'armure — vocabulaire fermé par les règles, que le
-  // domaine a le droit de nommer — et aussi le sort Bouclier. L'exception est
+  // est une catégorie d'armure et aussi le sort Bouclier ; « divination » est
+  // une école de magie et aussi le sort Divination. Les deux sont du vocabulaire
+  // fermé par les règles, que le domaine a le droit de nommer. L'exception est
   // nommée ici plutôt que le test affaibli : si cette liste s'allonge, c'est
   // le signal qu'un identifiant de contenu a fui dans le domaine.
-  const RULE_VOCABULARY = new Set(['bouclier']);
+  const RULE_VOCABULARY = new Set(['bouclier', 'divination']);
 
   it('n’écrit aucun identifiant de contenu dans src/domain/', () => {
     // Le domaine branche sur des genres de règle, jamais sur du contenu :
@@ -378,6 +379,9 @@ const slug = (name: string) =>
   name
     .replaceAll('’', "'")
     .toLowerCase()
+    // NFD ne décompose pas les ligatures : « Œil » resterait « œil ».
+    .replaceAll('œ', 'oe')
+    .replaceAll('æ', 'ae')
     .normalize('NFD')
     .replaceAll(/\p{Diacritic}/gu, '')
     .replaceAll(/[^a-z0-9]+/gu, '-')
