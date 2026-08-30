@@ -75,10 +75,13 @@ export function PersonalityScreen(): ReactNode {
         Ces quatre phrases ne changent aucun chiffre : elles servent à jouer. Écris ce que
         tu veux, ou laisse vide et reviens plus tard.
       </Explainer>
-      {background?.assembledFromGenericRules === true && (
+      {suggestions?.traits.length === 0 && (
+        // Le message ne vaut que pour l'historique « Personnalisé », qui ne
+        // propose rien. Les autres offrent des amorces : leur dire d'écrire
+        // « entièrement » serait faux.
         <Notice tone="reminder">
-          Ton historique est composé à partir des règles générales du SRD : à toi d’écrire
-          ces quatre phrases entièrement.
+          Ton historique ne propose pas d’amorce : à toi d’écrire ces quatre phrases
+          entièrement.
         </Notice>
       )}
       {FIELDS.map((spec) => (

@@ -330,3 +330,45 @@ describe('sous-races du SRD 5.1', () => {
     expect(C.races.find((race) => race.id === 'gnome')?.subraces).toHaveLength(2);
   });
 });
+
+describe('historiques', () => {
+  it('ne revendique le SRD que pour l’Acolyte', () => {
+    const fromSrd = C.backgrounds
+      .filter((background) => !background.assembledFromGenericRules)
+      .map((background) => background.id);
+    // Le SRD 5.1 n'en publie qu'un : tout le reste est écrit pour Aventurine à
+    // partir des règles générales d'historique, et doit se déclarer comme tel.
+    expect(fromSrd).toEqual(['acolyte']);
+  });
+
+  it('donne deux compétences à chaque historique, fixes ou au choix', () => {
+    for (const background of C.backgrounds) {
+      const chosen = background.choices
+        .filter((spec) => spec.kind === 'skill')
+        .reduce((total, spec) => total + spec.pick, 0);
+      expect(background.skills.length + chosen).toBe(2);
+    }
+  });
+
+  it('donne à chaque historique deux outils ou langues', () => {
+    for (const background of C.backgrounds) {
+      const chosen = background.choices
+        .filter((spec) => spec.kind === 'tool' || spec.kind === 'language')
+        .reduce((total, spec) => total + spec.pick, 0);
+      expect(background.proficiencies.tools.length + chosen).toBe(2);
+    }
+  });
+
+  it('donne une aptitude et des amorces à tous sauf au « Personnalisé »', () => {
+    for (const background of C.backgrounds) {
+      if (background.id === 'personnalise') {
+        continue;
+      }
+      expect(background.feature).not.toBeNull();
+      expect(background.suggestedTraits.traits.length).toBeGreaterThan(0);
+      expect(background.suggestedTraits.ideals.length).toBeGreaterThan(0);
+      expect(background.suggestedTraits.bonds.length).toBeGreaterThan(0);
+      expect(background.suggestedTraits.flaws.length).toBeGreaterThan(0);
+    }
+  });
+});

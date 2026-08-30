@@ -225,11 +225,18 @@ d'habillage n'est copié.
 Aucun contenu hors SRD, à **deux** exceptions près, assumées et signalées dans
 l'interface.
 
-1. Le SRD 5.1 ne contient qu'un seul historique (Acolyte), ce qui rend un
-   créateur de personnage inutilisable. On ajoute un historique
-   **« Personnalisé »** construit uniquement sur les règles génériques
-   d'historique du SRD. C'est de l'assemblage de règles SRD, pas du contenu
-   inventé.
+1. **Historiques.** Le SRD 5.1 n'en publie qu'un seul, l'Acolyte, ce qui rend
+   un créateur de personnage inutilisable. Les autres — Soldat, Criminel,
+   Ermite, Noble… — appartiennent au *Player's Handbook* et ne sont pas
+   ouverts : **on ne les recopie pas**. On écrit à la place un jeu
+   d'historiques **originaux**, montés sur les règles génériques d'historique
+   du SRD : deux compétences, deux outils ou langues, un équipement de départ,
+   une aptitude et des amorces de personnalité. Les noms sont des métiers
+   ordinaires, la prose est écrite pour ce projet, et aucune aptitude ne
+   reprend celles du PHB. Tout ce qui n'est pas l'Acolyte porte
+   `assembledFromGenericRules: true`, et l'écran de choix le dit au joueur.
+   Trois tests d'intégrité vérifient que chaque entrée respecte la forme
+   générique du SRD.
 
 2. **Origines personnalisées** : le joueur place lui-même les bonus de
    caractéristique de son peuple (+2 et +1) au lieu de les recevoir imposés.

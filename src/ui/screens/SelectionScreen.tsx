@@ -69,7 +69,7 @@ const CONFIG: Record<SelectionKind, SelectionConfig> = {
     legend: 'Choisis ton historique',
     help: {
       label: 'C’est quoi un « historique » ?',
-      body: 'Ce que tu faisais avant de partir à l’aventure. Il te donne des compétences, du matériel et de quoi jouer ton personnage.',
+      body: 'Ce que tu faisais avant de partir à l’aventure. Il te donne des compétences, du matériel et de quoi jouer ton personnage. Seul l’Acolyte figure tel quel dans le SRD 5.1 : les autres sont écrits pour Aventurine à partir des règles générales d’historique.',
     },
     entries: (catalogue) => catalogue.backgrounds,
     selected: (draft) => draft.backgroundId,
