@@ -1,0 +1,513 @@
+// Contenu dérivé du SRD 5.1 (CC BY 4.0) — traduction Aventurine.
+import type { Race } from '../domain/content';
+import { NO_PROFICIENCIES } from '../domain/content';
+import { ALL_SKILLS } from '../domain/skills';
+
+const ANY_LANGUAGE = [
+  'nain',
+  'elfique',
+  'gigant',
+  'gnome',
+  'gobelin',
+  'halfelin',
+  'orc',
+  'draconique',
+  'abyssal',
+  'celeste',
+  'infernal',
+  'sylvestre',
+  'primordial',
+  'parler-souterrain',
+];
+
+export const RACE_ENTRIES: readonly Race[] = [
+  {
+    id: 'nain',
+    name: 'Nain',
+    blurb: 'Solide, tenace, dur au mal. On ne le déplace pas facilement.',
+    facts: ['+2 Constitution', '7,50 m · taille moyenne', 'Vision dans le noir'],
+    abilityBonuses: { constitution: 2 },
+    size: 'M',
+    speed: 7.5,
+    darkvision: 18,
+    languages: ['commun', 'nain'],
+    skills: [],
+    proficiencies: {
+      armor: [],
+      weaponCategories: [],
+      weapons: ['hache-d-armes', 'hachette', 'marteau-leger', 'marteau-de-guerre'],
+      tools: [],
+    },
+    resistances: ['poison'],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      {
+        name: 'Résistance naine',
+        text: 'Tu as l’avantage contre le poison, et tu encaisses moitié moins de dégâts de poison.',
+      },
+      {
+        name: 'Connaissance de la pierre',
+        text: 'Face à un ouvrage de pierre, tu ajoutes deux fois ton bonus de maîtrise à ton enquête.',
+      },
+    ],
+    choices: [
+      {
+        kind: 'tool',
+        subject: 'tools',
+        title: 'L’outil de ton clan',
+        help: 'Les nains apprennent un métier avant de tenir une arme.',
+        pick: 1,
+        from: ['outils-de-forgeron', 'outils-de-brasseur', 'outils-de-macon'],
+      },
+    ],
+    subraces: [
+      {
+        id: 'nain-des-collines',
+        name: 'Nain des collines',
+        blurb: 'Plus vif, plus endurant. Il encaisse ce que les autres esquivent.',
+        facts: ['+1 Sagesse', '7,50 m', '+1 point de vie par niveau'],
+        abilityBonuses: { sagesse: 1 },
+        skills: [],
+        proficiencies: NO_PROFICIENCIES,
+        features: [
+          { name: 'Robustesse naine', text: 'Tu gagnes 1 point de vie par niveau.' },
+        ],
+        bonusHitPointsPerLevel: 1,
+        speed: null,
+        choices: [],
+      },
+      {
+        id: 'nain-des-montagnes',
+        name: 'Nain des montagnes',
+        blurb: 'Élevé dans les hauteurs, habitué au poids de l’acier.',
+        facts: ['+2 Force', '7,50 m', 'Armures légères et intermédiaires'],
+        abilityBonuses: { force: 2 },
+        skills: [],
+        proficiencies: {
+          armor: ['legere', 'intermediaire'],
+          weaponCategories: [],
+          weapons: [],
+          tools: [],
+        },
+        features: [
+          {
+            name: 'Entraînement nain au combat',
+            text: 'Tu maîtrises les armures légères et intermédiaires.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: null,
+        choices: [],
+      },
+    ],
+  },
+
+  {
+    id: 'elfe',
+    name: 'Elfe',
+    blurb: 'Vif et attentif. Il dort peu et remarque beaucoup.',
+    facts: ['+2 Dextérité', '9 m · taille moyenne', 'Perception, vision dans le noir'],
+    abilityBonuses: { dexterite: 2 },
+    size: 'M',
+    speed: 9,
+    darkvision: 18,
+    languages: ['commun', 'elfique'],
+    skills: ['perception'],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      {
+        name: 'Sens aiguisés',
+        text: 'Tu maîtrises la compétence Perception.',
+      },
+      {
+        name: 'Ascendance féerique',
+        text: 'Tu as l’avantage contre le charme, et la magie ne peut pas t’endormir.',
+      },
+      {
+        name: 'Transe',
+        text: 'Quatre heures de méditation te valent huit heures de sommeil.',
+      },
+    ],
+    choices: [],
+    subraces: [
+      {
+        id: 'haut-elfe',
+        name: 'Haut-elfe',
+        blurb: 'Vif d’esprit, formé à l’épée comme au sortilège.',
+        facts: ['+1 Intelligence', '9 m', 'Un tour de magie de magicien'],
+        abilityBonuses: { intelligence: 1 },
+        skills: [],
+        proficiencies: {
+          armor: [],
+          weaponCategories: [],
+          weapons: ['epee-longue', 'epee-courte', 'arc-court', 'arc-long'],
+          tools: [],
+        },
+        features: [
+          {
+            name: 'Entraînement elfique aux armes',
+            text: 'Tu maîtrises l’épée longue, l’épée courte, l’arc court et l’arc long.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: null,
+        choices: [
+          {
+            kind: 'cantrip',
+            subject: 'cantrip',
+            title: 'Ton tour de magie elfique',
+            help: 'Un petit sort appris très tôt, que tu peux relancer autant de fois que tu veux.',
+            pick: 1,
+            listFrom: 'magicien',
+          },
+          {
+            kind: 'language',
+            subject: 'language',
+            title: 'Ta langue supplémentaire',
+            help: 'Les hauts-elfes apprennent volontiers les langues de leurs voisins.',
+            pick: 1,
+            from: ANY_LANGUAGE,
+          },
+        ],
+      },
+      {
+        id: 'elfe-des-bois',
+        name: 'Elfe des bois',
+        blurb: 'Rapide et silencieux, à l’aise sous le couvert des arbres.',
+        facts: ['+1 Sagesse', '10,50 m', 'Se cacher dans la nature'],
+        abilityBonuses: { sagesse: 1 },
+        skills: [],
+        proficiencies: {
+          armor: [],
+          weaponCategories: [],
+          weapons: ['epee-longue', 'epee-courte', 'arc-court', 'arc-long'],
+          tools: [],
+        },
+        features: [
+          {
+            name: 'Pieds légers',
+            text: 'Ta vitesse de base passe à 10,50 mètres.',
+          },
+          {
+            name: 'Masque de la nature',
+            text: 'Tu peux te cacher même faiblement dissimulé par la végétation ou la pluie.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: 10.5,
+        choices: [],
+      },
+    ],
+  },
+
+  {
+    id: 'halfelin',
+    name: 'Halfelin',
+    blurb: 'Petit, chanceux, difficile à effrayer et encore plus à attraper.',
+    facts: ['+2 Dextérité', '7,50 m · petite taille', 'Chanceux, brave'],
+    abilityBonuses: { dexterite: 2 },
+    size: 'P',
+    speed: 7.5,
+    darkvision: 0,
+    languages: ['commun', 'halfelin'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      { name: 'Chanceux', text: 'Quand tu fais 1 sur un d20, tu relances le dé.' },
+      { name: 'Brave', text: 'Tu as l’avantage contre la terreur.' },
+      {
+        name: 'Agilité halfeline',
+        text: 'Tu traverses l’espace d’une créature plus grande que toi.',
+      },
+    ],
+    choices: [],
+    subraces: [
+      {
+        id: 'halfelin-pied-leger',
+        name: 'Pied-léger',
+        blurb: 'Sociable et discret : on l’aime bien, on ne le voit pas venir.',
+        facts: ['+1 Charisme', '7,50 m', 'Se cacher derrière plus grand'],
+        abilityBonuses: { charisme: 1 },
+        skills: [],
+        proficiencies: NO_PROFICIENCIES,
+        features: [
+          {
+            name: 'Discrétion naturelle',
+            text: 'Tu peux te cacher derrière une créature plus grande que toi.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: null,
+        choices: [],
+      },
+      {
+        id: 'halfelin-robuste',
+        name: 'Robuste',
+        blurb: 'Un estomac solide et un sang qui pardonne beaucoup.',
+        facts: ['+1 Constitution', '7,50 m', 'Résistance au poison'],
+        abilityBonuses: { constitution: 1 },
+        skills: [],
+        proficiencies: NO_PROFICIENCIES,
+        features: [
+          {
+            name: 'Résilience robuste',
+            text: 'Tu as l’avantage contre le poison, et tu en encaisses moitié moins.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: null,
+        choices: [],
+      },
+    ],
+  },
+
+  {
+    id: 'humain',
+    name: 'Humain',
+    blurb: 'Partout, en tout, et jamais très longtemps au même endroit.',
+    facts: ['+1 partout', '9 m · taille moyenne', 'Une langue de plus'],
+    abilityBonuses: {
+      force: 1,
+      dexterite: 1,
+      constitution: 1,
+      intelligence: 1,
+      sagesse: 1,
+      charisme: 1,
+    },
+    size: 'M',
+    speed: 9,
+    darkvision: 0,
+    languages: ['commun'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Polyvalence humaine',
+        text: 'Tu gagnes +1 dans chacune des six caractéristiques.',
+      },
+    ],
+    choices: [
+      {
+        kind: 'language',
+        subject: 'language',
+        title: 'Ta seconde langue',
+        help: 'Les humains commercent, voyagent et apprennent vite.',
+        pick: 1,
+        from: ANY_LANGUAGE,
+      },
+    ],
+    subraces: [],
+  },
+
+  {
+    id: 'drakeide',
+    name: 'Drakéide',
+    blurb: 'Du sang de dragon, une fierté de clan et un souffle qui brûle.',
+    facts: ['+2 Force, +1 Charisme', '9 m · taille moyenne', 'Souffle de dragon'],
+    abilityBonuses: { force: 2, charisme: 1 },
+    size: 'M',
+    speed: 9,
+    darkvision: 0,
+    languages: ['commun', 'draconique'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Souffle de dragon',
+        text: 'Tu craches une gerbe d’énergie ; le type et la forme dépendent de ton ascendance.',
+      },
+      {
+        name: 'Résistance draconique',
+        text: 'Tu résistes au type de dégâts de ton ascendance.',
+      },
+    ],
+    choices: [
+      {
+        kind: 'ancestry',
+        subject: 'ancestry',
+        title: 'Ton ascendance draconique',
+        help: 'Le dragon dont tu descends décide de ce que crache ton souffle.',
+        pick: 1,
+      },
+    ],
+    subraces: [],
+  },
+
+  {
+    id: 'gnome',
+    name: 'Gnome',
+    blurb: 'Curieux jusqu’à l’imprudence, inventif jusqu’à l’explosion.',
+    facts: ['+2 Intelligence', '7,50 m · petite taille', 'Ruse gnome'],
+    abilityBonuses: { intelligence: 2 },
+    size: 'P',
+    speed: 7.5,
+    darkvision: 18,
+    languages: ['commun', 'gnome'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      {
+        name: 'Ruse gnome',
+        text: 'Tu as l’avantage sur toutes tes sauvegardes mentales contre la magie.',
+      },
+    ],
+    choices: [],
+    subraces: [
+      {
+        id: 'gnome-des-roches',
+        name: 'Gnome des roches',
+        blurb: 'Bricoleur né : il démonte tout, et remonte presque tout.',
+        facts: ['+1 Constitution', '7,50 m', 'Bricoleur'],
+        abilityBonuses: { constitution: 1 },
+        skills: [],
+        proficiencies: { ...NO_PROFICIENCIES, tools: ['outils-de-bijoutier'] },
+        features: [
+          {
+            name: 'Connaissance de l’artificier',
+            text: 'Tu ajoutes deux fois ton bonus de maîtrise pour identifier un objet magique.',
+          },
+          {
+            name: 'Bricoleur',
+            text: 'Tu assembles de petits engins mécaniques qui tiennent une heure.',
+          },
+        ],
+        bonusHitPointsPerLevel: 0,
+        speed: null,
+        choices: [],
+      },
+    ],
+  },
+
+  {
+    id: 'demi-elfe',
+    name: 'Demi-elfe',
+    blurb: 'À l’aise partout, chez lui nulle part. Il sait s’en servir.',
+    facts: ['+2 Charisme, +1 ×2', '9 m · taille moyenne', 'Deux compétences au choix'],
+    abilityBonuses: { charisme: 2 },
+    size: 'M',
+    speed: 9,
+    darkvision: 18,
+    languages: ['commun', 'elfique'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      { name: 'Ascendance féerique', text: 'Tu as l’avantage contre le charme.' },
+      {
+        name: 'Polyvalence',
+        text: 'Tu maîtrises deux compétences de ton choix.',
+      },
+    ],
+    choices: [
+      {
+        kind: 'ability',
+        subject: 'ability',
+        title: 'Tes deux points de bonus',
+        help: 'Deux caractéristiques de ton choix gagnent +1, autres que le Charisme.',
+        pick: 2,
+        bonus: 1,
+        from: ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse'],
+      },
+      {
+        kind: 'skill',
+        subject: 'skills',
+        title: 'Tes deux talents',
+        help: 'Le demi-elfe apprend un peu de tout, partout où il passe.',
+        pick: 2,
+        from: ALL_SKILLS,
+      },
+      {
+        kind: 'language',
+        subject: 'language',
+        title: 'Ta troisième langue',
+        help: 'Entre deux mondes, on apprend vite à parler celui des autres.',
+        pick: 1,
+        from: ANY_LANGUAGE,
+      },
+    ],
+    subraces: [],
+  },
+
+  {
+    id: 'demi-orc',
+    name: 'Demi-orc',
+    blurb: 'On le regarde de travers. Il tient debout plus longtemps que les autres.',
+    facts: ['+2 Force, +1 Constitution', '9 m · taille moyenne', 'Endurance implacable'],
+    abilityBonuses: { force: 2, constitution: 1 },
+    size: 'M',
+    speed: 9,
+    darkvision: 18,
+    languages: ['commun', 'orc'],
+    skills: ['intimidation'],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: [],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      { name: 'Menaçant', text: 'Tu maîtrises la compétence Intimidation.' },
+      {
+        name: 'Endurance implacable',
+        text: 'Une fois par repos long, tomber à 0 point de vie te laisse à 1.',
+      },
+      {
+        name: 'Attaques sauvages',
+        text: 'Sur un coup critique en corps à corps, tu ajoutes un dé de dégâts.',
+      },
+    ],
+    choices: [],
+    subraces: [],
+  },
+
+  {
+    id: 'tieffelin',
+    name: 'Tieffelin',
+    blurb: 'Un héritage infernal, un regard qui met mal à l’aise, et de l’aplomb.',
+    facts: ['+2 Charisme, +1 Intelligence', '9 m · taille moyenne', 'Résistance au feu'],
+    abilityBonuses: { charisme: 2, intelligence: 1 },
+    size: 'M',
+    speed: 9,
+    darkvision: 18,
+    languages: ['commun', 'infernal'],
+    skills: [],
+    proficiencies: NO_PROFICIENCIES,
+    resistances: ['feu'],
+    features: [
+      {
+        name: 'Vision dans le noir',
+        text: 'Tu vois à 18 mètres dans le noir, en nuances de gris.',
+      },
+      {
+        name: 'Résistance infernale',
+        text: 'Tu encaisses moitié moins de dégâts de feu.',
+      },
+      {
+        name: 'Legs infernal',
+        text: 'Tu connais le tour de magie Thaumaturgie ; d’autres sorts viendront plus tard.',
+      },
+    ],
+    choices: [],
+    subraces: [],
+  },
+];
