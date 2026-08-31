@@ -29,7 +29,47 @@ export const BARD: CharacterClass = {
     {
       level: 1,
       name: 'Inspiration bardique',
-      text: 'Tu donnes un d6 à un allié, qu’il ajoute à un jet de son choix.',
+      text: 'En action bonus, tu donnes un d6 à un allié à 18 m qui t’entend. Dans les dix minutes, il l’ajoute à un test, une attaque ou une sauvegarde, même après avoir vu le d20. Le dé passe à d8 au niveau 5, d10 au 10, d12 au 15.',
+    },
+    {
+      level: 2,
+      name: 'Touche-à-tout',
+      text: 'Sur un test de caractéristique où ton bonus de maîtrise ne s’applique pas, tu en ajoutes la moitié, arrondie au inférieur.',
+    },
+    {
+      level: 2,
+      name: 'Chanson de repos',
+      text: 'Pendant un repos court, ceux qui t’écoutent et dépensent des dés de vie récupèrent 1d6 points de vie en plus. Le dé passe à d8 au niveau 9, d10 au 13, d12 au 17.',
+    },
+    {
+      level: 3,
+      name: 'Collège bardique',
+      text: 'Où tu as appris ton art : le collège du savoir, celui de la vaillance. Il te donne des aptitudes aux niveaux 3, 6 et 14.',
+    },
+    {
+      level: 3,
+      name: 'Expertise',
+      text: 'Deux de tes compétences comptent double ton bonus de maîtrise. Deux autres au niveau 10.',
+    },
+    {
+      level: 5,
+      name: 'Source d’inspiration',
+      text: 'Tes inspirations bardiques reviennent après un repos court, plus seulement après un repos long.',
+    },
+    {
+      level: 6,
+      name: 'Contre-chant',
+      text: 'En action, tu joues jusqu’à la fin de ton prochain tour : toi et tes alliés à 9 m qui t’entendez avez l’avantage aux sauvegardes contre la frayeur et le charme.',
+    },
+    {
+      level: 10,
+      name: 'Secrets magiques',
+      text: 'Deux sorts pris dans la liste de n’importe quelle classe, d’un niveau que tu peux lancer, deviennent des sorts de barde. Deux de plus aux niveaux 14 et 18.',
+    },
+    {
+      level: 20,
+      name: 'Inspiration suprême',
+      text: 'Si tu jettes l’initiative sans inspiration bardique en réserve, tu en récupères une.',
     },
   ],
   choices: [
@@ -115,7 +155,37 @@ export const CLERIC: CharacterClass = {
     {
       level: 1,
       name: 'Incantation divine',
-      text: 'Tu prépares chaque jour tes sorts parmi toute la liste du clerc.',
+      text: 'Chaque jour tu prépares tes sorts parmi toute la liste du clerc : ton modificateur de Sagesse + ton niveau. Ton degré de sauvegarde vaut 8 + maîtrise + Sagesse.',
+    },
+    {
+      level: 1,
+      name: 'Domaine divin',
+      text: 'La part de ton dieu que tu sers : la vie, la guerre, la lumière, la ruse. Elle ajoute des sorts toujours préparés et des aptitudes aux niveaux 1, 2, 6, 8 et 17.',
+    },
+    {
+      level: 2,
+      name: 'Conduit divin',
+      text: 'Une fois par repos court ou long, tu canalises ton dieu : renvoyer les morts-vivants, ou l’effet propre à ton domaine. Deux fois au niveau 6, trois au 18.',
+    },
+    {
+      level: 2,
+      name: 'Renvoi des morts-vivants',
+      text: 'En action, chaque mort-vivant à 9 m qui te voit ou t’entend fait une sauvegarde de Sagesse. Raté, il fuit une minute, ne t’approche plus à 9 m et ne prend pas de réaction. Un dégât met fin à l’effet.',
+    },
+    {
+      level: 5,
+      name: 'Destruction des morts-vivants',
+      text: 'Un mort-vivant qui rate ton renvoi est détruit sur place si son facteur de puissance ne dépasse pas 1/2. Le seuil monte aux niveaux 8, 11, 14 et 17.',
+    },
+    {
+      level: 10,
+      name: 'Intervention divine',
+      text: 'En action, tu implores ton dieu et lances des dés de pourcentage : sous ton niveau de clerc, il agit. Réussi, sept jours d’attente ; raté, tu réessaies le lendemain. À partir du niveau 20, il répond toujours.',
+    },
+    {
+      level: 17,
+      name: 'Guérison suprême',
+      text: 'Tes sorts de soin ne se lancent plus au dé : chaque dé compte pour son maximum. Un soin de 2d6 rend 12.',
     },
   ],
   choices: [
@@ -230,12 +300,37 @@ export const DRUID: CharacterClass = {
     {
       level: 1,
       name: 'Druidique',
-      text: 'La langue secrète des druides, que seuls les initiés remarquent.',
+      text: 'La langue secrète des druides. Tu y laisses des messages cachés, que les initiés repèrent d’office et les autres sur un test de Perception DD 15, sans pouvoir les lire.',
     },
     {
       level: 1,
       name: 'Incantation naturelle',
-      text: 'Tu prépares chaque jour tes sorts parmi toute la liste du druide.',
+      text: 'Chaque jour tu prépares tes sorts parmi toute la liste du druide : ton modificateur de Sagesse + ton niveau. Ton degré de sauvegarde vaut 8 + maîtrise + Sagesse.',
+    },
+    {
+      level: 2,
+      name: 'Cercle druidique',
+      text: 'Le cercle que tu rejoins : celui de la terre, celui de la lune. Il te donne des aptitudes aux niveaux 2, 6, 10 et 14.',
+    },
+    {
+      level: 2,
+      name: 'Forme sauvage',
+      text: 'En action, tu prends la forme d’une bête déjà vue, deux fois par repos, pour la moitié de ton niveau en heures. Facteur de puissance 1/4 sans vol ni nage au niveau 2, 1/2 au niveau 4, 1 au niveau 8.',
+    },
+    {
+      level: 18,
+      name: 'Sorts en forme de bête',
+      text: 'Transformé, tu lances tes sorts de druide : gestes et paroles passent, mais pas les composantes matérielles.',
+    },
+    {
+      level: 18,
+      name: 'Corps intemporel',
+      text: 'Ton corps ne prend qu’une année tous les dix ans.',
+    },
+    {
+      level: 20,
+      name: 'Archidruide',
+      text: 'Ta forme sauvage n’a plus de limite d’usage, et tes sorts se passent de gestes, de paroles et de toute composante sans coût.',
     },
   ],
   choices: [
@@ -306,7 +401,27 @@ export const SORCERER: CharacterClass = {
     {
       level: 1,
       name: 'Magie innée',
-      text: 'Tes sorts viennent de ton sang : tu les connais, tu ne les prépares pas.',
+      text: 'Tes sorts viennent de ton sang : tu en connais un nombre fixe et ne les prépares pas. Ton degré de sauvegarde vaut 8 + maîtrise + Charisme.',
+    },
+    {
+      level: 1,
+      name: 'Origine magique',
+      text: 'D’où vient ce sang : un dragon, une déchirure du chaos. Elle te donne des aptitudes aux niveaux 1, 6, 14 et 18.',
+    },
+    {
+      level: 2,
+      name: 'Source de magie',
+      text: 'Des points de sorcellerie, 2 au niveau 2 puis autant que ton niveau, rendus par un repos long. Tu les échanges contre des emplacements de sort, et l’inverse.',
+    },
+    {
+      level: 3,
+      name: 'Métamagie',
+      text: 'Deux façons de tordre un sort, une seule par incantation : le doubler, le presser en action bonus, l’étendre, l’allonger, le rendre discret. Une de plus aux niveaux 10 et 17.',
+    },
+    {
+      level: 20,
+      name: 'Restauration sorcière',
+      text: 'Chaque repos court te rend 4 points de sorcellerie.',
     },
   ],
   choices: [
@@ -406,7 +521,32 @@ export const WARLOCK: CharacterClass = {
     {
       level: 1,
       name: 'Magie de pacte',
-      text: 'Peu d’emplacements, mais ils reviennent après un repos court.',
+      text: 'Peu d’emplacements, tous du même niveau, rendus par un repos court. Ton degré de sauvegarde vaut 8 + maîtrise + Charisme.',
+    },
+    {
+      level: 1,
+      name: 'Protecteur d’outre-monde',
+      text: 'Qui a signé en face : un fiélon, un archifée, un Grand Ancien. Il ajoute des sorts et des aptitudes aux niveaux 1, 6, 10 et 14.',
+    },
+    {
+      level: 2,
+      name: 'Manifestations occultes',
+      text: 'Deux tours permanents offerts par ton pacte, sans coût ni emplacement : voir dans le noir magique, pousser d’un trait, porter une armure sans en avoir. Tu en gagnes d’autres en montant, et tu peux en échanger un à chaque niveau.',
+    },
+    {
+      level: 3,
+      name: 'Faveur de pacte',
+      text: 'Le cadeau de ton patron : une arme qui apparaît à l’appel, un familier plus rusé qu’un autre, ou un livre de trois tours de magie pris hors de ta liste.',
+    },
+    {
+      level: 11,
+      name: 'Arcanum mystique',
+      text: 'Un sort de niveau 6 de ta liste, lançable une fois par repos long sans emplacement. Un sort de niveau 7 au niveau 13, de niveau 8 au 15, de niveau 9 au 17.',
+    },
+    {
+      level: 20,
+      name: 'Maître occultiste',
+      text: 'Une minute d’imploration et tous tes emplacements de magie de pacte reviennent. Une fois par repos long.',
     },
   ],
   choices: [
@@ -495,12 +635,27 @@ export const WIZARD: CharacterClass = {
     {
       level: 1,
       name: 'Grimoire',
-      text: 'Six sorts y sont copiés ; tu en prépares une partie chaque jour.',
+      text: 'Six sorts de niveau 1 y sont copiés au départ, deux de plus à chaque niveau. Tu en prépares chaque jour ton modificateur d’Intelligence + ton niveau.',
     },
     {
       level: 1,
       name: 'Récupération arcanique',
-      text: 'Un repos court par jour te rend un emplacement de sort.',
+      text: 'Une fois par jour, après un repos court, tu récupères des emplacements dont les niveaux cumulés valent la moitié de ton niveau de magicien arrondie au supérieur, aucun au-dessus du niveau 5.',
+    },
+    {
+      level: 2,
+      name: 'Tradition arcanique',
+      text: 'L’école que tu approfondis : évocation, illusion, nécromancie, et les autres. Elle te donne des aptitudes aux niveaux 2, 6, 10 et 14.',
+    },
+    {
+      level: 18,
+      name: 'Maîtrise des sorts',
+      text: 'Un sort de niveau 1 et un de niveau 2 de ton grimoire se lancent à volonté à leur niveau de base, sans emplacement, tant qu’ils sont préparés.',
+    },
+    {
+      level: 20,
+      name: 'Sort personnel',
+      text: 'Deux sorts de niveau 3 sont toujours préparés sans compter dans ton total, et se lancent chacun une fois par repos sans emplacement.',
     },
   ],
   choices: [

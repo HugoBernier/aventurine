@@ -26,6 +26,16 @@ import styles from './SummaryScreen.module.css';
 const TO_CHOOSE = 'À choisir';
 const SIZE_NAMES = { P: 'Petite', M: 'Moyenne' } as const;
 
+/**
+ * Groupées par origine, et dans cet ordre : ce que tu es de naissance, ce que
+ * tu as appris, ce que tu faisais avant. C'est l'ordre de l'assistant.
+ */
+const FEATURE_GROUPS = [
+  ['race', 'De ton peuple'],
+  ['class', 'De ta classe'],
+  ['background', 'De ton historique'],
+] as const;
+
 function Tile({
   label,
   value,
@@ -90,7 +100,7 @@ export function SummaryScreen({
           {draft.name === '' ? 'Personnage sans nom' : draft.name}
         </div>
         <p className={styles.subtitle}>
-          {lineage} · {characterClass?.name ?? TO_CHOOSE} · niveau 1
+          {lineage} · {characterClass?.name ?? TO_CHOOSE} · niveau {draft.level}
         </p>
         <p className={styles.subtitle}>
           {background?.name ?? TO_CHOOSE} · {alignment?.name ?? TO_CHOOSE}
@@ -218,6 +228,28 @@ export function SummaryScreen({
 
       {heavyWeapons.length > 0 && (
         <Notice tone="reminder">{formatHeavyWeapons(heavyWeapons)}</Notice>
+      )}
+
+      {sheet.features.length > 0 && (
+        <>
+          <h2 className={styles.heading}>Tes aptitudes</h2>
+          {FEATURE_GROUPS.map(([source, label]) => {
+            const group = sheet.features.filter((feature) => feature.source === source);
+            return group.length === 0 ? null : (
+              <section key={source}>
+                <h3 className={styles.subheading}>{label}</h3>
+                <dl className={styles.features}>
+                  {group.map((feature) => (
+                    <div className={styles.feature} key={`${source}-${feature.name}`}>
+                      <dt className={styles.featureName}>{feature.name}</dt>
+                      <dd className={styles.featureText}>{feature.text}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            );
+          })}
+        </>
       )}
 
       <h2 className={styles.heading}>Tes caractéristiques</h2>

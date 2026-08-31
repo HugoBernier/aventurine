@@ -17,6 +17,18 @@ const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => 
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
 
+/** Un nain barbare de niveau 1, fiche ouverte : le plus court chemin. */
+const barbarianSheet = async (
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> => {
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: /Nain/ }));
+  await next(user);
+  await next(user);
+  await user.click(screen.getByRole('radio', { name: /Barbare/ }));
+  await user.click(screen.getByRole('button', { name: /Ma fiche/ }));
+};
+
 describe('parcours de création', () => {
   beforeEach(() => {
     globalThis.localStorage.clear();
@@ -86,6 +98,32 @@ describe('parcours de création', () => {
     expect(screen.getAllByText('Taille et vitesse').length).toBeGreaterThan(0);
     expect(screen.getByText('Vision 18 m, résiste au poison')).toBeInTheDocument();
     expect(screen.getByText('Vision 18 m, résiste au feu')).toBeInTheDocument();
+  });
+
+  it('écrit le vrai niveau sur la fiche, pas un 1 en dur', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+    expect(screen.getByText(/Nain · Barbare · niveau 1/)).toBeInTheDocument();
+    // « Tes choix · Niveau » ramène à l'écran du niveau depuis la fiche.
+    await user.click(screen.getByRole('button', { name: /^Niveau · 1/ }));
+    await user.click(screen.getByRole('button', { name: 'Monter d’un niveau' }));
+    await user.click(screen.getByRole('button', { name: /Ma fiche/ }));
+    expect(screen.getByText(/Nain · Barbare · niveau 2/)).toBeInTheDocument();
+  });
+
+  it('montre les aptitudes de classe, avec leur effet chiffré', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+    expect(screen.getByRole('heading', { name: 'Tes aptitudes' })).toBeInTheDocument();
+    // Pas seulement le nom : le joueur doit pouvoir jouer l'aptitude sans livre.
+    expect(screen.getByText('Rage')).toBeInTheDocument();
+    expect(screen.getByText(/\+2 aux dégâts/)).toBeInTheDocument();
+  });
+
+  it('n’affiche pas une aptitude que le niveau n’a pas encore ouverte', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+    expect(screen.queryByText('Rage implacable')).not.toBeInTheDocument();
   });
 
   it('donne un nom accessible à chaque bouton', () => {

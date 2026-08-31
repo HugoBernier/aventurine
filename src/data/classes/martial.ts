@@ -31,7 +31,7 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 1,
       name: 'Rage',
-      text: 'En action bonus : avantage en Force, dégâts de mêlée en plus, et résistance aux coups, perforations et tranchants.',
+      text: 'En action bonus, une minute de rage, hors armure lourde : avantage aux tests et sauvegardes de Force, +2 aux dégâts de tes attaques de mêlée en Force, et résistance aux contondants, perforants et tranchants. Tu ne lances pas de sorts en rage. Deux fois par repos long au niveau 1, davantage ensuite.',
     },
     {
       level: 1,
@@ -41,17 +41,17 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 2,
       name: 'Instinct du danger',
-      text: 'Avantage aux sauvegardes de Dextérité contre ce que tu vois venir : pièges, sorts, souffles.',
+      text: 'Avantage aux sauvegardes de Dextérité contre ce que tu vois venir, pièges et sorts compris, sauf si tu es aveuglé, assourdi ou neutralisé.',
     },
     {
       level: 2,
       name: 'Attaque téméraire',
-      text: 'Tu attaques avec l’avantage, et on t’attaque avec l’avantage jusqu’à ton tour suivant.',
+      text: 'Décidé sur ta première attaque du tour : avantage à tes attaques de mêlée en Force, et avantage à toutes les attaques contre toi jusqu’à ton tour suivant.',
     },
     {
       level: 3,
       name: 'Voie primitive',
-      text: 'Tu choisis ce que ta rage fait de toi : berserker, guerrier totémique.',
+      text: 'Tu choisis ce que ta rage fait de toi : berserker, guerrier totémique. Elle te donne des aptitudes aux niveaux 3, 6, 10 et 14.',
     },
     {
       level: 5,
@@ -61,27 +61,27 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 5,
       name: 'Déplacement accéléré',
-      text: 'Ta vitesse augmente de 3 mètres tant que tu ne portes pas d’armure lourde.',
+      text: '+3 m de vitesse tant que tu ne portes pas d’armure lourde.',
     },
     {
       level: 7,
       name: 'Instinct sauvage',
-      text: 'Avantage à l’initiative, et tu peux agir même surpris si tu entres en rage aussitôt.',
+      text: 'Avantage à l’initiative. Surpris et non neutralisé, tu agis quand même à ton premier tour si tu entres en rage avant toute autre chose.',
     },
     {
       level: 9,
       name: 'Critique brutal',
-      text: 'Un dé de dégâts supplémentaire sur un critique en mêlée. Deux au niveau 13, trois au niveau 17.',
+      text: 'Un dé de dégâts d’arme supplémentaire sur un critique en mêlée. Deux dés au niveau 13, trois au 17.',
     },
     {
       level: 11,
       name: 'Rage implacable',
-      text: 'Tombé à 0 point de vie en rage, tu tiens debout avec 1 point si tu réussis une sauvegarde.',
+      text: 'Tombé à 0 point de vie en rage sans mourir sur le coup : sauvegarde de Constitution DD 10, réussie tu restes debout à 1 point de vie. Le DD monte de 5 à chaque usage et retombe à 10 après un repos.',
     },
     {
       level: 15,
       name: 'Rage persistante',
-      text: 'Ta rage ne s’arrête plus que si tu tombes inconscient ou si tu y mets fin.',
+      text: 'Ta rage ne prend fin que si tu tombes inconscient ou si tu y mets fin toi-même.',
     },
     {
       level: 18,
@@ -150,7 +150,32 @@ export const FIGHTER: CharacterClass = {
     {
       level: 1,
       name: 'Second souffle',
-      text: 'Une fois par repos, tu récupères 1d10 + 1 points de vie en action bonus.',
+      text: 'En action bonus, tu récupères 1d10 + ton niveau de guerrier en points de vie. Une fois par repos court ou long.',
+    },
+    {
+      level: 1,
+      name: 'Style de combat',
+      text: 'Une façon de te battre qui te donne un bonus précis : +2 aux attaques à distance, +1 en classe d’armure, +2 aux dégâts à une arme, et d’autres. Tu la choisis à l’écran suivant.',
+    },
+    {
+      level: 2,
+      name: 'Fougue',
+      text: 'À ton tour, une action supplémentaire en plus de la normale. Une fois par repos court ou long, deux fois à partir du niveau 17.',
+    },
+    {
+      level: 3,
+      name: 'Archétype martial',
+      text: 'Ce que tu as fait de ton entraînement : champion, maître de guerre, chevalier occulte. Il te donne des aptitudes aux niveaux 3, 7, 10, 15 et 18.',
+    },
+    {
+      level: 5,
+      name: 'Attaque supplémentaire',
+      text: 'Tu attaques deux fois quand tu prends l’action d’attaque. Trois fois au niveau 11, quatre au 20.',
+    },
+    {
+      level: 9,
+      name: 'Indomptable',
+      text: 'Tu relances une sauvegarde ratée et dois garder le nouveau résultat. Une fois par repos long, deux au niveau 13, trois au 17.',
     },
   ],
   choices: [
@@ -249,12 +274,107 @@ export const MONK: CharacterClass = {
     {
       level: 1,
       name: 'Arts martiaux',
-      text: 'Tu frappes à mains nues avec ta Dextérité, et tu enchaînes en action bonus.',
+      text: 'À mains nues ou avec une arme de moine, sans armure ni bouclier : tu frappes avec ta Dextérité, tes dégâts passent à 1d4, et l’action d’attaque t’offre une frappe à mains nues en action bonus. Le dé passe à 1d6 au niveau 5, 1d8 au 11, 1d10 au 17.',
     },
     {
       level: 1,
       name: 'Défense sans armure',
       text: 'Sans armure ni bouclier, ta classe d’armure vaut 10 + Dextérité + Sagesse.',
+    },
+    {
+      level: 2,
+      name: 'Ki',
+      text: 'Autant de points de ki que ton niveau, récupérés après un repos court. Quand une aptitude de ki demande une sauvegarde, son degré vaut 8 + ton bonus de maîtrise + ta Sagesse.',
+    },
+    {
+      level: 2,
+      name: 'Déluge de coups',
+      text: 'Juste après ton action d’attaque, 1 point de ki pour deux frappes à mains nues en action bonus.',
+    },
+    {
+      level: 2,
+      name: 'Défense patiente',
+      text: '1 point de ki pour prendre l’action Esquiver en action bonus.',
+    },
+    {
+      level: 2,
+      name: 'Pas du vent',
+      text: '1 point de ki pour te précipiter ou te désengager en action bonus, et tes sauts portent deux fois plus loin ce tour-ci.',
+    },
+    {
+      level: 2,
+      name: 'Déplacement sans armure',
+      text: '+3 m de vitesse sans armure ni bouclier. Le bonus monte à 4,50 m au niveau 6, 6 m au 10, 7,50 m au 14, 9 m au 18. Au niveau 9, tu cours sur les murs et sur l’eau.',
+    },
+    {
+      level: 3,
+      name: 'Tradition monastique',
+      text: 'L’enseignement que tu suis : la main ouverte, l’ombre, les quatre éléments. Il te donne des aptitudes aux niveaux 3, 6, 11 et 17.',
+    },
+    {
+      level: 3,
+      name: 'Déviation de projectiles',
+      text: 'En réaction à une attaque à distance qui te touche, tu réduis les dégâts de 1d10 + ta Dextérité + ton niveau. Ramenés à 0, tu attrapes le projectile, et 1 point de ki te permet de le relancer aussitôt.',
+    },
+    {
+      level: 4,
+      name: 'Chute ralentie',
+      text: 'En réaction, tu retires cinq fois ton niveau aux dégâts d’une chute.',
+    },
+    {
+      level: 5,
+      name: 'Attaque supplémentaire',
+      text: 'Tu attaques deux fois quand tu prends l’action d’attaque.',
+    },
+    {
+      level: 5,
+      name: 'Frappe étourdissante',
+      text: 'Sur une touche en mêlée, 1 point de ki : la cible rate sa sauvegarde de Constitution et reste étourdie jusqu’à la fin de ton prochain tour.',
+    },
+    {
+      level: 6,
+      name: 'Frappes ki',
+      text: 'Tes coups à mains nues comptent comme magiques pour franchir les résistances.',
+    },
+    {
+      level: 7,
+      name: 'Évasion',
+      text: 'Sur un effet de zone à sauvegarde de Dextérité : aucun dégât si tu réussis, la moitié si tu rates.',
+    },
+    {
+      level: 7,
+      name: 'Immobilité de l’esprit',
+      text: 'À ton tour, en action, tu mets fin toi-même à un charme ou à une frayeur qui te touche.',
+    },
+    {
+      level: 10,
+      name: 'Pureté du corps',
+      text: 'Tu es immunisé aux maladies et aux poisons.',
+    },
+    {
+      level: 13,
+      name: 'Langue du soleil et de la lune',
+      text: 'Tu comprends toutes les langues parlées, et toute créature qui a une langue te comprend.',
+    },
+    {
+      level: 14,
+      name: 'Âme de diamant',
+      text: 'Tu maîtrises les six sauvegardes, et 1 point de ki te permet de relancer celles que tu rates.',
+    },
+    {
+      level: 15,
+      name: 'Corps intemporel',
+      text: 'Tu ne vieillis plus, aucune magie ne te vieillit, et tu n’as plus besoin de manger ni de boire.',
+    },
+    {
+      level: 18,
+      name: 'Corps vide',
+      text: '4 points de ki pour devenir invisible pendant une minute, avec résistance à tout sauf à la force. 8 points pour lancer projection astrale sans composantes.',
+    },
+    {
+      level: 20,
+      name: 'Perfection intérieure',
+      text: 'Ta Sagesse et ta Dextérité montent à 20 et leur maximum passe à 24. Si tu commences ton tour sans ki, tu en récupères 4.',
     },
   ],
   choices: [
@@ -311,37 +431,42 @@ export const ROGUE: CharacterClass = {
     {
       level: 1,
       name: 'Attaque sournoise',
-      text: 'Une fois par tour, tu ajoutes 1d6 quand tu as l’avantage ou qu’un allié est au contact. Le dé grandit d’un cran tous les deux niveaux.',
+      text: 'Une fois par tour, +1d6 de dégâts sur une touche à l’arme de finesse ou à distance, si tu as l’avantage ou si un ennemi de la cible est au contact d’elle. Le dé grandit d’un cran tous les deux niveaux, jusqu’à 10d6 au niveau 19.',
+    },
+    {
+      level: 1,
+      name: 'Expertise',
+      text: 'Deux de tes maîtrises, compétences ou outils de voleur, comptent double ton bonus de maîtrise. Deux autres au niveau 6.',
     },
     {
       level: 1,
       name: 'Argot des voleurs',
-      text: 'Un code secret qui passe pour une conversation ordinaire.',
+      text: 'Un code secret qui passe pour une conversation ordinaire, et des signes laissés dans la rue.',
     },
     {
       level: 2,
       name: 'Ruse',
-      text: 'Tu peux te précipiter, te désengager ou te cacher en action bonus, à chaque tour.',
+      text: 'Chaque tour, une action bonus pour te précipiter, te désengager ou te cacher.',
     },
     {
       level: 3,
       name: 'Archétype de roublard',
-      text: 'Tu choisis la voie qui affine ta manière de faire : voleur, assassin, escroc arcanique.',
+      text: 'La voie qui affine ta manière de faire : voleur, assassin, escroc arcanique. Elle te donne des aptitudes aux niveaux 3, 9, 13 et 17.',
     },
     {
       level: 5,
       name: 'Esquive instinctive',
-      text: 'En réaction, tu réduis de moitié les dégâts d’une attaque que tu vois venir.',
+      text: 'En réaction à une attaque que tu vois venir, tu réduis ses dégâts de moitié.',
     },
     {
       level: 7,
       name: 'Évasion',
-      text: 'Les effets de zone à sauvegarde de Dextérité ne te font plus rien si tu réussis, et moitié moins si tu rates.',
+      text: 'Sur un effet de zone à sauvegarde de Dextérité : aucun dégât si tu réussis, la moitié si tu rates.',
     },
     {
       level: 11,
       name: 'Talent fiable',
-      text: 'Sur un test où tu ajoutes ta maîtrise, tout dé inférieur à 10 compte comme un 10.',
+      text: 'Sur un test où tu ajoutes ton bonus de maîtrise, tout dé inférieur à 10 compte comme un 10.',
     },
     {
       level: 14,
@@ -351,17 +476,17 @@ export const ROGUE: CharacterClass = {
     {
       level: 15,
       name: 'Esprit insaisissable',
-      text: 'Tu maîtrises les jets de sauvegarde de Sagesse.',
+      text: 'Tu gagnes la maîtrise des jets de sauvegarde de Sagesse.',
     },
     {
       level: 18,
       name: 'Insaisissable',
-      text: 'Aucune attaque ne bénéficie de l’avantage contre toi, sauf si tu es neutralisé.',
+      text: 'Aucune attaque ne bénéficie de l’avantage contre toi tant que tu n’es pas neutralisé.',
     },
     {
       level: 20,
       name: 'Coup de chance',
-      text: 'Une fois par repos, tu transformes un raté en réussite, ou un test manqué en 20.',
+      text: 'Une attaque ratée devient une touche, ou un test raté compte comme un 20. Une fois par repos court ou long.',
     },
   ],
   choices: [
