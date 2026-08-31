@@ -34,6 +34,25 @@ export type HitPointRolls = Readonly<Record<string, number>>;
  * lancé à sa table et saisi ici. La Constitution s'ajoute à chaque niveau,
  * premier compris.
  */
+/**
+ * Ce qu'un niveau rapporte : le dé plus la Constitution, jamais moins de 1.
+ *
+ * Le SRD 5.1 ne publie pas ce plancher, mais sans lui un dé de 1 avec une
+ * Constitution de 8 rapporte 0, et une Constitution de 6 fait PERDRE des
+ * points de vie en montant de niveau. C'est le seul écart de règle du calcul,
+ * il va toujours dans le sens du joueur, et toutes les tables l'appliquent.
+ *
+ * Le bonus par niveau reste EN DEHORS du plancher : la robustesse du nain des
+ * collines est un +1 à part, pas une part du dé.
+ */
+function gainedAt(
+  die: number,
+  constitutionModifier: number,
+  bonusPerLevel: number,
+): number {
+  return Math.max(1, die + constitutionModifier) + bonusPerLevel;
+}
+
 export function maxHitPoints(
   level: number,
   hitDie: number,
@@ -42,18 +61,15 @@ export function maxHitPoints(
   rolls: HitPointRolls = {},
 ): number {
   const levels = clampLevel(level);
-  const perLevel = constitutionModifier + bonusPerLevel;
   const average = Math.floor(hitDie / 2) + 1;
 
-  let total = hitDie + perLevel;
+  let total = gainedAt(hitDie, constitutionModifier, bonusPerLevel);
   for (let at = 2; at <= levels; at++) {
     const rolled = rolls[String(at)];
-    const gained = isPlausibleRoll(rolled, hitDie) ? rolled : average;
-    total += gained + perLevel;
+    const die = isPlausibleRoll(rolled, hitDie) ? rolled : average;
+    total += gainedAt(die, constitutionModifier, bonusPerLevel);
   }
-  // Un personnage ne tombe jamais sous 1 point de vie par niveau, même avec
-  // une Constitution désastreuse.
-  return Math.max(total, levels);
+  return total;
 }
 
 /** Emplacements du niveau 1 au niveau 9, index 0 = sorts de niveau 1. */

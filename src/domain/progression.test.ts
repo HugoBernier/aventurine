@@ -120,3 +120,30 @@ describe('magie de pacte', () => {
     expect(pactMagic(20)).toEqual({ slots: 4, slotLevel: 5 });
   });
 });
+
+describe('un niveau ne retire jamais de points de vie', () => {
+  // Le SRD 5.1 ne publie pas de plancher par niveau, mais sans lui un dé de 1
+  // avec une Constitution négative fait gagner 0 point de vie, et une
+  // Constitution de 6 en fait PERDRE. Un personnage qui monte de niveau et
+  // s'affaiblit n'est defendable sous aucune lecture.
+  it('donne au moins 1 point de vie pour un dé de 1 avec une Constitution de 8', () => {
+    expect(maxHitPoints(1, 12, -1, 0)).toBe(11);
+    expect(maxHitPoints(2, 12, -1, 0, { '2': 1 })).toBe(12);
+  });
+
+  it('ne fait jamais reculer le total, même avec une Constitution de 6', () => {
+    expect(maxHitPoints(1, 12, -3, 0)).toBe(9);
+    expect(maxHitPoints(2, 12, -3, 0, { '2': 1 })).toBe(10);
+    expect(maxHitPoints(3, 12, -3, 0, { '2': 1, '3': 1 })).toBe(11);
+  });
+
+  it('laisse le bonus du nain des collines s’ajouter par-dessus le plancher', () => {
+    // La robustesse naine est un +1 par niveau à part, pas une part du dé.
+    expect(maxHitPoints(2, 12, -3, 1, { '2': 1 })).toBe(12);
+  });
+
+  it('ne touche à rien quand la Constitution est positive', () => {
+    expect(maxHitPoints(2, 10, 1, 0, { '2': 1 })).toBe(13);
+    expect(maxHitPoints(3, 8, 2, 0)).toBe(24);
+  });
+});
