@@ -14,6 +14,8 @@ import type { ChoiceSource } from './choice';
 import type {
   Armor,
   CreatureSize,
+  Feature,
+  FeatureStep,
   DamageType,
   ItemLine,
   PreparationMode,
@@ -95,6 +97,8 @@ export interface SheetFeature {
   readonly source: ChoiceSource;
   readonly name: string;
   readonly text: string;
+  /** La ligne du tableau que le niveau atteint, quand l'aptitude en a un. */
+  readonly value: string | null;
 }
 
 export interface CharacterSheet {
@@ -463,6 +467,23 @@ function attacks(
   return result;
 }
 
+/** Une aptitude sans tableau : sa valeur est simplement absente. */
+function plain(source: ChoiceSource, feature: Feature): SheetFeature {
+  return { source, name: feature.name, text: feature.text, value: null };
+}
+
+/** La dernière ligne du tableau que le niveau atteint. */
+function stepAt(steps: readonly FeatureStep[] | undefined, level: number): string | null {
+  let found: string | null = null;
+  const rows = steps ?? [];
+  for (const step of rows) {
+    if (step.from <= level) {
+      found = step.value;
+    }
+  }
+  return found;
+}
+
 /**
  * Seul producteur de valeurs dérivées. Tolère un brouillon incomplet : ce qui
  * n'est pas encore calculable vaut `null`, jamais zéro : un zéro se confondrait
@@ -533,27 +554,26 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     };
   });
 
+  const level = clampLevel(draft.level);
   const features: readonly SheetFeature[] = [
-    ...(race?.features ?? []).map((f) => ({ source: 'race' as const, ...f })),
-    ...(subrace?.features ?? []).map((f) => ({ source: 'race' as const, ...f })),
+    ...(race?.features ?? []).map((f) => plain('race', f)),
+    ...(subrace?.features ?? []).map((f) => plain('race', f)),
     // Une aptitude de niveau 5 n'apparaît pas sur la fiche d'un niveau 3.
     ...(characterClass?.features ?? [])
-      .filter((f) => f.level <= clampLevel(draft.level))
-      .map(({ level: _level, ...f }) => ({ source: 'class' as const, ...f })),
-    ...(characterClass?.subclass?.features ?? []).map((f) => ({
-      source: 'class' as const,
-      ...f,
-    })),
-    ...(background?.feature == null
-      ? []
-      : [{ source: 'background' as const, ...background.feature }]),
+      .filter((f) => f.level <= level)
+      .map((f) => ({
+        source: 'class' as const,
+        name: f.name,
+        text: f.text,
+        value: stepAt(f.steps, level),
+      })),
+    ...(characterClass?.subclass?.features ?? []).map((f) => plain('class', f)),
+    ...(background?.feature == null ? [] : [plain('background', background.feature)]),
     // Un don se lit sur la fiche comme n'importe quelle autre aptitude : le
     // joueur ne se demande pas d'où elle vient au moment de s'en servir.
     ...pickedByKind(draft, catalogue, ['feat']).flatMap((id) => {
       const feat = catalogue.feats.find((entry) => entry.id === id);
-      return feat === undefined
-        ? []
-        : [{ source: 'class' as const, name: feat.name, text: feat.text }];
+      return feat === undefined ? [] : [plain('class', feat)];
     }),
   ];
 

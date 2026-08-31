@@ -307,7 +307,13 @@ function buildOptions(
       });
     }
     case 'improvement': {
-      const totals = abilityTotals(draft, catalogue);
+      // Sans l'exclusion, une Force à 17 choisie ici compterait 19, et le
+      // plafond refuserait le choix que le joueur vient de faire.
+      const totals = abilityTotals(
+        draft,
+        catalogue,
+        slotId(owner.source, owner.parentId, spec.subject),
+      );
       return spec.from.map((id) => {
         const ability = findAbility(catalogue, id);
         const total = totals[id];
@@ -534,13 +540,21 @@ export function chosenAbilityBonuses(
  * de niveau. La fiche s'en sert pour afficher, `openChoices` pour savoir ce
  * qui a atteint 20 : un seul calcul, donc une seule règle.
  */
+/**
+ * Les totaux du personnage. `exceptSlot` retire la contribution d'un créneau
+ * précis : un créneau qui juge ses propres options ne doit pas compter la
+ * réponse qu'il a déjà reçue, sinon l'option choisie se grise elle-même.
+ */
 export function abilityTotals(
   draft: CharacterDraft,
   catalogue: Catalogue,
+  exceptSlot: string | null = null,
 ): AbilityScores {
   const race = findRace(catalogue, draft.raceId);
   const subrace = findSubrace(catalogue, draft.raceId, draft.subraceId);
-  const chosen = chosenAbilityBonuses(draft, catalogue);
+  const chosen = chosenAbilityBonuses(draft, catalogue).filter(
+    (entry) => entry.slotId !== exceptSlot,
+  );
   return abilityScores((ability) => {
     const fixed =
       (race?.abilityBonuses[ability] ?? 0) + (subrace?.abilityBonuses[ability] ?? 0);

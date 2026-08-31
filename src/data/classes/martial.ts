@@ -31,7 +31,17 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 1,
       name: 'Rage',
-      text: 'En action bonus, une minute de rage, hors armure lourde : avantage aux tests et sauvegardes de Force, +2 aux dégâts de tes attaques de mêlée en Force, et résistance aux contondants, perforants et tranchants. Tu ne lances pas de sorts en rage. Deux fois par repos long au niveau 1, davantage ensuite.',
+      text: 'En action bonus, une minute de rage, hors armure lourde : avantage aux tests et sauvegardes de Force, dégâts en plus sur tes attaques de mêlée en Force, et résistance aux contondants, perforants et tranchants. Tu ne lances pas de sorts en rage.',
+      steps: [
+        { from: 1, value: '2 rages par repos long, +2 aux dégâts' },
+        { from: 3, value: '3 rages par repos long, +2 aux dégâts' },
+        { from: 6, value: '4 rages par repos long, +2 aux dégâts' },
+        { from: 9, value: '4 rages par repos long, +3 aux dégâts' },
+        { from: 12, value: '5 rages par repos long, +3 aux dégâts' },
+        { from: 16, value: '5 rages par repos long, +4 aux dégâts' },
+        { from: 17, value: '6 rages par repos long, +4 aux dégâts' },
+        { from: 20, value: 'rages illimitées, +4 aux dégâts' },
+      ],
     },
     {
       level: 1,
@@ -71,7 +81,12 @@ export const BARBARIAN: CharacterClass = {
     {
       level: 9,
       name: 'Critique brutal',
-      text: 'Un dé de dégâts d’arme supplémentaire sur un critique en mêlée. Deux dés au niveau 13, trois au 17.',
+      text: 'Des dés de dégâts d’arme supplémentaires sur un critique en mêlée.',
+      steps: [
+        { from: 9, value: '+1 dé de dégâts sur un critique' },
+        { from: 13, value: '+2 dés de dégâts sur un critique' },
+        { from: 17, value: '+3 dés de dégâts sur un critique' },
+      ],
     },
     {
       level: 11,
@@ -275,6 +290,12 @@ export const MONK: CharacterClass = {
       level: 1,
       name: 'Arts martiaux',
       text: 'À mains nues ou avec une arme de moine, sans armure ni bouclier : tu frappes avec ta Dextérité, tes dégâts passent à 1d4, et l’action d’attaque t’offre une frappe à mains nues en action bonus. Le dé passe à 1d6 au niveau 5, 1d8 au 11, 1d10 au 17.',
+      steps: [
+        { from: 1, value: 'dés de 1d4' },
+        { from: 5, value: 'dés de 1d6' },
+        { from: 11, value: 'dés de 1d8' },
+        { from: 17, value: 'dés de 1d10' },
+      ],
     },
     {
       level: 1,
@@ -285,6 +306,10 @@ export const MONK: CharacterClass = {
       level: 2,
       name: 'Ki',
       text: 'Autant de points de ki que ton niveau, récupérés après un repos court. Quand une aptitude de ki demande une sauvegarde, son degré vaut 8 + ton bonus de maîtrise + ta Sagesse.',
+      steps: [
+        { from: 2, value: '2 points de ki' },
+        { from: 3, value: 'autant de points de ki que ton niveau' },
+      ],
     },
     {
       level: 2,
@@ -305,6 +330,13 @@ export const MONK: CharacterClass = {
       level: 2,
       name: 'Déplacement sans armure',
       text: '+3 m de vitesse sans armure ni bouclier. Le bonus monte à 4,50 m au niveau 6, 6 m au 10, 7,50 m au 14, 9 m au 18. Au niveau 9, tu cours sur les murs et sur l’eau.',
+      steps: [
+        { from: 2, value: '+3 m' },
+        { from: 6, value: '+4,50 m' },
+        { from: 10, value: '+6 m' },
+        { from: 14, value: '+7,50 m' },
+        { from: 18, value: '+9 m' },
+      ],
     },
     {
       level: 3,
@@ -431,7 +463,19 @@ export const ROGUE: CharacterClass = {
     {
       level: 1,
       name: 'Attaque sournoise',
-      text: 'Une fois par tour, +1d6 de dégâts sur une touche à l’arme de finesse ou à distance, si tu as l’avantage ou si un ennemi de la cible est au contact d’elle. Le dé grandit d’un cran tous les deux niveaux, jusqu’à 10d6 au niveau 19.',
+      text: 'Une fois par tour, des dégâts en plus sur une touche à l’arme de finesse ou à distance, si tu as l’avantage ou si un ennemi de la cible est au contact d’elle.',
+      steps: [
+        { from: 1, value: '1d6' },
+        { from: 3, value: '2d6' },
+        { from: 5, value: '3d6' },
+        { from: 7, value: '4d6' },
+        { from: 9, value: '5d6' },
+        { from: 11, value: '6d6' },
+        { from: 13, value: '7d6' },
+        { from: 15, value: '8d6' },
+        { from: 17, value: '9d6' },
+        { from: 19, value: '10d6' },
+      ],
     },
     {
       level: 1,

@@ -12,8 +12,24 @@ export interface Feature {
 }
 
 /** Une aptitude de classe, acquise à un niveau précis. */
+/**
+ * Un palier d'une aptitude qui suit un tableau : « à partir de tel niveau,
+ * telle valeur ». La phrase est écrite dans `data/`, le domaine ne fait que
+ * choisir la ligne du niveau atteint.
+ */
+export interface FeatureStep {
+  readonly from: number;
+  readonly value: string;
+}
+
 export interface LeveledFeature extends Feature {
   readonly level: number;
+  /**
+   * Les aptitudes dont l'effet se lit dans un tableau, la rage du barbare en
+   * tête. Sans elles, le texte devrait énumérer vingt niveaux et le joueur
+   * chercher sa ligne.
+   */
+  readonly steps?: readonly FeatureStep[];
 }
 
 export type ArmorCategory = 'legere' | 'intermediaire' | 'lourde' | 'bouclier';

@@ -167,7 +167,17 @@ export const ROGUE: CharacterClass = {
   },
   unarmoredDefense: null,
   features: [
-    { level: 1, name: 'Attaque sournoise', text: '1d6 de dégâts en plus.' },
+    // Une aptitude à tableau : sa valeur dépend du niveau atteint.
+    {
+      level: 1,
+      name: 'Attaque sournoise',
+      text: 'Des dégâts en plus une fois par tour.',
+      steps: [
+        { from: 1, value: '1d6' },
+        { from: 3, value: '2d6' },
+        { from: 5, value: '3d6' },
+      ],
+    },
     // Une aptitude que seul un roublard de niveau 5 ou plus doit voir.
     {
       level: 5,

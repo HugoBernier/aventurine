@@ -30,6 +30,12 @@ export const BARD: CharacterClass = {
       level: 1,
       name: 'Inspiration bardique',
       text: 'En action bonus, tu donnes un d6 à un allié à 18 m qui t’entend. Dans les dix minutes, il l’ajoute à un test, une attaque ou une sauvegarde, même après avoir vu le d20. Le dé passe à d8 au niveau 5, d10 au 10, d12 au 15.',
+      steps: [
+        { from: 1, value: 'dé de d6' },
+        { from: 5, value: 'dé de d8' },
+        { from: 10, value: 'dé de d10' },
+        { from: 15, value: 'dé de d12' },
+      ],
     },
     {
       level: 2,
@@ -40,6 +46,12 @@ export const BARD: CharacterClass = {
       level: 2,
       name: 'Chanson de repos',
       text: 'Pendant un repos court, ceux qui t’écoutent et dépensent des dés de vie récupèrent 1d6 points de vie en plus. Le dé passe à d8 au niveau 9, d10 au 13, d12 au 17.',
+      steps: [
+        { from: 2, value: '1d6 points de vie' },
+        { from: 9, value: '1d8 points de vie' },
+        { from: 13, value: '1d10 points de vie' },
+        { from: 17, value: '1d12 points de vie' },
+      ],
     },
     {
       level: 3,
@@ -166,6 +178,11 @@ export const CLERIC: CharacterClass = {
       level: 2,
       name: 'Conduit divin',
       text: 'Une fois par repos court ou long, tu canalises ton dieu : renvoyer les morts-vivants, ou l’effet propre à ton domaine. Deux fois au niveau 6, trois au 18.',
+      steps: [
+        { from: 2, value: '1 usage par repos' },
+        { from: 6, value: '2 usages par repos' },
+        { from: 18, value: '3 usages par repos' },
+      ],
     },
     {
       level: 2,
@@ -176,6 +193,13 @@ export const CLERIC: CharacterClass = {
       level: 5,
       name: 'Destruction des morts-vivants',
       text: 'Un mort-vivant qui rate ton renvoi est détruit sur place si son facteur de puissance ne dépasse pas 1/2. Le seuil monte aux niveaux 8, 11, 14 et 17.',
+      steps: [
+        { from: 5, value: 'puissance 1/2 ou moins' },
+        { from: 8, value: 'puissance 1 ou moins' },
+        { from: 11, value: 'puissance 2 ou moins' },
+        { from: 14, value: 'puissance 3 ou moins' },
+        { from: 17, value: 'puissance 4 ou moins' },
+      ],
     },
     {
       level: 10,
@@ -316,6 +340,11 @@ export const DRUID: CharacterClass = {
       level: 2,
       name: 'Forme sauvage',
       text: 'En action, tu prends la forme d’une bête déjà vue, deux fois par repos, pour la moitié de ton niveau en heures. Facteur de puissance 1/4 sans vol ni nage au niveau 2, 1/2 au niveau 4, 1 au niveau 8.',
+      steps: [
+        { from: 2, value: 'puissance 1/4, sans vol ni nage' },
+        { from: 4, value: 'puissance 1/2, sans vol' },
+        { from: 8, value: 'puissance 1' },
+      ],
     },
     {
       level: 18,
@@ -417,6 +446,11 @@ export const SORCERER: CharacterClass = {
       level: 3,
       name: 'Métamagie',
       text: 'Deux façons de tordre un sort, une seule par incantation : le doubler, le presser en action bonus, l’étendre, l’allonger, le rendre discret. Une de plus aux niveaux 10 et 17.',
+      steps: [
+        { from: 3, value: '2 options' },
+        { from: 10, value: '3 options' },
+        { from: 17, value: '4 options' },
+      ],
     },
     {
       level: 20,
@@ -542,6 +576,12 @@ export const WARLOCK: CharacterClass = {
       level: 11,
       name: 'Arcanum mystique',
       text: 'Un sort de niveau 6 de ta liste, lançable une fois par repos long sans emplacement. Un sort de niveau 7 au niveau 13, de niveau 8 au 15, de niveau 9 au 17.',
+      steps: [
+        { from: 11, value: 'un sort de niveau 6' },
+        { from: 13, value: 'des sorts de niveaux 6 et 7' },
+        { from: 15, value: 'des sorts de niveaux 6, 7 et 8' },
+        { from: 17, value: 'des sorts de niveaux 6, 7, 8 et 9' },
+      ],
     },
     {
       level: 20,

@@ -395,3 +395,62 @@ describe('sorts d’une classe', () => {
     expect(spellsForClass(C, null, 0, 9)).toEqual([]);
   });
 });
+
+const atLevelFour = (base: number, hasPicked: boolean) => {
+  const empty = emptyDraft();
+  const choices: Record<string, readonly string[]> = {
+    'race:nain:origin-2': ['force'],
+    'class:roublard:niveau-4': ['ability-2'],
+  };
+  if (hasPicked) {
+    choices['class:roublard:niveau-4-majeur'] = ['force'];
+  }
+  return openChoices(
+    {
+      ...empty,
+      raceId: 'nain',
+      classId: 'roublard',
+      level: 4,
+      baseAbilities: { ...empty.baseAbilities, force: base },
+      choices,
+    },
+    C,
+  )
+    .find((slot) => slot.id === 'class:roublard:niveau-4-majeur')
+    ?.options.find((entry) => entry.id === 'force');
+};
+
+describe('plafond d’une amélioration de niveau', () => {
+  it('laisse monter un score qui a déjà reçu le +2 du peuple', () => {
+    // 15 au point d'achat, +2 du peuple : 17, et le +2 du niveau tient encore.
+    expect(atLevelFour(15, false)?.unavailable).toBeNull();
+  });
+
+  it('ne grise pas l’option que le joueur vient lui-même de choisir', () => {
+    // Le créneau ne doit pas compter sa propre réponse : sinon la Force à 17
+    // se lit 19, et le plafond refuse le choix déjà fait.
+    expect(atLevelFour(15, true)?.unavailable).toBeNull();
+  });
+
+  it('refuse quand même de dépasser 20', () => {
+    expect(atLevelFour(15, false)).toBeDefined();
+    const empty = emptyDraft();
+    const option = openChoices(
+      {
+        ...empty,
+        raceId: 'nain',
+        classId: 'roublard',
+        level: 4,
+        baseAbilities: { ...empty.baseAbilities, force: 19 },
+        choices: {
+          'race:nain:origin-2': ['force'],
+          'class:roublard:niveau-4': ['ability-2'],
+        },
+      },
+      C,
+    )
+      .find((slot) => slot.id === 'class:roublard:niveau-4-majeur')
+      ?.options.find((entry) => entry.id === 'force');
+    expect(option?.unavailable).toEqual({ kind: 'max-ability', max: 20 });
+  });
+});

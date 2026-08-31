@@ -241,7 +241,14 @@ export function SummaryScreen({
                 <dl className={styles.features}>
                   {group.map((feature) => (
                     <div className={styles.feature} key={`${source}-${feature.name}`}>
-                      <dt className={styles.featureName}>{feature.name}</dt>
+                      <dt className={styles.featureName}>
+                        {feature.name}
+                        {feature.value !== null && (
+                          // La ligne du tableau que TON niveau atteint : le
+                          // joueur ne cherche pas sa ligne, il la lit.
+                          <span className={styles.featureValue}>{feature.value}</span>
+                        )}
+                      </dt>
                       <dd className={styles.featureText}>{feature.text}</dd>
                     </div>
                   ))}

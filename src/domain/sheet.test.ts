@@ -438,3 +438,27 @@ describe('taille et armes lourdes', () => {
     expect(armed('gnome', 'rapiere')?.heavyForSmallSize).toBe(false);
   });
 });
+
+const sneakAt = (level: number) =>
+  sheetOf({ classId: 'roublard', level }).features.find(
+    (feature) => feature.name === 'Attaque sournoise',
+  );
+
+describe('aptitudes à tableau', () => {
+  it('donne la ligne du niveau atteint, pas la première', () => {
+    expect(sneakAt(1)?.value).toBe('1d6');
+    expect(sneakAt(5)?.value).toBe('3d6');
+    expect(sneakAt(20)?.value).toBe('3d6');
+  });
+
+  it('reste sur la dernière ligne franchie entre deux paliers', () => {
+    expect(sneakAt(4)?.value).toBe('2d6');
+  });
+
+  it('laisse la valeur vide pour une aptitude sans tableau', () => {
+    const feature = sheetOf({ raceId: 'nain' }).features.find(
+      (entry) => entry.name === 'Résistance naine',
+    );
+    expect(feature?.value).toBeNull();
+  });
+});
