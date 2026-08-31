@@ -126,6 +126,39 @@ describe('parcours de création', () => {
     expect(screen.queryByText('Rage implacable')).not.toBeInTheDocument();
   });
 
+  it('montre les sorts choisis sur la fiche, et permet d’en changer', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await next(user);
+    await next(user);
+    await user.click(screen.getByRole('radio', { name: /Magicien/ }));
+    // Aller jusqu'aux tours de magie et en prendre un.
+    for (let step = 0; step < 12; step++) {
+      const reached = screen.queryByRole('heading', { name: /tours de magie/i });
+      if (reached !== null) {
+        const [first] = screen.getAllByRole('checkbox');
+        if (first !== undefined) {
+          await user.click(first);
+        }
+        break;
+      }
+      await next(user);
+    }
+    await user.click(screen.getByRole('button', { name: /Ma fiche/ }));
+
+    expect(screen.getByRole('heading', { name: 'Ta magie' })).toBeInTheDocument();
+    expect(screen.getByText('Degré de sauvegarde')).toBeInTheDocument();
+    // Le bouton « Changer » ramène à l'écran de choix, sans refaire l'assistant.
+    const [change] = screen.getAllByRole('button', { name: 'Changer' });
+    if (change !== undefined) {
+      await user.click(change);
+    }
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      /tours de magie/i,
+    );
+  });
+
   it('donne un nom accessible à chaque bouton', () => {
     render(<App />);
     for (const button of screen.getAllByRole('button')) {

@@ -4,7 +4,7 @@ import type { Dispatch } from 'react';
 import { abilityRows } from '../domain/abilityRows';
 import type { AbilityRow } from '../domain/abilityRows';
 import type { AbilityId } from '../domain/abilities';
-import { findClass, findRace } from '../domain/catalogue';
+import { findClass, findRace, findSpell } from '../domain/catalogue';
 import type { Catalogue } from '../domain/catalogue';
 import type { ChoiceSlot, ChoiceSlotId } from '../domain/choice';
 import type {
@@ -21,7 +21,8 @@ import type { MissingChoice } from '../domain/completeness';
 import { openChoices } from '../domain/openChoices';
 import { pointsRemaining } from '../domain/pointBuy';
 import { buildSheet } from '../domain/sheet';
-import type { CharacterSheet } from '../domain/sheet';
+import type { CharacterSheet, SpellcastingSheet } from '../domain/sheet';
+import type { Spell } from '../domain/content';
 import { WizardDispatchContext, WizardStateContext } from './WizardProvider';
 import type { WizardContextValue } from './WizardProvider';
 import { buildFlow, progressOf, screenForField, screenForSlot } from './flow';
@@ -385,4 +386,62 @@ export function useLibrary(): LibraryView {
       [dispatch],
     ),
   };
+}
+
+export interface SpellbookGroup {
+  readonly level: number;
+  readonly spells: readonly Spell[];
+}
+
+export interface SpellbookView {
+  readonly casting: SpellcastingSheet | null;
+  /** Les tours de magie, qui ne coûtent jamais d'emplacement. */
+  readonly cantrips: readonly Spell[];
+  /** Les sorts choisis, rangés par niveau : c'est ainsi qu'on les lance. */
+  readonly groups: readonly SpellbookGroup[];
+  /** Les sorts que le domaine ou le serment donne d'office. */
+  readonly alwaysPrepared: readonly Spell[];
+  /** Où retourner pour changer d'avis, `null` si l'écran n'existe pas. */
+  readonly cantripScreenId: ScreenId | null;
+  readonly spellScreenId: ScreenId | null;
+}
+
+/**
+ * Le grimoire du personnage : ce qu'il sait lancer, et par où le changer.
+ * Les identifiants du domaine sont résolus ici en sorts complets, parce que
+ * l'interface a besoin du nom et de la portée, pas d'une clé.
+ */
+export function useSpellbook(): SpellbookView {
+  const { state, catalogue } = useWizardContext();
+  return useMemo(() => {
+    const sheet = buildSheet(state.draft, catalogue);
+    const casting = sheet.spellcasting;
+    const flow = buildFlow(state.draft, catalogue);
+    const slots = openChoices(state.draft, catalogue);
+    const screenOf = (kind: string): ScreenId | null => {
+      const slot = slots.find((entry) => entry.kind === kind);
+      return slot === undefined ? null : screenForSlot(flow, slot.id);
+    };
+    const resolve = (ids: readonly string[]): readonly Spell[] =>
+      ids.flatMap((id) => {
+        const spell = findSpell(catalogue, id);
+        return spell === null ? [] : [spell];
+      });
+
+    const spells = resolve(casting?.spellIds ?? []);
+    const levels = [...new Set(spells.map((spell) => spell.level))].toSorted(
+      (a, b) => a - b,
+    );
+    return {
+      casting,
+      cantrips: resolve(casting?.cantripIds ?? []),
+      groups: levels.map((level) => ({
+        level,
+        spells: spells.filter((spell) => spell.level === level),
+      })),
+      alwaysPrepared: resolve(casting?.alwaysPreparedIds ?? []),
+      cantripScreenId: screenOf('cantrip'),
+      spellScreenId: screenOf('spell'),
+    };
+  }, [state.draft, catalogue]);
 }

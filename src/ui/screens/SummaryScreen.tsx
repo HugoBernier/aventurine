@@ -16,6 +16,7 @@ import {
 } from '../../state/hooks';
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
 import { Notice } from '../components/Notice';
+import { SpellbookSection } from './SpellbookSection';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
 import { formatHeavyWeapons } from '../format/heavyWeapons';
@@ -258,6 +259,13 @@ export function SummaryScreen({
           })}
         </>
       )}
+
+      <SpellbookSection
+        onJump={(screenId) => {
+          goTo(screenId);
+          onNavigate?.();
+        }}
+      />
 
       <h2 className={styles.heading}>Tes caractéristiques</h2>
       <div className={styles.tiles}>

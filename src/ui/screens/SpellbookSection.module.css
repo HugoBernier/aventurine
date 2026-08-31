@@ -1,0 +1,112 @@
+.heading {
+  font-size: var(--font-size-300);
+  margin-block: var(--space-5) var(--space-3);
+}
+
+.summary {
+  margin: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.row + .row {
+  border-block-start: 1px solid var(--color-rule);
+}
+
+.term {
+  color: var(--color-text-muted);
+}
+
+.value {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.note {
+  margin-block: var(--space-2) 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.block {
+  margin-block-start: var(--space-4);
+}
+
+/* Le titre et « Changer » sur une ligne : l'action est là où on lit la liste,
+   pas au bas d'un écran qu'il faut dérouler. */
+.blockHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-end: var(--space-2);
+}
+
+.blockTitle {
+  font-size: var(--font-size-200);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.change {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.spell {
+  padding: var(--space-3);
+}
+
+.spell + .spell {
+  border-block-start: 1px solid var(--color-rule);
+}
+
+.spellName {
+  font-weight: 600;
+}
+
+.spellFacts {
+  font-size: var(--font-size-100);
+  color: var(--color-acquired);
+}
+
+.spellText {
+  margin-block: var(--space-1) 0;
+  color: var(--color-text-muted);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px dashed var(--color-control-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
