@@ -21,8 +21,18 @@ export function proficiencyBonus(level: number): number {
 }
 
 /** Un jet venu d'un fichier n'est pas de confiance : il doit tenir sur le dé. */
-function isPlausibleRoll(roll: number | undefined, hitDie: number): roll is number {
-  return roll !== undefined && Number.isSafeInteger(roll) && roll >= 1 && roll <= hitDie;
+/**
+ * Le dé retenu, ou `null` si la saisie ne peut pas sortir de ce dé.
+ *
+ * Renvoyer un prédicat `roll is number` serait un mensonge : un 15 sur un d12
+ * est bien un nombre, et TypeScript en déduisait que tout ce qui échoue au
+ * test vaut `undefined`. La valeur refusée était alors indistinguable d'un
+ * champ vide, donc écartée sans un mot.
+ */
+function usableRoll(roll: number | undefined, hitDie: number): number | null {
+  const isUsable =
+    roll !== undefined && Number.isSafeInteger(roll) && roll >= 1 && roll <= hitDie;
+  return isUsable ? roll : null;
 }
 
 /** Ce que le joueur a lancé, par niveau. Une clé absente vaut « moyenne fixe ». */
@@ -39,23 +49,78 @@ export function averageRoll(hitDie: number): number {
   return Math.floor(hitDie / 2) + 1;
 }
 
+export type HitPointSource = 'max' | 'rolled' | 'average';
+
 /**
- * Ce qu'un niveau rapporte : le dé plus la Constitution, jamais moins de 1.
- *
- * Le SRD 5.1 ne publie pas ce plancher, mais sans lui un dé de 1 avec une
- * Constitution de 8 rapporte 0, et une Constitution de 6 fait PERDRE des
- * points de vie en montant de niveau. C'est le seul écart de règle du calcul,
- * il va toujours dans le sens du joueur, et toutes les tables l'appliquent.
- *
- * Le bonus par niveau reste EN DEHORS du plancher : la robustesse du nain des
- * collines est un +1 à part, pas une part du dé.
+ * Ce qu'UN niveau rapporte, en pièces détachées. L'interface affichait avant
+ * un « +6 par niveau » calculé à part, faux au niveau 1 (qui prend le dé au
+ * maximum) et faux dès que le joueur lance ses dés. Une seule source, détaillée
+ * ligne à ligne, ne peut plus contredire le total.
  */
-function gainedAt(
+export interface HitPointRow {
+  readonly level: number;
+  readonly source: HitPointSource;
+  /** La valeur du dé retenue pour ce niveau. */
+  readonly die: number;
+  readonly constitution: number;
+  readonly bonus: number;
+  /** Le minimum de 1 a joué : la Constitution aurait donné moins. */
+  readonly isFloored: boolean;
+  /** Une saisie impossible sur ce dé, écartée. Le joueur doit le savoir. */
+  readonly ignoredRoll: number | null;
+  readonly total: number;
+}
+
+function row(
+  level: number,
+  source: HitPointSource,
   die: number,
   constitutionModifier: number,
   bonusPerLevel: number,
-): number {
-  return Math.max(1, die + constitutionModifier) + bonusPerLevel;
+  ignoredRoll: number | null,
+): HitPointRow {
+  const raw = die + constitutionModifier;
+  return {
+    level,
+    source,
+    die,
+    constitution: constitutionModifier,
+    bonus: bonusPerLevel,
+    isFloored: raw < 1,
+    ignoredRoll,
+    total: Math.max(1, raw) + bonusPerLevel,
+  };
+}
+
+/** Le détail niveau par niveau. `maxHitPoints` n'en est que la somme. */
+export function hitPointRows(
+  level: number,
+  hitDie: number,
+  constitutionModifier: number,
+  bonusPerLevel: number,
+  rolls: HitPointRolls = {},
+): readonly HitPointRow[] {
+  const levels = clampLevel(level);
+  const rows: HitPointRow[] = [
+    row(1, 'max', hitDie, constitutionModifier, bonusPerLevel, null),
+  ];
+  for (let at = 2; at <= levels; at++) {
+    const rolled = rolls[String(at)];
+    const usable = usableRoll(rolled, hitDie);
+    rows.push(
+      usable === null
+        ? row(
+            at,
+            'average',
+            averageRoll(hitDie),
+            constitutionModifier,
+            bonusPerLevel,
+            rolled ?? null,
+          )
+        : row(at, 'rolled', usable, constitutionModifier, bonusPerLevel, null),
+    );
+  }
+  return rows;
 }
 
 export function maxHitPoints(
@@ -65,16 +130,10 @@ export function maxHitPoints(
   bonusPerLevel: number,
   rolls: HitPointRolls = {},
 ): number {
-  const levels = clampLevel(level);
-  const average = averageRoll(hitDie);
-
-  let total = gainedAt(hitDie, constitutionModifier, bonusPerLevel);
-  for (let at = 2; at <= levels; at++) {
-    const rolled = rolls[String(at)];
-    const die = isPlausibleRoll(rolled, hitDie) ? rolled : average;
-    total += gainedAt(die, constitutionModifier, bonusPerLevel);
-  }
-  return total;
+  return hitPointRows(level, hitDie, constitutionModifier, bonusPerLevel, rolls).reduce(
+    (total, line) => total + line.total,
+    0,
+  );
 }
 
 /** Emplacements du niveau 1 au niveau 9, index 0 = sorts de niveau 1. */

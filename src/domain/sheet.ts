@@ -24,10 +24,11 @@ import type {
 } from './content';
 import { NO_PROFICIENCIES } from './content';
 import type { CharacterDraft } from './draft';
+import type { HitPointRow } from './progression';
 import { abilityTotals, openChoices } from './openChoices';
 import {
-  averageRoll,
   clampLevel,
+  hitPointRows,
   maxHitPoints,
   pactMagic,
   proficiencyBonus,
@@ -109,15 +110,10 @@ export interface CharacterSheet {
   readonly maxHitPoints: number | null;
   readonly hitDice: { readonly count: number; readonly die: number } | null;
   /**
-   * Ce que rapporte UN niveau, en parts séparées. Sans ce détail, un magicien
-   * à Constitution 8 voit son total monter de 3 sans pouvoir savoir que c'est
-   * 4 du dé moins 1 de Constitution, et croit à une erreur.
+   * Le détail des points de vie, un niveau par ligne. Le total seul est
+   * invérifiable : le joueur ne peut pas savoir d'où sortent ses 23 points.
    */
-  readonly hitPointsPerLevel: {
-    readonly average: number;
-    readonly constitution: number;
-    readonly bonus: number;
-  } | null;
+  readonly hitPointRows: readonly HitPointRow[];
   readonly armorClass: ValueBreakdown | null;
   readonly initiative: number;
   readonly speedMeters: number | null;
@@ -602,14 +598,16 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
             bonusHitPoints,
             rolls,
           ),
-    hitPointsPerLevel:
+    hitPointRows:
       characterClass === null
-        ? null
-        : {
-            average: averageRoll(characterClass.hitDie),
-            constitution: modifiers.constitution,
-            bonus: bonusHitPoints,
-          },
+        ? []
+        : hitPointRows(
+            draft.level,
+            characterClass.hitDie,
+            modifiers.constitution,
+            bonusHitPoints,
+            rolls,
+          ),
     hitDice:
       characterClass === null
         ? null

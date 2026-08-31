@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MAX_LEVEL,
   clampLevel,
+  hitPointRows,
   maxHitPoints,
   pactMagic,
   proficiencyBonus,
@@ -145,5 +146,48 @@ describe('un niveau ne retire jamais de points de vie', () => {
   it('ne touche à rien quand la Constitution est positive', () => {
     expect(maxHitPoints(2, 10, 1, 0, { '2': 1 })).toBe(13);
     expect(maxHitPoints(3, 8, 2, 0)).toBe(24);
+  });
+});
+
+describe('le décompte des points de vie, ligne à ligne', () => {
+  it('donne le dé au maximum au niveau 1, la moyenne ensuite', () => {
+    const rows = hitPointRows(3, 12, -1, 0);
+    expect(rows.map((row) => [row.level, row.source, row.die, row.total])).toEqual([
+      [1, 'max', 12, 11],
+      [2, 'average', 7, 6],
+      [3, 'average', 7, 6],
+    ]);
+  });
+
+  it('retient le dé saisi quand il est possible', () => {
+    const [, second] = hitPointRows(2, 12, -1, 0, { '2': 9 });
+    expect(second?.source).toBe('rolled');
+    expect(second?.die).toBe(9);
+    expect(second?.total).toBe(8);
+  });
+
+  it('signale une saisie impossible au lieu de l’écarter en silence', () => {
+    // 15 ne sort pas d'un d12 : la moyenne sert, mais la ligne le dit.
+    const [, second] = hitPointRows(2, 12, 0, 0, { '2': 15 });
+    expect(second?.source).toBe('average');
+    expect(second?.ignoredRoll).toBe(15);
+  });
+
+  it('ne signale rien quand le champ est simplement vide', () => {
+    const [, second] = hitPointRows(2, 12, 0, 0);
+    expect(second?.ignoredRoll).toBeNull();
+  });
+
+  it('marque la ligne où le plancher de 1 a joué', () => {
+    const [, second] = hitPointRows(2, 12, -3, 0, { '2': 1 });
+    expect(second?.isFloored).toBe(true);
+    expect(second?.total).toBe(1);
+  });
+
+  it('somme exactement au total', () => {
+    const rolls = { '2': 1, '3': 12 };
+    const rows = hitPointRows(3, 12, -1, 1, rolls);
+    const sum = rows.reduce((total, row) => total + row.total, 0);
+    expect(sum).toBe(maxHitPoints(3, 12, -1, 1, rolls));
   });
 });

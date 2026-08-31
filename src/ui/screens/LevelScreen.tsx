@@ -3,7 +3,7 @@ import { useCatalogue, useCharacterSheet, useDraft, useLevel } from '../../state
 import { findClass } from '../../domain/catalogue';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
-import { formatHitPointsPerLevel } from '../format/hitPoints';
+import { formatHitPointRow, formatIgnoredRoll } from '../format/hitPoints';
 import styles from './LevelScreen.module.css';
 
 /**
@@ -88,14 +88,7 @@ export function LevelScreen(): ReactNode {
           <dd className={styles.value2}>+{sheet.proficiencyBonus}</dd>
         </div>
         <div className={styles.row}>
-          <dt className={styles.term}>
-            Points de vie
-            {sheet.hitPointsPerLevel !== null && (
-              <span className={styles.detail}>
-                {formatHitPointsPerLevel(sheet.hitPointsPerLevel)}
-              </span>
-            )}
-          </dt>
+          <dt className={styles.term}>Points de vie</dt>
           <dd className={styles.value2}>{sheet.maxHitPoints ?? 'à définir'}</dd>
         </div>
         <div className={styles.row}>
@@ -111,6 +104,31 @@ export function LevelScreen(): ReactNode {
           <dd className={styles.value2}>{openAdvancements}</dd>
         </div>
       </dl>
+
+      {characterClass !== null && (
+        <section className={styles.breakdown}>
+          <h2 className={styles.breakdownTitle}>D’où viennent tes points de vie</h2>
+          <ol className={styles.ledger}>
+            {sheet.hitPointRows.map((row) => {
+              const ignored = formatIgnoredRoll(row, characterClass.hitDie);
+              return (
+                <li className={styles.ledgerRow} key={row.level}>
+                  <span className={styles.ledgerLevel}>Niveau {row.level}</span>
+                  <span className={styles.ledgerHow}>{formatHitPointRow(row)}</span>
+                  <span className={styles.ledgerGain}>+{row.total}</span>
+                  {ignored === null ? null : (
+                    <span className={styles.ledgerWarning}>{ignored}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+          <p className={styles.ledgerTotal}>
+            <span>Total</span>
+            <span className={styles.ledgerGain}>{sheet.maxHitPoints ?? 0}</span>
+          </p>
+        </section>
+      )}
 
       {characterClass !== null && level > 1 && (
         <>

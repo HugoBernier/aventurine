@@ -1,27 +1,34 @@
+import type { HitPointRow } from '../../domain/progression';
 import { formatModifier } from './abilityBlock';
 
-interface PerLevel {
-  readonly average: number;
-  readonly constitution: number;
-  readonly bonus: number;
-}
+const SOURCE: Record<HitPointRow['source'], string> = {
+  max: 'dé au maximum',
+  rolled: 'ton dé',
+  average: 'moyenne du dé',
+};
 
 /**
- * « 4 du dé, −1 de Constitution, soit +3 par niveau ». Le total seul laisse
- * croire à une erreur quand la Constitution est basse : un magicien monte de 3
- * alors que son dé vaut 4.
+ * Une ligne du décompte : « moyenne du dé 7, Constitution -1 ». Le total de la
+ * ligne s'affiche à côté, jamais dans la phrase : c'est le nombre qu'on
+ * additionne du regard pour retrouver la somme.
  */
-export function formatHitPointsPerLevel(per: PerLevel): string {
-  const parts = [`${String(per.average)} du dé`];
-  if (per.constitution !== 0) {
-    parts.push(`${formatModifier(per.constitution)} de Constitution`);
+export function formatHitPointRow(row: HitPointRow): string {
+  const parts = [`${SOURCE[row.source]} ${String(row.die)}`];
+  if (row.constitution !== 0) {
+    parts.push(`Constitution ${formatModifier(row.constitution)}`);
   }
-  if (per.bonus !== 0) {
-    parts.push(`${formatModifier(per.bonus)} de ton peuple`);
+  if (row.bonus !== 0) {
+    parts.push(`peuple ${formatModifier(row.bonus)}`);
   }
-  const total = Math.max(1, per.average + per.constitution) + per.bonus;
-  const isFloored = per.average + per.constitution < 1;
-  return `${parts.join(', ')}, soit ${formatModifier(total)} par niveau${
-    isFloored ? ' (jamais moins de 1)' : ''
-  }`;
+  if (row.isFloored) {
+    parts.push('minimum 1');
+  }
+  return parts.join(', ');
+}
+
+/** Ce qu'il faut dire quand une saisie ne peut pas sortir de ce dé. */
+export function formatIgnoredRoll(row: HitPointRow, hitDie: number): string | null {
+  return row.ignoredRoll === null
+    ? null
+    : `${String(row.ignoredRoll)} est impossible sur un d${String(hitDie)} : la moyenne est utilisée.`;
 }
