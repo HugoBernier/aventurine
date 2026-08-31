@@ -26,6 +26,7 @@ import { NO_PROFICIENCIES } from './content';
 import type { CharacterDraft } from './draft';
 import { abilityTotals, openChoices } from './openChoices';
 import {
+  averageRoll,
   clampLevel,
   maxHitPoints,
   pactMagic,
@@ -107,6 +108,16 @@ export interface CharacterSheet {
   readonly proficiencyBonus: number;
   readonly maxHitPoints: number | null;
   readonly hitDice: { readonly count: number; readonly die: number } | null;
+  /**
+   * Ce que rapporte UN niveau, en parts séparées. Sans ce détail, un magicien
+   * à Constitution 8 voit son total monter de 3 sans pouvoir savoir que c'est
+   * 4 du dé moins 1 de Constitution, et croit à une erreur.
+   */
+  readonly hitPointsPerLevel: {
+    readonly average: number;
+    readonly constitution: number;
+    readonly bonus: number;
+  } | null;
   readonly armorClass: ValueBreakdown | null;
   readonly initiative: number;
   readonly speedMeters: number | null;
@@ -591,6 +602,14 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
             bonusHitPoints,
             rolls,
           ),
+    hitPointsPerLevel:
+      characterClass === null
+        ? null
+        : {
+            average: averageRoll(characterClass.hitDie),
+            constitution: modifiers.constitution,
+            bonus: bonusHitPoints,
+          },
     hitDice:
       characterClass === null
         ? null

@@ -68,6 +68,13 @@
   color: var(--color-text-muted);
 }
 
+/* Le détail sous le libellé : d'où vient le nombre, sur place. */
+.detail {
+  display: block;
+  font-size: var(--font-size-100);
+  color: var(--color-text-subtle);
+}
+
 .value2 {
   margin: 0;
   font-weight: 600;

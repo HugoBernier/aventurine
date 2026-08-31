@@ -34,6 +34,11 @@ export type HitPointRolls = Readonly<Record<string, number>>;
  * lancé à sa table et saisi ici. La Constitution s'ajoute à chaque niveau,
  * premier compris.
  */
+/** La valeur fixe que le SRD donne à la place du dé : d6 → 4, d12 → 7. */
+export function averageRoll(hitDie: number): number {
+  return Math.floor(hitDie / 2) + 1;
+}
+
 /**
  * Ce qu'un niveau rapporte : le dé plus la Constitution, jamais moins de 1.
  *
@@ -61,7 +66,7 @@ export function maxHitPoints(
   rolls: HitPointRolls = {},
 ): number {
   const levels = clampLevel(level);
-  const average = Math.floor(hitDie / 2) + 1;
+  const average = averageRoll(hitDie);
 
   let total = gainedAt(hitDie, constitutionModifier, bonusPerLevel);
   for (let at = 2; at <= levels; at++) {

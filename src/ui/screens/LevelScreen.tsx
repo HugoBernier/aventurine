@@ -3,6 +3,7 @@ import { useCatalogue, useCharacterSheet, useDraft, useLevel } from '../../state
 import { findClass } from '../../domain/catalogue';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
+import { formatHitPointsPerLevel } from '../format/hitPoints';
 import styles from './LevelScreen.module.css';
 
 /**
@@ -87,7 +88,14 @@ export function LevelScreen(): ReactNode {
           <dd className={styles.value2}>+{sheet.proficiencyBonus}</dd>
         </div>
         <div className={styles.row}>
-          <dt className={styles.term}>Points de vie</dt>
+          <dt className={styles.term}>
+            Points de vie
+            {sheet.hitPointsPerLevel !== null && (
+              <span className={styles.detail}>
+                {formatHitPointsPerLevel(sheet.hitPointsPerLevel)}
+              </span>
+            )}
+          </dt>
           <dd className={styles.value2}>{sheet.maxHitPoints ?? 'à définir'}</dd>
         </div>
         <div className={styles.row}>
