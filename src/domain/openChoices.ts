@@ -274,7 +274,7 @@ function buildOptions(
           id,
           language?.name ?? id,
           hasScript
-            ? `S’écrit avec l’alphabet ${language.script}, comme d’autres langues du monde.`
+            ? `S’écrit avec l’alphabet ${language.script}.`
             : 'Ne s’écrit pas : elle ne se transmet qu’à l’oral.',
           [
             language?.exotic === true ? 'Exotique' : 'Standard',
