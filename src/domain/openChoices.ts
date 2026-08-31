@@ -269,13 +269,16 @@ function buildOptions(
     case 'language': {
       return spec.from.map((id) => {
         const language = findLanguage(catalogue, id);
+        const hasScript = language !== null && language.script !== 'aucune';
         return option(
           id,
           language?.name ?? id,
-          `Écriture ${language?.script ?? 'inconnue'}.`,
+          hasScript
+            ? `S’écrit avec l’alphabet ${language.script}, comme d’autres langues du monde.`
+            : 'Ne s’écrit pas : elle ne se transmet qu’à l’oral.',
           [
             language?.exotic === true ? 'Exotique' : 'Standard',
-            language?.script ?? NO_FACT,
+            hasScript ? `Écriture ${language.script}` : 'Sans écriture',
             NO_FACT,
           ],
           null,
