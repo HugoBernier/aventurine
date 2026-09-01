@@ -329,3 +329,40 @@ describe('points de vie lancés', () => {
     expect(back.draft.hitPointMethod).toBe('average');
   });
 });
+
+/** Deux bascules de méthode d'affilée : de quoi empiler deux fois le même avis. */
+const switched = (): WizardState =>
+  run(
+    from({ classId: 'roublard' }),
+    { type: 'SET_ABILITY_METHOD', method: 'standard-array' },
+    { type: 'SET_ABILITY_METHOD', method: 'point-buy' },
+  );
+
+describe('durée de vie des avis', () => {
+  it('ne garde qu’un avis quand on refait le même changement', () => {
+    // Deux bascules de méthode empilaient deux fois la même phrase.
+    expect(switched().notices).toHaveLength(1);
+  });
+
+  it('efface les avis quand on change d’écran', () => {
+    // Un avis explique ce qui vient de se passer ICI. Ailleurs, il ment.
+    const next = run(switched(), { type: 'GO_NEXT' });
+    expect(next.notices).toEqual([]);
+  });
+
+  it('les efface aussi sur un saut depuis la fiche', () => {
+    const next = run(switched(), { type: 'GO_TO', screenId: 'race' });
+    expect(next.notices).toEqual([]);
+  });
+
+  it('garde l’avis quand c’est la cascade elle-même qui déplace l’écran', () => {
+    // Le créneau disparaît sous les pieds du joueur : l'avis est la seule
+    // explication du saut, l'effacer laisserait un déplacement inexpliqué.
+    const state = from({
+      classId: 'roublard',
+      choices: { 'class:roublard:skills': ['discretion', 'acrobaties'] },
+    });
+    const next = run(state, { type: 'SELECT_CLASS', classId: 'clerc' });
+    expect(next.notices.length).toBeGreaterThan(0);
+  });
+});

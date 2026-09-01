@@ -19,7 +19,7 @@ import {
 import { buildFlow } from './flow';
 import { pruneChoices } from './prune';
 import type { RemovedChoice } from './prune';
-import type { Notice, NoticeReason, WizardAction, WizardState } from './types';
+import type { Notice, NoticeReason, ScreenId, WizardAction, WizardState } from './types';
 
 /** Les avis les plus anciens disparaissent : on n'empile pas les bandeaux. */
 const MAX_NOTICES = 3;
@@ -80,7 +80,22 @@ function withNotices(
     id: `${String(Date.now())}-${String(index)}`,
     reason,
   }));
-  return [...existing, ...added].slice(-MAX_NOTICES);
+  const kinds = new Set(added.map((notice) => notice.reason.kind));
+  const kept = existing.filter((notice) => !kinds.has(notice.reason.kind));
+  return [...kept, ...added].slice(-MAX_NOTICES);
+}
+
+/**
+ * Un avis explique ce que l'action qu'on vient de faire a retiré. Il n'a de
+ * sens que sur l'écran où on l'a déclenchée : ailleurs il commente une action
+ * qu'on ne voit plus, et il restait affiché jusqu'à ce qu'on le ferme.
+ *
+ * Seul le déplacement DÉLIBÉRÉ efface. Quand c'est la cascade qui a fait
+ * disparaître l'écran sous les pieds du joueur, l'avis est la seule
+ * explication du saut : `commit` le pose après coup.
+ */
+function movedTo(state: WizardState, screenId: ScreenId): WizardState {
+  return { ...state, currentScreenId: screenId, notices: [] };
 }
 
 /**
@@ -115,7 +130,7 @@ function move(state: WizardState, catalogue: Catalogue, offset: number): WizardS
   const flow = buildFlow(state.draft, catalogue);
   const index = flow.findIndex((screen) => screen.id === state.currentScreenId);
   const target = flow[index + offset];
-  return target === undefined ? state : { ...state, currentScreenId: target.id };
+  return target === undefined ? state : movedTo(state, target.id);
 }
 
 function initialScores(method: AbilityMethod): CharacterDraft['baseAbilities'] {
@@ -284,9 +299,7 @@ function toggleChoice(
 
 function goTo(state: WizardState, catalogue: Catalogue, screenId: string): WizardState {
   const flow = buildFlow(state.draft, catalogue);
-  return flow.some((screen) => screen.id === screenId)
-    ? { ...state, currentScreenId: screenId }
-    : state;
+  return flow.some((screen) => screen.id === screenId) ? movedTo(state, screenId) : state;
 }
 
 function withDraft(state: WizardState, draft: CharacterDraft): WizardState {
