@@ -1,4 +1,5 @@
 import type { CharacterSheet } from '../../domain/sheet';
+import { formatResistances } from './damageTypes';
 import { formatMeters } from './meters';
 
 /**
@@ -26,8 +27,9 @@ export function formatSheetSummary(sheet: CharacterSheet): string | null {
   if (sheet.darkvisionMeters !== null && sheet.darkvisionMeters > 0) {
     parts.push(`vision ${formatMeters(sheet.darkvisionMeters)} m`);
   }
-  if (sheet.resistances.length > 0) {
-    parts.push(`résiste au ${sheet.resistances.join(', au ')}`);
+  const resistances = formatResistances(sheet.resistances);
+  if (resistances !== null) {
+    parts.push(resistances);
   }
   return parts.length === 0 ? null : parts.join(' · ');
 }

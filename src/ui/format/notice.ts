@@ -1,9 +1,14 @@
 import type { NoticeReason } from '../../state/types';
 import { counted } from './plural';
 
+/**
+ * Le libellé porte sa préposition déjà contractée. Coller « à » devant un
+ * libellé qui commence par son article donnait « à le tableau standard » :
+ * une contraction ne peut pas se faire au moment du collage.
+ */
 const METHOD_LABEL = {
-  'point-buy': 'la répartition de points',
-  'standard-array': 'le tableau standard',
+  'point-buy': 'à la répartition de points',
+  'standard-array': 'au tableau standard',
 } as const;
 
 const SOURCE_LABEL = {
@@ -24,7 +29,7 @@ export function formatNotice(reason: NoticeReason): string {
       return `${counted(count, 'option n’est', 'options ne sont')} plus disponible${count > 1 ? 's' : ''} : une autre source te ${count > 1 ? 'les' : 'la'} donne déjà.`;
     }
     case 'abilities-reset': {
-      return `Tu es passé à ${METHOD_LABEL[reason.method]} : tes caractéristiques repartent de zéro.`;
+      return `Tu es passé ${METHOD_LABEL[reason.method]} : tes caractéristiques repartent de zéro.`;
     }
   }
 }

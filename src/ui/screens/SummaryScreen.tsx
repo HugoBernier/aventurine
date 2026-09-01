@@ -20,6 +20,7 @@ import { SpellbookSection } from './SpellbookSection';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
 import { formatHeavyWeapons } from '../format/heavyWeapons';
+import { formatDamageTypeList } from '../format/damageTypes';
 import { formatMeters } from '../format/meters';
 import { plural } from '../format/plural';
 import styles from './SummaryScreen.module.css';
@@ -221,7 +222,7 @@ export function SummaryScreen({
           // Même règle que la vision : une tuile « aucune » n'apprend rien.
           <Tile
             label={plural(sheet.resistances.length, 'Résistance', 'Résistances')}
-            value={sheet.resistances.join(', ')}
+            value={formatDamageTypeList(sheet.resistances)}
             detail="Tu encaisses moitié moins de ces dégâts"
           />
         )}
