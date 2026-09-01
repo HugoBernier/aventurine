@@ -40,7 +40,7 @@ export const BARD: CharacterClass = {
     {
       level: 2,
       name: 'Touche-à-tout',
-      text: 'Sur un test de caractéristique où ton bonus de maîtrise ne s’applique pas, tu en ajoutes la moitié, arrondie au inférieur.',
+      text: 'Sur un test de caractéristique où ton bonus de maîtrise ne s’applique pas, tu en ajoutes la moitié, arrondie à l’inférieur.',
     },
     {
       level: 2,
@@ -71,7 +71,7 @@ export const BARD: CharacterClass = {
     {
       level: 6,
       name: 'Contre-chant',
-      text: 'En action, tu joues jusqu’à la fin de ton prochain tour : toi et tes alliés à 9 m qui t’entendez avez l’avantage aux sauvegardes contre la frayeur et le charme.',
+      text: 'En action, tu joues jusqu’à la fin de ton prochain tour : toi et tes alliés à 9 m qui t’entendent avez l’avantage aux sauvegardes contre la frayeur et le charme.',
     },
     {
       level: 10,

@@ -2651,7 +2651,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     id: 'mot-de-retour',
     name: 'Mot de retour',
     school: 'invocation',
-    range: '1,5 mètres',
+    range: '1,50 mètre',
     s: false,
     summary:
       'Toi et cinq compagnons rentrez instantanément au sanctuaire que tu as désigné.',
@@ -3141,7 +3141,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     range: 'contact',
     duration: '24 heures',
     summary:
-      'La cible devient immunisée au psychique, aux charmes et à toute divination, même à un Souhait.',
+      'La cible devient immunisée contre les dégâts psychiques, les charmes et toute divination, même un Souhait.',
     classes: ['barde', 'magicien'],
   }),
   level8({

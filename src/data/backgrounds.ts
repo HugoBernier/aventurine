@@ -92,7 +92,7 @@ export const BACKGROUND_ENTRIES: readonly Background[] = [
       {
         kind: 'tool',
         subject: 'tools',
-        title: 'Ce à quoi vous jouiez',
+        title: 'Ce à quoi tu jouais',
         help: 'Les longues attentes se tuent aux dés ou aux cartes.',
         pick: 1,
         from: ['des-a-jouer', 'jeu-de-cartes'],
