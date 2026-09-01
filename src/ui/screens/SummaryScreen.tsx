@@ -16,6 +16,7 @@ import {
 } from '../../state/hooks';
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
 import { Notice } from '../components/Notice';
+import { PlaySection } from './PlaySection';
 import { SpellbookSection } from './SpellbookSection';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
@@ -217,6 +218,11 @@ export function SummaryScreen({
             value={`${formatMeters(sheet.darkvisionMeters)} m`}
           />
         )}
+        <Tile
+          label="Perception passive"
+          value={String(sheet.passivePerception)}
+          detail="Ce que tu remarques sans lancer de dé"
+        />
         {sheet.size !== null && <Tile label="Taille" value={SIZE_NAMES[sheet.size]} />}
         {sheet.resistances.length > 0 && (
           // Même règle que la vision : une tuile « aucune » n'apprend rien.
@@ -260,6 +266,8 @@ export function SummaryScreen({
           })}
         </>
       )}
+
+      <PlaySection />
 
       <SpellbookSection
         onJump={(screenId) => {

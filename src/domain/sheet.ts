@@ -125,6 +125,12 @@ export interface CharacterSheet {
   readonly resistances: readonly DamageType[];
   readonly saves: readonly RollLine[];
   readonly skills: readonly RollLine[];
+  /**
+   * 10 + le modificateur de Perception. Le meneur s'en sert à chaque scène
+   * pour savoir ce qu'on remarque sans lancer de dé : c'est la valeur la plus
+   * consultée d'une fiche, et elle ne se déduit pas d'un coup d'œil.
+   */
+  readonly passivePerception: number;
   readonly attacks: readonly Attack[];
   readonly spellcasting: SpellcastingSheet | null;
   readonly proficiencies: Proficiencies;
@@ -628,6 +634,7 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
     resistances: resistances(draft, catalogue),
     saves,
     skills,
+    passivePerception: 10 + (skills.find((line) => line.id === 'perception')?.bonus ?? 0),
     attacks: attacks(
       lines,
       catalogue,

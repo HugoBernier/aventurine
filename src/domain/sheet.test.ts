@@ -484,3 +484,21 @@ describe('aptitudes à tableau', () => {
     expect(feature?.value).toBeNull();
   });
 });
+
+describe('perception passive', () => {
+  it('vaut 10 plus le modificateur de Perception', () => {
+    // Sans maîtrise ni Sagesse : 10 + (-1) = 9.
+    expect(sheetOf({}).passivePerception).toBe(9);
+  });
+
+  it('compte la maîtrise quand la race donne Perception', () => {
+    // Le nain de la fixture n'a pas Perception ; le clerc peut la choisir.
+    const sheet = sheetOf({
+      classId: 'clerc',
+      choices: { 'class:clerc:skills': ['perception'] },
+    });
+    const perception = sheet.skills.find((line) => line.id === 'perception');
+    expect(sheet.passivePerception).toBe(10 + Number(perception?.bonus));
+    expect(perception?.proficient).toBe(true);
+  });
+});
