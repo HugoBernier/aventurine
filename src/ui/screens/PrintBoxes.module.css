@@ -1,0 +1,38 @@
+/* Rien de tout cela n'apparaît à l'écran : `print.css` le révèle. */
+.boxes {
+  display: none;
+}
+
+.field {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4mm;
+  padding-block: 1.5mm;
+  border-block-end: 1px solid var(--color-rule);
+}
+
+.label {
+  font-size: 8pt;
+  color: var(--color-text-muted);
+}
+
+/* Un trait, pas un cadre : on écrit dessus, et ça consomme moins d'encre. */
+.rule {
+  flex: 1;
+  max-width: 30mm;
+  border-block-end: 1px solid var(--color-text);
+  align-self: stretch;
+}
+
+.ticks {
+  display: flex;
+  gap: 1.5mm;
+}
+
+.tick {
+  inline-size: 4mm;
+  block-size: 4mm;
+  border: 1px solid var(--color-text);
+  border-radius: 1mm;
+}

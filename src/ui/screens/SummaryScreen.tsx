@@ -17,6 +17,7 @@ import {
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
 import { Notice } from '../components/Notice';
 import { PlaySection } from './PlaySection';
+import { PrintBoxes } from './PrintBoxes';
 import { SpellbookSection } from './SpellbookSection';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
@@ -98,7 +99,7 @@ export function SummaryScreen({
 
   return (
     <>
-      <div className={styles.identity}>
+      <div className={styles.identity} data-sheet="identity">
         <div className={styles.name}>
           {draft.name === '' ? 'Personnage sans nom' : draft.name}
         </div>
@@ -110,8 +111,20 @@ export function SummaryScreen({
         </p>
       </div>
 
+      <h2 className={styles.heading}>Tes caractéristiques</h2>
+      <div className={styles.tiles} data-sheet="tiles">
+        {sheet.saves.map((save) => (
+          <Tile
+            key={save.id}
+            label={catalogue.abilities.find((a) => a.id === save.id)?.name ?? save.id}
+            value={String(sheet.abilities[save.ability])}
+            detail={`modificateur ${formatModifier(sheet.modifiers[save.ability])}`}
+          />
+        ))}
+      </div>
+
       {missing.length > 0 && (
-        <>
+        <div data-print="hide">
           <h2 className={styles.heading}>{formatMissingTitle(missing.length)}</h2>
           <ul className={styles.list}>
             {missing.map((entry) => (
@@ -136,18 +149,40 @@ export function SummaryScreen({
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
 
+      {/* `window.print()` plutôt qu'une bibliothèque PDF : le navigateur sait
+          déjà paginer, et sur téléphone « Enregistrer au format PDF » est dans
+          le dialogue d'impression, sur iOS comme sur Android. */}
+      <button
+        type="button"
+        className={styles.library}
+        data-print="hide"
+        onClick={() => {
+          globalThis.print();
+        }}
+      >
+        <span>Imprimer ou enregistrer en PDF</span>
+        <span className={styles.chevron}>Ta fiche de jeu</span>
+      </button>
+
       {onOpenLibrary !== undefined && (
-        <button type="button" className={styles.library} onClick={onOpenLibrary}>
+        <button
+          type="button"
+          className={styles.library}
+          data-print="hide"
+          onClick={onOpenLibrary}
+        >
           <span>Tes personnages</span>
           <span className={styles.chevron}>Changer ou en créer un</span>
         </button>
       )}
 
-      <h2 className={styles.heading}>Tes choix</h2>
-      <ul className={styles.list}>
+      <h2 className={styles.heading} data-print="hide">
+        Tes choix
+      </h2>
+      <ul className={styles.list} data-print="hide">
         {(
           [
             ['Race', race?.name ?? TO_CHOOSE, 'race'],
@@ -180,7 +215,7 @@ export function SummaryScreen({
       </ul>
 
       <h2 className={styles.heading}>En combat</h2>
-      <div className={styles.tiles}>
+      <div className={styles.tiles} data-sheet="tiles">
         <Tile
           label="Classe d’armure"
           value={armorClass === null ? TO_CHOOSE : String(armorClass.total)}
@@ -238,9 +273,15 @@ export function SummaryScreen({
         <Notice tone="reminder">{formatHeavyWeapons(heavyWeapons)}</Notice>
       )}
 
+      <PrintBoxes slots={sheet.spellcasting?.slots ?? []} />
+
+      <PlaySection />
+
       {sheet.features.length > 0 && (
         <>
-          <h2 className={styles.heading}>Tes aptitudes</h2>
+          <h2 className={styles.heading} data-sheet="annex">
+            Tes aptitudes
+          </h2>
           {FEATURE_GROUPS.map(([source, label]) => {
             const group = sheet.features.filter((feature) => feature.source === source);
             return group.length === 0 ? null : (
@@ -267,26 +308,12 @@ export function SummaryScreen({
         </>
       )}
 
-      <PlaySection />
-
       <SpellbookSection
         onJump={(screenId) => {
           goTo(screenId);
           onNavigate?.();
         }}
       />
-
-      <h2 className={styles.heading}>Tes caractéristiques</h2>
-      <div className={styles.tiles}>
-        {sheet.saves.map((save) => (
-          <Tile
-            key={save.id}
-            label={catalogue.abilities.find((a) => a.id === save.id)?.name ?? save.id}
-            value={String(sheet.abilities[save.ability])}
-            detail={`modificateur ${formatModifier(sheet.modifiers[save.ability])}`}
-          />
-        ))}
-      </div>
 
       <p className={styles.attribution}>
         {SRD_ATTRIBUTION_FR} {AFFILIATION_NOTICE}

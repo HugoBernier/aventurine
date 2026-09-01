@@ -1,0 +1,202 @@
+/* Feuille de jeu imprimée.
+ *
+ * Le PDF sort par « Enregistrer au format PDF » du navigateur, sans
+ * bibliothèque : jsPDF pèse 350 kio et pdf-lib un mégaoctet, contre un budget
+ * de 150 kio pour toute l'application, et l'un comme l'autre ferait replacer à
+ * la main une mise en page que le navigateur sait déjà faire.
+ *
+ * Rien n'est repris de la fiche officielle ni d'aucune fiche existante : leur
+ * mise en page est protégée. Seule la STRUCTURE conventionnelle est commune,
+ * parce qu'elle est fonctionnelle : on cherche ses caractéristiques en haut à
+ * gauche et ses compétences en colonne, sur toutes les fiches du monde.
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  /* L'assistant est une application à hauteur fixe qui ne défile pas. Sur
+     papier il n'y a pas de hauteur fixe : le cadre redevient un flux. */
+  [data-print='frame'] {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  /* Le miroir de « hide » : ce qui n'a de sens que sur papier. */
+  [data-print='only'] {
+    display: block !important;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-size: 9pt;
+  }
+
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  main > div {
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* Un titre ne reste jamais seul en bas d'une page. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+
+  h2 {
+    font-size: 10.5pt;
+    margin-block: 2.5mm 1mm;
+    padding-block-end: 0.6mm;
+    border-block-end: 1px solid #000000;
+  }
+
+  h3 {
+    font-size: 8.5pt;
+    margin-block: 1.5mm 0.8mm;
+  }
+
+  /* L'identité tient en trois lignes : c'est un en-tête, pas une carte. */
+  [data-sheet='identity'] {
+    border: 0 !important;
+    padding: 0 0 1.5mm !important;
+    border-block-end: 2px solid #000000 !important;
+    border-radius: 0 !important;
+    line-height: 1.25;
+  }
+
+  [data-sheet='identity'] > * {
+    margin: 0 !important;
+    font-size: 9pt !important;
+  }
+
+  [data-sheet='identity'] > :first-child {
+    font-size: 13pt !important;
+  }
+
+  /* Ni ombre ni fond : l'encre sert à lire, pas à décorer. */
+  * {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  /* Les LIGNES ne se coupent pas ; les listes, si. Interdire la coupure d'une
+     liste entière rejette dix-huit compétences en page suivante et laisse une
+     demi-page blanche derrière elles. */
+  li {
+    break-inside: avoid;
+  }
+
+  /* Le titre de l'assistant n'a rien à faire sur une fiche : le nom du
+     personnage est le titre du document. */
+  main h1 {
+    display: none;
+  }
+
+  /* --- Le recto de jeu ---------------------------------------------------
+     À l'écran, une colonne au pouce. Sur A4 la page est trois fois plus large
+     et deux fois moins haute : les mêmes cartes empilées donneraient quatre
+     pages d'air. Tout se resserre en grilles. */
+
+  [data-sheet='tiles'] {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1.5mm !important;
+  }
+
+  [data-sheet='tiles'] > * {
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    padding: 1.5mm !important;
+    text-align: center;
+  }
+
+  /* Le chiffre porte la ligne, le libellé le nomme. Un joueur qui découvre lit
+     le libellé ; un habitué ne voit que le chiffre. */
+  [data-sheet='tiles'] > * > :first-child {
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  [data-sheet='tiles'] > * > :nth-child(2) {
+    font-size: 15pt !important;
+    line-height: 1.1;
+  }
+
+  [data-sheet='tiles'] > * > :nth-child(3) {
+    font-size: 6.5pt;
+  }
+
+  /* Sauvegardes et compétences en trois colonnes : les dix-huit compétences
+     tiennent alors sur six lignes au lieu de dix-huit. */
+  [data-sheet='rolls'] {
+    column-count: 3;
+    column-gap: 4mm;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  [data-sheet='rolls'] > li {
+    border: 0 !important;
+    border-block-end: 1px solid #cccccc !important;
+    padding: 0.6mm 0 !important;
+    break-inside: avoid;
+  }
+
+  [data-sheet='rolls'] > li > * {
+    font-size: 8pt !important;
+  }
+
+  /* Un interligne de 1,5 sur deux lignes coûte 17 px par jet, soit une demi-page
+     sur dix-huit compétences. On lit un tableau, pas un paragraphe. */
+  [data-sheet='rolls'],
+  [data-sheet='rolls'] > li,
+  [data-sheet='tiles'] > * {
+    line-height: 1.15 !important;
+  }
+
+  /* Le texte des aptitudes et les sorts sont des annexes : le recto porte ce
+     qu'on lance, les pages suivantes ce qu'on relit. */
+  [data-sheet='annex'] {
+    break-before: page;
+  }
+
+  /* Les cases à remplir en trois colonnes : elles servent en jeu, elles ne
+     méritent pas le quart de la page. */
+  [data-print='only'] {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 4mm;
+    margin-block: 2mm;
+  }
+
+  /* L'équipement et les langues : une liste, pas un cadre aéré. */
+  [data-sheet='gear'] {
+    column-count: 3;
+    column-gap: 4mm;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  [data-sheet='gear'] > * {
+    font-size: 8pt !important;
+    margin: 0 !important;
+    padding-block: 0.4mm;
+    break-inside: avoid;
+  }
+}

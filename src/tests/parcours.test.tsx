@@ -159,6 +159,14 @@ describe('parcours de création', () => {
     );
   });
 
+  it('offre d’imprimer la fiche, et ne s’imprime pas lui-même', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+    const bouton = screen.getByRole('button', { name: /Imprimer ou enregistrer/ });
+    // Le bouton déclenche l'impression du navigateur, sans bibliothèque PDF.
+    expect(bouton).toHaveAttribute('data-print', 'hide');
+  });
+
   it('donne un nom accessible à chaque bouton', () => {
     render(<App />);
     for (const button of screen.getAllByRole('button')) {

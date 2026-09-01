@@ -18,7 +18,7 @@ function Rolls({
   readonly abilityOf: (line: RollLine) => string;
 }): ReactNode {
   return (
-    <ul className={styles.rolls}>
+    <ul className={styles.rolls} data-sheet="rolls">
       {lines.map((line) => {
         const mastery = formatMastery(line);
         return (
@@ -49,7 +49,7 @@ function Attacks({
   return (
     <>
       <h3 className={styles.subheading}>Tes attaques</h3>
-      <ul className={styles.rolls}>
+      <ul className={styles.rolls} data-sheet="rolls">
         {sheet.attacks.map((attack) => {
           const weapon = findWeapon(catalogue, attack.weaponId);
           const reach =
@@ -112,7 +112,7 @@ export function PlaySection(): ReactNode {
       {(gear.length > 0 || sheet.languageIds.length > 0) && (
         <>
           <h2 className={styles.heading}>Ce que tu portes</h2>
-          <div className={styles.list}>
+          <div className={styles.list} data-sheet="gear">
             {gear.map((line) => (
               <p className={styles.line} key={line.itemId}>
                 <span>

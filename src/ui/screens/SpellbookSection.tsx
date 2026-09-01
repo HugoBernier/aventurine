@@ -23,7 +23,12 @@ function SpellList({ title, spells, onChange, emptyLabel }: SpellListProps): Rea
       <div className={styles.blockHead}>
         <h3 className={styles.blockTitle}>{title}</h3>
         {onChange !== undefined && (
-          <button type="button" className={styles.change} onClick={onChange}>
+          <button
+            type="button"
+            className={styles.change}
+            data-print="hide"
+            onClick={onChange}
+          >
             Changer
           </button>
         )}
@@ -70,7 +75,9 @@ export function SpellbookSection({ onJump }: SpellbookSectionProps): ReactNode {
 
   return (
     <>
-      <h2 className={styles.heading}>Ta magie</h2>
+      <h2 className={styles.heading} data-sheet="annex">
+        Ta magie
+      </h2>
       <dl className={styles.summary}>
         <div className={styles.row}>
           <dt className={styles.term}>Caractéristique</dt>
