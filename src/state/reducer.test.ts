@@ -61,7 +61,6 @@ describe('décisions structurantes', () => {
     expect(next.notices[0]?.reason).toEqual({
       kind: 'slot-closed',
       source: 'class',
-      parentId: 'roublard',
       lost: 2,
     });
   });

@@ -11,9 +11,12 @@ export function formatUnavailable(reason: UnavailableReason, kind: ChoiceKind): 
     case 'already-granted': {
       // Une caractéristique ne s'« acquiert » pas : elle a déjà pris un bonus,
       // et la règle interdit d'en empiler un second dessus.
-      return kind === 'ability'
-        ? 'Elle a déjà reçu un bonus'
-        : `Déjà acquise grâce à ${SOURCE_LABEL[reason.source]}`;
+      if (kind === 'ability') {
+        return 'Elle a déjà reçu un bonus';
+      }
+      // Une compétence et une langue sont féminines, un outil ne l'est pas.
+      const already = kind === 'tool' ? 'Déjà acquis' : 'Déjà acquise';
+      return `${already} grâce à ${SOURCE_LABEL[reason.source]}`;
     }
     case 'slot-full': {
       return 'Décoche-en une pour en changer';

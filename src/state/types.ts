@@ -58,7 +58,6 @@ export type NoticeReason =
   | {
       readonly kind: 'slot-closed';
       readonly source: ChoiceSource;
-      readonly parentId: string;
       readonly lost: number;
     }
   | {

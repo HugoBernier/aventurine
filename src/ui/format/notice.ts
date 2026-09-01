@@ -21,8 +21,12 @@ const SOURCE_LABEL = {
 export function formatNotice(reason: NoticeReason): string {
   switch (reason.kind) {
     case 'slot-closed': {
-      const what = counted(reason.lost, 'choix', 'choix');
-      return `Tu as changé ${SOURCE_LABEL[reason.source]} : tes ${what} liés à « ${reason.parentId} » ont été remis à zéro.`;
+      // Le parent n'est pas nommé : on n'a ici que son identifiant, et
+      // « nain-des-collines » n'est pas du français. Le libellé de source dit
+      // déjà ce qui a changé.
+      return reason.lost > 1
+        ? `Tu as changé ${SOURCE_LABEL[reason.source]} : les ${String(reason.lost)} choix qui en dépendaient ont été remis à zéro.`
+        : `Tu as changé ${SOURCE_LABEL[reason.source]} : le choix qui en dépendait a été remis à zéro.`;
     }
     case 'options-withdrawn': {
       const count = reason.optionIds.length;

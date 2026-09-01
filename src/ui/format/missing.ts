@@ -8,7 +8,7 @@ const NOUNS: Partial<Record<MissingKind, readonly [string, string]>> = {
   tool: ['outil', 'outils'],
   cantrip: ['tour de magie', 'tours de magie'],
   spell: ['sort', 'sorts'],
-  equipment: ["choix d'équipement", "choix d'équipement"],
+  equipment: ['choix d’équipement', 'choix d’équipement'],
 };
 
 const SENTENCES: Partial<Record<MissingKind, string>> = {

@@ -62,7 +62,6 @@ function noticeFor(removed: RemovedChoice): NoticeReason {
     return {
       kind: 'slot-closed',
       source: parsed.source,
-      parentId: parsed.parentId,
       lost: removed.optionIds.length,
     };
   }

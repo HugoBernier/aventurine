@@ -69,7 +69,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     name: 'Prestidigitation',
     school: 'transmutation',
     range: '3 mètres',
-    duration: "jusqu'à 1 heure",
+    duration: 'jusqu’à 1 heure',
     summary:
       'De petits effets sans conséquence : une étincelle, une odeur, un objet nettoyé ou sali.',
     classes: ['barde', 'ensorceleur', 'magicien', 'occultiste'],
@@ -80,7 +80,7 @@ export const SPELL_ENTRIES: readonly Spell[] = [
     school: 'transmutation',
     s: false,
     range: '9 mètres',
-    duration: "jusqu'à 1 minute",
+    duration: 'jusqu’à 1 minute',
     summary:
       'Une manifestation divine mineure : ta voix tonne, les flammes vacillent, une porte claque.',
     classes: ['clerc'],

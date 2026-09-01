@@ -27,7 +27,7 @@ export function formatPreparation(casting: SpellcastingSheet): string {
 export function formatSlots(casting: SpellcastingSheet): string | null {
   if (casting.pact !== null) {
     const { slots: count, slotLevel } = casting.pact;
-    return `${String(count)} emplacement${count > 1 ? 's' : ''} de niveau ${String(slotLevel)}, rendus par un repos court`;
+    return `${String(count)} emplacement${count > 1 ? 's' : ''} de niveau ${String(slotLevel)}, rendu${count > 1 ? 's' : ''} par un repos court`;
   }
   const parts = casting.slots
     .map((count, index) => ({ count, level: index + 1 }))
