@@ -1,6 +1,6 @@
 import type { AbilityId, AbilityScores } from './abilities';
 import type { CastingProgression } from './progression';
-import type { ChoiceSpec } from './choiceSpec';
+import type { ChoiceSpec, SubclassSpec } from './choiceSpec';
 import type { SkillId } from './skills';
 
 /** Trois repères alignés, dans le même ordre sur toutes les options d'un choix. */
@@ -228,7 +228,9 @@ export interface Spellcasting {
  */
 export interface Subclass extends Named {
   readonly blurb: string;
-  readonly features: readonly Feature[];
+  /** Trois repères comparables d'une voie à l'autre, comme les races. */
+  readonly facts: Facts;
+  readonly features: readonly LeveledFeature[];
   readonly proficiencies: Proficiencies | null;
   readonly alwaysPreparedSpells: readonly string[];
   readonly unarmoredDefense: UnarmoredDefense | null;
@@ -274,7 +276,14 @@ export interface CharacterClass extends Named {
   readonly equipmentOptions: readonly EquipmentOption[];
   readonly fixedEquipment: readonly ItemLine[];
   readonly spellcasting: Spellcasting | null;
-  readonly subclass: Subclass | null;
+  /**
+   * Les voies ouvertes par la classe. Le SRD 5.1 n'en publie qu'une par
+   * classe, ce qui ne dispense pas de la CHOISIR : un joueur qui n'a jamais
+   * vu son domaine passer devant lui ne sait pas qu'il en a un.
+   */
+  readonly subclasses: readonly Subclass[];
+  /** Quand la voie se choisit, et sous quel nom la classe l'appelle. */
+  readonly subclassChoice: SubclassSpec;
   /** Les niveaux où la classe améliore ses caractéristiques ou prend un don. */
   readonly advancements: readonly Advancement[];
 }

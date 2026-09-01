@@ -22,7 +22,7 @@ import {
   findBackground,
   spellsForClass,
 } from './catalogue';
-import type { Advancement, EquipmentOption, Facts } from './content';
+import type { Advancement, EquipmentOption, Facts, Subclass } from './content';
 import { pickedFor } from './draft';
 import { clampLevel, pactMagic, spellSlots } from './progression';
 import type { CharacterDraft } from './draft';
@@ -88,7 +88,7 @@ function fixedGrants(draft: CharacterDraft, catalogue: Catalogue): Granted {
   const characterClass = findClass(catalogue, draft.classId);
   if (characterClass !== null) {
     grantAll(granted.tools, characterClass.proficiencies.tools, 'class');
-    const { subclass } = characterClass;
+    const subclass = chosenSubclass(draft, catalogue);
     if (subclass?.proficiencies != null) {
       grantAll(granted.tools, subclass.proficiencies.tools, 'class');
     }
@@ -138,6 +138,29 @@ function advancementFollowUp(
   }
 }
 
+/**
+ * La voie que le joueur a choisie, ou `null` tant qu'il ne l'a pas fait.
+ *
+ * Lit la réponse directement dans le brouillon, sans repasser par
+ * `openChoices` : c'est `openChoices` qui l'appelle, pour savoir quelles
+ * maîtrises et quels sous-choix la voie apporte.
+ */
+export function chosenSubclass(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): Subclass | null {
+  const characterClass = findClass(catalogue, draft.classId);
+  if (characterClass === null || draft.classId === null) {
+    return null;
+  }
+  const spec = characterClass.subclassChoice;
+  if (clampLevel(draft.level) < spec.level) {
+    return null;
+  }
+  const [picked] = pickedFor(draft, slotId('class', draft.classId, spec.subject));
+  return characterClass.subclasses.find((entry) => entry.id === picked) ?? null;
+}
+
 function specsInPriorityOrder(
   draft: CharacterDraft,
   catalogue: Catalogue,
@@ -166,7 +189,15 @@ function specsInPriorityOrder(
 
   const characterClass = findClass(catalogue, draft.classId);
   push('class', draft.classId, characterClass?.choices ?? []);
-  push('class', draft.classId, characterClass?.subclass?.choices ?? []);
+
+  // La voie ne se choisit qu'à partir du niveau où la classe l'ouvre : 1 pour
+  // le clerc, 2 pour le magicien, 3 pour la plupart. Redescendre referme le
+  // créneau et la purge retire la réponse, comme pour un palier.
+  const spec = characterClass?.subclassChoice;
+  if (spec !== undefined && clampLevel(draft.level) >= spec.level) {
+    push('class', draft.classId, [spec]);
+  }
+  push('class', draft.classId, chosenSubclass(draft, catalogue)?.choices ?? []);
 
   // Un palier n'existe qu'une fois son niveau atteint, et sa suite dépend de
   // la route choisie. Redescendre de niveau referme le palier : la purge
@@ -240,6 +271,7 @@ function registerFor(
     case 'spell':
     case 'equipment':
     case 'ancestry':
+    case 'subclass':
     case 'fighting-style': {
       return null;
     }
@@ -383,6 +415,11 @@ function buildOptions(
         option(style.id, style.name, style.text, [style.text, NO_FACT, NO_FACT], null),
       );
     }
+    case 'subclass': {
+      return (findClass(catalogue, draft.classId)?.subclasses ?? []).map((entry) =>
+        option(entry.id, entry.name, entry.blurb, entry.facts, null),
+      );
+    }
     case 'expertise': {
       const skills = Array.from(granted.skills.keys(), (id) => {
         const skill = findSkill(catalogue, id);
@@ -510,6 +547,7 @@ function abilityBonusOf(spec: ChoiceSpec): number | null {
     case 'equipment':
     case 'ancestry':
     case 'fighting-style':
+    case 'subclass':
     case 'feat':
     case 'advancement':
     case 'cantrip':

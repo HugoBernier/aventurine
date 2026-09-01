@@ -49,7 +49,7 @@ const raceSpecs = (): readonly OwnedSpec[] =>
 const classSpecs = (): readonly OwnedSpec[] =>
   C.classes.flatMap((entry) => [
     ...own('class', entry.id, entry.choices),
-    ...own('class', entry.id, entry.subclass?.choices ?? []),
+    ...entry.subclasses.flatMap((sub) => own('class', entry.id, sub.choices)),
   ]);
 
 const backgroundSpecs = (): readonly OwnedSpec[] =>
@@ -186,8 +186,8 @@ describe('intégrité référentielle', () => {
   });
 
   it('ne référence que des sorts existants dans les sorts toujours préparés', () => {
-    const referenced = C.classes.flatMap(
-      (entry) => entry.subclass?.alwaysPreparedSpells ?? [],
+    const referenced = C.classes.flatMap((entry) =>
+      entry.subclasses.flatMap((sub) => sub.alwaysPreparedSpells),
     );
     expect(referenced.filter((id) => !spellIds.has(id))).toEqual([]);
   });

@@ -239,7 +239,28 @@ export const ROGUE: CharacterClass = {
     { itemId: 'armure-de-cuir', quantity: 1 },
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'voleur',
+      name: 'Voleur',
+      blurb: 'Des mains rapides et des murs qui se grimpent.',
+      facts: ['Ruse élargie', 'Escalade sans coût', '—'],
+      features: [{ level: 3, name: 'Mains agiles', text: 'Ta Ruse en fait plus.' }],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: {
+    kind: 'subclass',
+    subject: 'subclass',
+    title: 'Ton archétype de roublard',
+    help: 'La voie qui affine ta manière de faire.',
+    pick: 1,
+    level: 3,
+  },
   advancements: [
     {
       level: 4,
@@ -344,16 +365,50 @@ const classes: readonly CharacterClass[] = [
       preparation: 'prepared',
       ritual: true,
     },
-    subclass: {
-      id: 'domaine-de-la-vie',
-      name: 'Domaine de la Vie',
-      blurb: 'Tu soignes, tu protèges, tu tiens la ligne.',
-      features: [{ name: 'Disciple de la vie', text: 'Tes soins rendent plus.' }],
-      proficiencies: { ...NO_PROFICIENCIES, armor: ['lourde'] },
-      alwaysPreparedSpells: ['benediction'],
-      unarmoredDefense: null,
-      bonusHitPointsPerLevel: 0,
-      choices: [],
+    subclasses: [
+      {
+        id: 'domaine-de-la-vie',
+        name: 'Domaine de la Vie',
+        blurb: 'Tu soignes, tu protèges, tu tiens la ligne.',
+        facts: ['Armures lourdes', 'Soins renforcés', '—'],
+        features: [
+          { level: 1, name: 'Disciple de la vie', text: 'Tes soins rendent plus.' },
+          // Une aptitude de voie qu'un clerc de niveau 1 ne doit pas voir.
+          { level: 6, name: 'Guérisseur béni', text: 'Tes soins te soignent aussi.' },
+        ],
+        proficiencies: { ...NO_PROFICIENCIES, armor: ['lourde'] },
+        alwaysPreparedSpells: ['benediction'],
+        unarmoredDefense: null,
+        bonusHitPointsPerLevel: 0,
+        choices: [],
+      },
+      // Une seconde voie : sans elle, le créneau n'aurait rien à comparer.
+      {
+        id: 'domaine-de-la-guerre',
+        name: 'Domaine de la Guerre',
+        blurb: 'Tu frappes, et ton dieu frappe avec toi.',
+        facts: ['Armes de guerre', 'Attaque en bonus', '—'],
+        features: [
+          {
+            level: 1,
+            name: 'Prêtre guerrier',
+            text: 'Une attaque de plus en action bonus.',
+          },
+        ],
+        proficiencies: { ...NO_PROFICIENCIES, weaponCategories: ['de-guerre'] },
+        alwaysPreparedSpells: [],
+        unarmoredDefense: null,
+        bonusHitPointsPerLevel: 0,
+        choices: [],
+      },
+    ],
+    subclassChoice: {
+      kind: 'subclass',
+      subject: 'subclass',
+      title: 'Ton domaine divin',
+      help: 'La part de ton dieu que tu sers.',
+      pick: 1,
+      level: 1,
     },
     // Le clerc de la fixture n'a aucun palier : c'est le cas « une classe sans
     // amélioration » que le domaine doit traverser sans rien ouvrir.

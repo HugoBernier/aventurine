@@ -1,14 +1,15 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import type { CharacterClass } from '../../domain/content';
 import {
-  ROGUE_ADVANCEMENTS,
-  FIGHTER_ADVANCEMENTS,
   ADVANCEMENTS,
+  FIGHTER_ADVANCEMENTS,
+  ROGUE_ADVANCEMENTS,
   equipmentChoice,
   equipmentOption,
   item,
   proficiencies,
   skillChoice,
+  subclassChoice,
 } from './helpers';
 
 export const BARBARIAN: CharacterClass = {
@@ -145,7 +146,46 @@ export const BARBARIAN: CharacterClass = {
     item('paquetage-d-explorateur'),
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'voie-du-berserker',
+      name: 'Voie du berserker',
+      blurb: 'Ta rage ne connaît plus de frein, et tu le paies après.',
+      facts: ['Une attaque de plus', 'Insensible à la peur', 'Épuisement au réveil'],
+      features: [
+        {
+          level: 3,
+          name: 'Frénésie',
+          text: 'En entrant en rage, tu peux frapper une fois de plus en action bonus à chaque tour. La rage finie, tu gagnes un niveau d’épuisement.',
+        },
+        {
+          level: 6,
+          name: 'Rage aveugle',
+          text: 'Impossible de te charmer ou de t’effrayer en rage. Un effet déjà en cours est suspendu le temps de la rage.',
+        },
+        {
+          level: 10,
+          name: 'Présence intimidante',
+          text: 'En action, une créature à 9 m qui te voit ou t’entend est effrayée si elle rate une sauvegarde de Sagesse contre 8 + ta maîtrise + ton Charisme.',
+        },
+        {
+          level: 14,
+          name: 'Représailles',
+          text: 'Quand une créature à 1,50 m te blesse, tu la frappes en réaction.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ta voie primitive',
+    'Ce que ta rage fait de toi. Elle te donnera des aptitudes aux niveaux 3, 6, 10 et 14.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -265,7 +305,51 @@ export const FIGHTER: CharacterClass = {
     item('paquetage-de-donjon'),
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'champion',
+      name: 'Champion',
+      blurb: 'Rien de compliqué : tu frappes plus souvent, et plus fort.',
+      facts: ['Critique sur 19-20', 'Puis sur 18-20', 'Régénère au combat'],
+      features: [
+        {
+          level: 3,
+          name: 'Critique amélioré',
+          text: 'Tes attaques d’arme font un coup critique sur un 19 comme sur un 20.',
+        },
+        {
+          level: 7,
+          name: 'Athlète remarquable',
+          text: 'Tu ajoutes la moitié de ton bonus de maîtrise, arrondie au supérieur, aux tests de Force, de Dextérité et de Constitution qui ne l’ont pas déjà. Tes sauts avec élan gagnent ta Force en mètres.',
+        },
+        {
+          level: 10,
+          name: 'Style de combat supplémentaire',
+          text: 'Tu prends un second style de combat.',
+        },
+        {
+          level: 15,
+          name: 'Critique supérieur',
+          text: 'Tes coups critiques tombent désormais sur 18, 19 et 20.',
+        },
+        {
+          level: 18,
+          name: 'Survivant',
+          text: 'Au début de chacun de tes tours, si tu es à la moitié de tes points de vie ou moins sans être à 0, tu récupères 5 + ta Constitution.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ton archétype martial',
+    'Ce que tu as fait de ton entraînement. Il te donnera des aptitudes aux niveaux 3, 7, 10, 15 et 18.',
+  ),
   advancements: FIGHTER_ADVANCEMENTS,
 };
 
@@ -441,7 +525,46 @@ export const MONK: CharacterClass = {
   ],
   fixedEquipment: [item('flechette', 10), item('paquetage-d-explorateur')],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'voie-de-la-main-ouverte',
+      name: 'Voie de la main ouverte',
+      blurb: 'Le corps à corps pur : tu déséquilibres, tu repousses, tu te soignes.',
+      facts: ['Déluge qui contrôle', 'Soins par le ki', 'Paume frémissante'],
+      features: [
+        {
+          level: 3,
+          name: 'Technique de la main ouverte',
+          text: 'Chaque coup de ton déluge impose un effet au choix : renverser la cible, la repousser de 4,50 m, ou lui retirer ses réactions jusqu’à ton tour suivant.',
+        },
+        {
+          level: 6,
+          name: 'Intégrité du corps',
+          text: 'En action, tu récupères trois fois ton niveau en points de vie. Une fois par repos long.',
+        },
+        {
+          level: 11,
+          name: 'Tranquillité',
+          text: 'Après un repos long, tu bénéficies de sanctuaire jusqu’au repos suivant, avec un degré de 8 + ta maîtrise + ta Sagesse.',
+        },
+        {
+          level: 17,
+          name: 'Paume frémissante',
+          text: 'Sur une frappe à mains nues, 3 points de ki posent des vibrations qui durent autant de jours que ton niveau. En action, tu y mets fin : la cible tombe à 0 point de vie, ou subit 10d10 si elle réussit sa sauvegarde de Constitution.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ta tradition monastique',
+    'L’enseignement que tu suis. Il te donnera des aptitudes aux niveaux 3, 6, 11 et 17.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -592,6 +715,51 @@ export const ROGUE: CharacterClass = {
     item('paquetage-de-cambrioleur'),
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'voleur',
+      name: 'Voleur',
+      blurb:
+        'Des mains rapides, des murs qui se grimpent, et deux tours au premier round.',
+      facts: ['Ruse élargie', 'Escalade sans coût', 'Deux tours au premier round'],
+      features: [
+        {
+          level: 3,
+          name: 'Mains agiles',
+          text: 'Ton action bonus de Ruse sert aussi à un test d’Escamotage, à crocheter une serrure, à désamorcer un piège ou à utiliser un objet.',
+        },
+        {
+          level: 3,
+          name: 'Travail en hauteur',
+          text: 'Grimper ne te coûte plus de déplacement supplémentaire, et tes sauts avec élan gagnent ta Dextérité en mètres.',
+        },
+        {
+          level: 9,
+          name: 'Discrétion suprême',
+          text: 'Avantage à la Discrétion si tu ne parcours pas plus de la moitié de ta vitesse dans le tour.',
+        },
+        {
+          level: 13,
+          name: 'Utilisation d’objet magique',
+          text: 'Tu ignores toute condition de classe, de peuple ou de niveau sur un objet magique.',
+        },
+        {
+          level: 17,
+          name: 'Réflexes du voleur',
+          text: 'Deux tours au premier round d’un combat : le tien, puis un second à ton initiative moins 10. Pas si tu es surpris.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ton archétype de roublard',
+    'La voie qui affine ta manière de faire. Elle te donnera des aptitudes aux niveaux 3, 9, 13 et 17.',
+  ),
   advancements: ROGUE_ADVANCEMENTS,
 };

@@ -51,6 +51,16 @@ export interface FightingStyleSpec extends BaseSpec {
 }
 
 /**
+ * La voie que la classe fait choisir : domaine du clerc, archétype du
+ * guerrier, collège du barde. Elle porte SON niveau, parce qu'il change d'une
+ * classe à l'autre : 1 pour le clerc, 2 pour le magicien, 3 pour les autres.
+ */
+export interface SubclassSpec extends BaseSpec {
+  readonly kind: 'subclass';
+  readonly level: number;
+}
+
+/**
  * Deux façons de monter un score, distinguées par leur genre.
  *
  * `ability` est un bonus d'ORIGINE : le registre du domaine empêche d'en poser
@@ -105,6 +115,7 @@ export type ChoiceSpec =
   | FeatSpec
   | AdvancementSpec
   | SpellSpec
+  | SubclassSpec
   | ExpertiseSpec;
 
 /** Les créneaux de maîtrise sont regroupés dans l'étape « Ce que tu sais faire ». */

@@ -307,10 +307,18 @@ describe('magie', () => {
     expect(poor.spellcasting?.preparedCount).toBe(1);
   });
 
-  it('ajoute les sorts toujours préparés de la sous-classe', () => {
-    expect(sheetOf({ classId: 'clerc' }).spellcasting?.alwaysPreparedIds).toEqual([
-      'benediction',
-    ]);
+  it('ajoute les sorts toujours préparés de la voie CHOISIE', () => {
+    const sheet = sheetOf({
+      classId: 'clerc',
+      choices: { 'class:clerc:subclass': ['domaine-de-la-vie'] },
+    });
+    expect(sheet.spellcasting?.alwaysPreparedIds).toEqual(['benediction']);
+  });
+
+  it('n’en ajoute aucun tant que la voie n’est pas choisie', () => {
+    // La voie était imposée : un clerc recevait les sorts d'un domaine qu'il
+    // n'avait jamais vu passer.
+    expect(sheetOf({ classId: 'clerc' }).spellcasting?.alwaysPreparedIds).toEqual([]);
   });
 
   it('retient les tours de magie choisis', () => {
@@ -326,10 +334,24 @@ describe('magie', () => {
 });
 
 describe('maîtrises, aptitudes et équipement', () => {
-  it('réunit les maîtrises de la race, de la classe et de la sous-classe', () => {
-    const sheet = sheetOf({ classId: 'clerc', raceId: 'nain' });
+  it('réunit les maîtrises de la race, de la classe et de la voie choisie', () => {
+    const sheet = sheetOf({
+      classId: 'clerc',
+      raceId: 'nain',
+      choices: { 'class:clerc:subclass': ['domaine-de-la-vie'] },
+    });
     expect(sheet.proficiencies.armor).toContain('lourde');
     expect(sheet.proficiencies.tools).toContain('outils-de-forgeron');
+  });
+
+  it('ne donne pas les maîtrises d’une voie qu’on n’a pas prise', () => {
+    const sheet = sheetOf({
+      classId: 'clerc',
+      raceId: 'nain',
+      choices: { 'class:clerc:subclass': ['domaine-de-la-guerre'] },
+    });
+    expect(sheet.proficiencies.armor).not.toContain('lourde');
+    expect(sheet.proficiencies.weaponCategories).toContain('de-guerre');
   });
 
   it('rassemble les aptitudes en indiquant leur source', () => {

@@ -1,6 +1,11 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import { ABILITIES } from '../../domain/abilities';
-import type { ChoiceSpec, SkillSpec, SpellSpec } from '../../domain/choiceSpec';
+import type {
+  ChoiceSpec,
+  SkillSpec,
+  SpellSpec,
+  SubclassSpec,
+} from '../../domain/choiceSpec';
 import type {
   Advancement,
   EquipmentOption,
@@ -73,6 +78,17 @@ export function equipmentChoice(
   from: readonly string[],
 ): ChoiceSpec {
   return { kind: 'equipment', subject, title, help, pick: 1, from };
+}
+
+/**
+ * Le créneau qui fait choisir sa voie. Chaque classe l'ouvre à son niveau et
+ * lui donne son nom : le clerc parle de domaine, le guerrier d'archétype.
+ *
+ * Le SRD 5.1 n'en publie qu'une par classe. On la fait choisir quand même :
+ * une voie imposée en silence est une voie que le joueur ne sait pas avoir.
+ */
+export function subclassChoice(level: number, title: string, help: string): SubclassSpec {
+  return { kind: 'subclass', subject: 'subclass', title, help, pick: 1, level };
 }
 
 /**

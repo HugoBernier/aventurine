@@ -7,6 +7,7 @@ import {
   item,
   proficiencies,
   skillChoice,
+  subclassChoice,
 } from './helpers';
 
 /**
@@ -132,7 +133,51 @@ export const PALADIN: CharacterClass = {
     item('paquetage-de-pretre'),
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'serment-de-devotion',
+      name: 'Serment de dévotion',
+      blurb: 'Le paladin du livre d’images : honnêteté, courage, compassion.',
+      facts: ['Arme sacrée', 'Aura anti-charme', 'Nimbe au niveau 20'],
+      features: [
+        {
+          level: 3,
+          name: 'Conduit divin : arme sacrée',
+          text: 'En action, une minute durant, ton arme ajoute ton Charisme aux attaques, au minimum +1, compte comme magique et éclaire sur 6 m.',
+        },
+        {
+          level: 3,
+          name: 'Conduit divin : renvoi de l’impie',
+          text: 'En action, chaque fiélon et mort-vivant à 9 m qui te voit ou t’entend fuit une minute s’il rate sa sauvegarde de Sagesse.',
+        },
+        {
+          level: 7,
+          name: 'Aura de dévotion',
+          text: 'Toi et tes alliés à 3 m ne pouvez pas être charmés tant que tu es conscient. La portée passe à 9 m au niveau 18.',
+        },
+        {
+          level: 15,
+          name: 'Pureté d’âme',
+          text: 'Tu es en permanence sous protection contre le mal et le bien.',
+        },
+        {
+          level: 20,
+          name: 'Nimbe sacré',
+          text: 'En action, une minute durant, tu brilles sur 9 m : tes ennemis dans la lumière subissent 10 radiants par tour et te ciblent avec désavantage. Une fois par repos long.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ton serment sacré',
+    'La promesse qui te tient. Elle te donnera des aptitudes aux niveaux 3, 7, 15 et 20.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -271,6 +316,45 @@ export const RANGER: CharacterClass = {
     item('paquetage-d-explorateur'),
   ],
   spellcasting: null,
-  subclass: null,
+  subclasses: [
+    {
+      id: 'chasseur',
+      name: 'Chasseur',
+      blurb: 'Tu choisis à chaque palier comment tu abats ta proie.',
+      facts: ['Proie au choix', 'Défense au choix', 'Attaque multiple'],
+      features: [
+        {
+          level: 3,
+          name: 'Proie du chasseur',
+          text: 'Une option au choix : +1d8 sur une cible déjà blessée, une riposte contre les créatures de grande taille, ou une seconde attaque sur un voisin de ta cible.',
+        },
+        {
+          level: 7,
+          name: 'Tactique défensive',
+          text: 'Une option au choix : les attaques d’opportunité contre toi ont le désavantage, +4 en classe d’armure contre celui qui vient de te toucher, ou l’avantage contre la frayeur.',
+        },
+        {
+          level: 11,
+          name: 'Attaque multiple',
+          text: 'Une option au choix : une salve à distance sur toutes les créatures autour d’un point, ou une attaque de mêlée sur tout ce qui t’entoure.',
+        },
+        {
+          level: 15,
+          name: 'Défense supérieure',
+          text: 'Une option au choix : l’évasion, renvoyer sur un autre l’attaque de celui qui te rate, ou réduire de moitié les dégâts d’un coup que tu vois venir.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ton archétype de rôdeur',
+    'La spécialité que tu t’es faite. Elle te donnera des aptitudes aux niveaux 3, 7, 11 et 15.',
+  ),
   advancements: ADVANCEMENTS,
 };

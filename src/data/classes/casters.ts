@@ -9,6 +9,7 @@ import {
   proficiencies,
   skillChoice,
   spellChoice,
+  subclassChoice,
 } from './helpers';
 
 export const BARD: CharacterClass = {
@@ -147,7 +148,46 @@ export const BARD: CharacterClass = {
     preparation: 'known',
     ritual: true,
   },
-  subclass: null,
+  subclasses: [
+    {
+      id: 'college-du-savoir',
+      name: 'Collège du savoir',
+      blurb: 'Tu sais un peu de tout, et tu sapes la confiance des autres.',
+      facts: ['Trois compétences', 'Sape un jet ennemi', 'Deux sorts de plus'],
+      features: [
+        {
+          level: 3,
+          name: 'Maîtrises supplémentaires',
+          text: 'Tu maîtrises trois compétences de ton choix.',
+        },
+        {
+          level: 3,
+          name: 'Mots cinglants',
+          text: 'En réaction, tu dépenses une inspiration bardique pour retirer le dé au jet d’attaque, au test ou aux dégâts d’une créature à 18 m qui t’entend.',
+        },
+        {
+          level: 6,
+          name: 'Secrets magiques supplémentaires',
+          text: 'Deux sorts de n’importe quelle classe, d’un niveau que tu peux lancer, sans compter dans tes sorts connus.',
+        },
+        {
+          level: 14,
+          name: 'Talent sans égal',
+          text: 'Tu ajoutes un dé d’inspiration bardique à un test de caractéristique, même après avoir vu le d20.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    3,
+    'Ton collège bardique',
+    'Où tu as appris ton art. Il te donnera des aptitudes aux niveaux 3, 6 et 14.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -273,26 +313,51 @@ export const CLERIC: CharacterClass = {
     preparation: 'prepared',
     ritual: true,
   },
-  subclass: {
-    id: 'domaine-de-la-vie',
-    name: 'Domaine de la Vie',
-    blurb: 'Tu soignes plus fort que les autres, et tu portes l’acier lourd.',
-    features: [
-      {
-        name: 'Disciple de la vie',
-        text: 'Tes sorts de soins rendent 2 + le niveau du sort en plus.',
-      },
-      {
-        name: 'Maîtrise supplémentaire',
-        text: 'Tu maîtrises les armures lourdes.',
-      },
-    ],
-    proficiencies: proficiencies({ armor: ['lourde'] }),
-    alwaysPreparedSpells: ['benediction', 'soin-des-blessures'],
-    unarmoredDefense: null,
-    bonusHitPointsPerLevel: 0,
-    choices: [],
-  },
+  subclasses: [
+    {
+      id: 'domaine-de-la-vie',
+      name: 'Domaine de la Vie',
+      blurb: 'Tu soignes plus fort que les autres, et tu portes l’acier lourd.',
+      facts: ['Armures lourdes', 'Soins renforcés', 'Frappe divine'],
+      features: [
+        {
+          level: 1,
+          name: 'Maîtrise supplémentaire',
+          text: 'Tu maîtrises les armures lourdes.',
+        },
+        {
+          level: 1,
+          name: 'Disciple de la vie',
+          text: 'Chacun de tes sorts de soin de niveau 1 ou plus rend 2 + le niveau du sort en points de vie supplémentaires.',
+        },
+        {
+          level: 2,
+          name: 'Conduit divin : préserver la vie',
+          text: 'En action, tu répartis cinq fois ton niveau en points de vie entre des créatures à 9 m, sans dépasser la moitié du maximum de chacune.',
+        },
+        {
+          level: 6,
+          name: 'Guérisseur béni',
+          text: 'Quand un de tes sorts de soin en soigne un autre, tu récupères 2 + le niveau du sort.',
+        },
+        {
+          level: 8,
+          name: 'Frappe divine',
+          text: 'Une fois par tour, ton attaque d’arme ajoute 1d8 radiants. Deux dés au niveau 14.',
+        },
+      ],
+      proficiencies: proficiencies({ armor: ['lourde'] }),
+      alwaysPreparedSpells: ['benediction', 'soin-des-blessures'],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    1,
+    'Ton domaine divin',
+    'La part de ton dieu que tu sers. Elle te donnera des sorts et des aptitudes aux niveaux 1, 2, 6 et 8.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -411,7 +476,57 @@ export const DRUID: CharacterClass = {
     preparation: 'prepared',
     ritual: true,
   },
-  subclass: null,
+  subclasses: [
+    {
+      id: 'cercle-de-la-terre',
+      name: 'Cercle de la terre',
+      blurb:
+        'Le savoir d’un terroir, un tour de magie de plus, et des sorts qu’il t’offre.',
+      facts: ['Un tour de magie', 'Emplacements au repos', 'Sorts du terroir'],
+      features: [
+        {
+          level: 2,
+          name: 'Tour de magie supplémentaire',
+          text: 'Tu apprends un tour de magie de druide de plus.',
+        },
+        {
+          level: 2,
+          name: 'Récupération naturelle',
+          text: 'Un repos court par jour te rend des emplacements dont les niveaux cumulés valent la moitié de ton niveau arrondie au supérieur, aucun au-dessus du niveau 5.',
+        },
+        {
+          level: 3,
+          name: 'Sorts du cercle',
+          text: 'Le terroir où tu es devenu druide, arctique, côte, désert, forêt, prairie, montagne ou marais, te donne des sorts toujours préparés aux niveaux 3, 5, 7 et 9.',
+        },
+        {
+          level: 6,
+          name: 'Foulée aisée',
+          text: 'Le terrain difficile naturel ne te coûte rien, les plantes ne te ralentissent ni ne te blessent, et tu as l’avantage contre celles animées par magie.',
+        },
+        {
+          level: 10,
+          name: 'Garde de la nature',
+          text: 'Ni élémentaire ni fée ne peut te charmer ou t’effrayer, et tu es immunisé aux poisons et aux maladies.',
+        },
+        {
+          level: 14,
+          name: 'Sanctuaire naturel',
+          text: 'Une bête ou une plante qui t’attaque doit réussir une sauvegarde de Sagesse contre ton degré, sinon elle choisit une autre cible ou perd son attaque.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    2,
+    'Ton cercle druidique',
+    'Le cercle que tu rejoins. Il te donnera des aptitudes aux niveaux 2, 6, 10 et 14.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -508,34 +623,51 @@ export const SORCERER: CharacterClass = {
     preparation: 'known',
     ritual: false,
   },
-  subclass: {
-    id: 'lignage-draconique',
-    name: 'Lignage draconique',
-    blurb: 'Un dragon dans ton arbre généalogique, et ça se voit.',
-    features: [
-      {
-        name: 'Résilience draconique',
-        text: 'Tu gagnes 1 point de vie par niveau, et ta peau vaut 13 + Dextérité sans armure.',
-      },
-      {
-        name: 'Ascendance draconique',
-        text: 'Tu parles draconique et tu résistes au type de dégâts de ton dragon.',
-      },
-    ],
-    proficiencies: null,
-    alwaysPreparedSpells: [],
-    unarmoredDefense: { base: 13, addedAbilities: ['dexterite'], shieldAllowed: true },
-    bonusHitPointsPerLevel: 1,
-    choices: [
-      {
-        kind: 'ancestry',
-        subject: 'ancestry',
-        title: 'Ton ascendance draconique',
-        help: 'Le dragon dont tu descends décide de ta résistance.',
-        pick: 1,
-      },
-    ],
-  },
+  subclasses: [
+    {
+      id: 'lignage-draconique',
+      name: 'Lignage draconique',
+      blurb: 'Un dragon dans ton arbre généalogique, et ça se voit.',
+      facts: ['+1 pv par niveau', 'Peau d’écailles', 'Ailes au niveau 14'],
+      features: [
+        {
+          level: 1,
+          name: 'Ascendance draconique',
+          text: 'Tu choisis ton dragon, tu parles draconique, et tu as l’avantage aux tests de Charisme face aux dragons.',
+        },
+        {
+          level: 1,
+          name: 'Résilience draconique',
+          text: 'Tu gagnes 1 point de vie par niveau, et sans armure ta classe d’armure vaut 13 + Dextérité.',
+        },
+        {
+          level: 6,
+          name: 'Affinité élémentaire',
+          text: 'Tes sorts du type de dégâts de ton dragon ajoutent ton Charisme à un jet de dégâts, et 1 point de sorcellerie t’y donne la résistance pendant une heure.',
+        },
+        {
+          level: 14,
+          name: 'Ailes de dragon',
+          text: 'En action bonus, des ailes te donnent une vitesse de vol égale à ta vitesse au sol.',
+        },
+        {
+          level: 18,
+          name: 'Présence draconique',
+          text: 'En action, 5 points de sorcellerie effraient ou fascinent une minute durant toute créature à 18 m qui rate sa sauvegarde de Sagesse.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: { base: 13, addedAbilities: ['dexterite'], shieldAllowed: true },
+      bonusHitPointsPerLevel: 1,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    1,
+    'Ton origine magique',
+    'D’où vient ton pouvoir. Elle te donnera des aptitudes aux niveaux 1, 6, 14 et 18.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -641,22 +773,46 @@ export const WARLOCK: CharacterClass = {
     preparation: 'known',
     ritual: false,
   },
-  subclass: {
-    id: 'le-fielon',
-    name: 'Le Fiélon',
-    blurb: 'Ton patron vient des Enfers. Il ne fait pas de cadeau, mais il paie.',
-    features: [
-      {
-        name: 'Bénédiction du Ténébreux',
-        text: 'Quand tu abats une créature, tu gagnes des points de vie temporaires.',
-      },
-    ],
-    proficiencies: null,
-    alwaysPreparedSpells: [],
-    unarmoredDefense: null,
-    bonusHitPointsPerLevel: 0,
-    choices: [],
-  },
+  subclasses: [
+    {
+      id: 'le-fielon',
+      name: 'Le Fiélon',
+      blurb: 'Un pacte signé en bas, et des points de vie temporaires à chaque mort.',
+      facts: ['Pv temporaires', 'Un d10 à volonté', 'Résistance au choix'],
+      features: [
+        {
+          level: 1,
+          name: 'Bénédiction du Ténébreux',
+          text: 'Chaque fois que tu réduis une créature hostile à 0 point de vie, tu gagnes ton Charisme + ton niveau en points de vie temporaires, au minimum 1.',
+        },
+        {
+          level: 6,
+          name: 'Chance du Ténébreux',
+          text: 'Tu ajoutes 1d10 à un test ou une sauvegarde, même après le jet. Une fois par repos.',
+        },
+        {
+          level: 10,
+          name: 'Résilience fiélonne',
+          text: 'À chaque repos, tu choisis un type de dégâts non magiques auquel tu résistes jusqu’au repos suivant.',
+        },
+        {
+          level: 14,
+          name: 'Précipiter en enfer',
+          text: 'Sur une touche, la cible disparaît dans les plans inférieurs et revient à la fin de ton prochain tour avec 10d10 dégâts psychiques, sauf si elle est fiélonne.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    1,
+    'Ton protecteur',
+    'Qui a signé en face. Il te donnera des aptitudes aux niveaux 1, 6, 10 et 14.',
+  ),
   advancements: ADVANCEMENTS,
 };
 
@@ -741,6 +897,50 @@ export const WIZARD: CharacterClass = {
     preparation: 'spellbook',
     ritual: true,
   },
-  subclass: null,
+  subclasses: [
+    {
+      id: 'ecole-d-evocation',
+      name: 'École d’évocation',
+      blurb: 'Tu fais des dégâts, et tu épargnes qui tu veux dans la zone.',
+      facts: ['Épargne tes alliés', 'Tours de magie renforcés', 'Dégâts maximaux'],
+      features: [
+        {
+          level: 2,
+          name: 'Spécialiste de l’évocation',
+          text: 'Copier un sort d’évocation dans ton grimoire coûte moitié moins de temps et d’or.',
+        },
+        {
+          level: 2,
+          name: 'Sculpter les sorts',
+          text: 'Dans la zone de tes sorts d’évocation, tu épargnes 1 + le niveau du sort en créatures : elles réussissent d’office leur sauvegarde et ne subissent aucun dégât.',
+        },
+        {
+          level: 6,
+          name: 'Tour de magie puissant',
+          text: 'Une créature qui réussit sa sauvegarde contre un de tes tours de magie encaisse quand même la moitié des dégâts.',
+        },
+        {
+          level: 10,
+          name: 'Évocation renforcée',
+          text: 'Tu ajoutes ton Intelligence à un jet de dégâts de chacun de tes sorts d’évocation.',
+        },
+        {
+          level: 14,
+          name: 'Surcharge',
+          text: 'Un sort de niveau 1 à 5 inflige ses dégâts maximaux. Gratuit la première fois, puis 2d12 nécrotiques par usage supplémentaire avant un repos long, et 1d12 de plus à chaque fois.',
+        },
+      ],
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    },
+  ],
+  subclassChoice: subclassChoice(
+    2,
+    'Ta tradition arcanique',
+    'L’école que tu approfondis. Elle te donnera des aptitudes aux niveaux 2, 6, 10 et 14.',
+  ),
   advancements: ADVANCEMENTS,
 };

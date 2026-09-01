@@ -24,6 +24,7 @@ export type ChoiceKind =
   | 'equipment'
   | 'ancestry'
   | 'fighting-style'
+  | 'subclass'
   | 'expertise';
 
 /** Structuré, jamais rédigé : `ui/format/` compose la phrase française. */

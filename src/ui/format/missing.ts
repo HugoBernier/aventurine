@@ -20,6 +20,9 @@ const SENTENCES: Partial<Record<MissingKind, string>> = {
   name: 'Ton personnage n’a pas encore de nom',
   'fighting-style': 'Il te reste à choisir ta façon de te battre',
   ancestry: 'Il te reste à choisir ton ascendance',
+  // Le titre du créneau nomme déjà la voie (« Ton domaine divin »), mais cette
+  // liste se lit hors contexte : elle doit se suffire à elle-même.
+  subclass: 'Il te reste à choisir ta voie',
 };
 
 /** Le domaine rend `{ kind, remaining }` ; la phrase se compose ici. */

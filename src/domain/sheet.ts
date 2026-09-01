@@ -25,7 +25,7 @@ import type {
 import { NO_PROFICIENCIES } from './content';
 import type { CharacterDraft } from './draft';
 import type { HitPointRow } from './progression';
-import { abilityTotals, openChoices } from './openChoices';
+import { abilityTotals, chosenSubclass, openChoices } from './openChoices';
 import {
   clampLevel,
   hitPointRows,
@@ -326,7 +326,7 @@ function armorClass(
   }
   const { armor, hasShield } = wornArmor(lines, catalogue);
   const defense =
-    characterClass.subclass?.unarmoredDefense ?? characterClass.unarmoredDefense;
+    chosenSubclass(draft, catalogue)?.unarmoredDefense ?? characterClass.unarmoredDefense;
 
   return best([
     plainCandidate(modifiers, hasShield),
@@ -417,7 +417,7 @@ function spellcastingSheet(
     preparedCount: isPrepared ? Math.max(1, modifier + draft.level) : null,
     cantripIds: pickedByKind(draft, catalogue, ['cantrip']),
     spellIds: pickedByKind(draft, catalogue, ['spell']),
-    alwaysPreparedIds: characterClass.subclass?.alwaysPreparedSpells ?? [],
+    alwaysPreparedIds: chosenSubclass(draft, catalogue)?.alwaysPreparedSpells ?? [],
   };
 }
 
@@ -505,18 +505,18 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
   const characterClass = findClass(catalogue, draft.classId);
   const background = findBackground(catalogue, draft.backgroundId);
 
+  const subclass = chosenSubclass(draft, catalogue);
   const { lines, gold } = collectEquipment(draft, catalogue);
   const proficiencies = mergeProficiencies([
     race?.proficiencies,
     subrace?.proficiencies,
     characterClass?.proficiencies,
-    characterClass?.subclass?.proficiencies,
+    subclass?.proficiencies,
     background?.proficiencies,
   ]);
 
   const bonusHitPoints =
-    (subrace?.bonusHitPointsPerLevel ?? 0) +
-    (characterClass?.subclass?.bonusHitPointsPerLevel ?? 0);
+    (subrace?.bonusHitPointsPerLevel ?? 0) + (subclass?.bonusHitPointsPerLevel ?? 0);
 
   const proficiency = proficiencyBonus(draft.level);
   // « Moyenne fixe » ignore les jets sans les effacer : le joueur bascule d'un
@@ -574,7 +574,14 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
         text: f.text,
         value: stepAt(f.steps, level),
       })),
-    ...(characterClass?.subclass?.features ?? []).map((f) => plain('class', f)),
+    ...(subclass?.features ?? [])
+      .filter((f) => f.level <= level)
+      .map((f) => ({
+        source: 'class' as const,
+        name: f.name,
+        text: f.text,
+        value: stepAt(f.steps, level),
+      })),
     ...(background?.feature == null ? [] : [plain('background', background.feature)]),
     // Un don se lit sur la fiche comme n'importe quelle autre aptitude : le
     // joueur ne se demande pas d'où elle vient au moment de s'en servir.
