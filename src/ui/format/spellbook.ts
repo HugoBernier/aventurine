@@ -62,14 +62,23 @@ export function formatEmptyLevel(casting: SpellcastingSheet): string {
     : 'Rien à ce niveau pour l’instant.';
 }
 
+/** Le cas ordinaire : l'annoncer sur chaque sort n'apprendrait rien. */
+const PLAIN_ACTION = '1 action';
+
 /** Les repères d'un sort, dans l'ordre où on les cherche en jouant. */
 export function spellFacts(spell: {
+  readonly castingTime: string;
   readonly range: string;
   readonly duration: string;
   readonly concentration: boolean;
   readonly ritual: boolean;
 }): string {
   const marks = [spell.range, spell.duration];
+  // Lancer un sort en action bonus ou en réaction change un tour de jeu : ça se
+  // lit sur la fiche, pas seulement à l'écran de choix.
+  if (spell.castingTime !== PLAIN_ACTION) {
+    marks.unshift(spell.castingTime);
+  }
   if (spell.concentration) {
     marks.push('concentration');
   }

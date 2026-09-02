@@ -25,6 +25,15 @@ const spellSlot = (draft: CharacterDraft): number | null => {
   return slot?.pick ?? null;
 };
 
+/** Les niveaux de sort réellement proposés à l'écran des sorts. */
+const spellLevelsOffered = (draft: CharacterDraft): readonly number[] => {
+  const slot = openChoices(draft, C).find((entry) => entry.kind === 'spell');
+  const levels = (slot?.options ?? []).map(
+    (option) => C.spells.find((spell) => spell.id === option.id)?.level ?? -1,
+  );
+  return [...new Set(levels)].toSorted((a, b) => a - b);
+};
+
 const cantripSlot = (draft: CharacterDraft): number | null => {
   const slot = openChoices(draft, C).find((entry) => entry.kind === 'cantrip');
   return slot?.pick ?? null;
@@ -100,5 +109,72 @@ describe('le paladin et le rôdeur, demi-lanceurs', () => {
     const clerc = buildSheet(character('clerc', 20), C).spellcasting?.slots;
     expect(paladin).toEqual([4, 3, 3, 3, 2]);
     expect(clerc).toHaveLength(9);
+  });
+});
+
+/**
+ * SRD, à l'identique pour le barde, l'ensorceleur, l'occultiste et le rôdeur :
+ * « Each of these spells must be of a level for which you have spell slots. »
+ * Aucune règle ne fixe de quota par niveau de sort — le clerc, le magicien et
+ * le paladin disent même « in any combination ». Le seul plafond est le plus
+ * haut niveau d'emplacement ouvert.
+ */
+describe('ce qu’on a le droit d’apprendre', () => {
+  it('ne propose que du niveau 1 à un barde débutant', () => {
+    expect(spellLevelsOffered(character('barde', 1))).toEqual([1]);
+  });
+
+  it('ouvre le niveau 2 au barde dès qu’il en a l’emplacement', () => {
+    expect(spellLevelsOffered(character('barde', 3))).toEqual([1, 2]);
+    expect(spellLevelsOffered(character('barde', 5))).toEqual([1, 2, 3]);
+  });
+
+  it('laisse le mélange libre : six sorts de niveau 1 au niveau 3', () => {
+    // Le nombre connu ne se répartit pas par niveau de sort : rien n'oblige
+    // un barde de niveau 3 à prendre deux sorts de niveau 2.
+    expect(spellSlot(character('barde', 3))).toBe(6);
+    const niveauUn = openChoices(character('barde', 3), C)
+      .find((entry) => entry.kind === 'spell')
+      ?.options.filter(
+        (option) => C.spells.find((spell) => spell.id === option.id)?.level === 1,
+      );
+    expect(niveauUn?.length ?? 0).toBeGreaterThanOrEqual(6);
+  });
+
+  it('suit le niveau d’emplacement du pacte pour l’occultiste', () => {
+    // Le sien monte par paliers : au niveau 6, ses emplacements sont de
+    // niveau 3, et il peut apprendre du 1, du 2 ou du 3.
+    expect(spellLevelsOffered(character('occultiste', 6))).toEqual([1, 2, 3]);
+  });
+
+  it('s’arrête au niveau 2 pour un rôdeur de niveau 5', () => {
+    expect(spellLevelsOffered(character('rodeur', 5))).toEqual([1, 2]);
+  });
+});
+
+describe('l’écran de choix montre de quel niveau est chaque sort', () => {
+  it('annonce le niveau de chaque option', () => {
+    const options =
+      openChoices(character('barde', 3), C).find((entry) => entry.kind === 'spell')
+        ?.options ?? [];
+    const parNiveau = new Set(options.map((option) => option.facts[0]));
+    expect([...parNiveau].toSorted((a, b) => a.localeCompare(b, 'fr'))).toEqual([
+      '1',
+      '2',
+    ]);
+  });
+
+  it('met le temps d’incantation en tête pour un tour de magie, qui n’a pas de niveau', () => {
+    const options =
+      openChoices(character('barde', 3), C).find((entry) => entry.kind === 'cantrip')
+        ?.options ?? [];
+    const isAligned = options.every(
+      (option) =>
+        option.facts[0] === C.spells.find((spell) => spell.id === option.id)?.castingTime,
+    );
+    expect({ options: options.length > 0, isAligned }).toEqual({
+      options: true,
+      isAligned: true,
+    });
   });
 });

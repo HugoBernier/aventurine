@@ -386,7 +386,12 @@ function buildOptions(
           spell.id,
           spell.name,
           spell.summary,
-          [spell.castingTime, spell.range, spell.duration],
+          // La liste mélange les niveaux dès que le personnage a plusieurs
+          // rangs d'emplacements : sans ce repère, rien ne dit lequel on
+          // prend. Un tour de magie n'a pas de niveau à annoncer.
+          spec.kind === 'cantrip'
+            ? [spell.castingTime, spell.range, spell.duration]
+            : [String(spell.level), spell.range, spell.duration],
           null,
         ),
       );

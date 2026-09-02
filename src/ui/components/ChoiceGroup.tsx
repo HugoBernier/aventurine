@@ -14,8 +14,11 @@ export type FactLabels = readonly [string, string, string];
  * sens de leurs repères : eux passent leurs intitulés par `factLabels`.
  */
 const FACT_LABELS: Partial<Record<ChoiceKind, FactLabels>> = {
-  cantrip: ['Portée', 'Durée', 'Incantation'],
-  spell: ['Portée', 'Durée', 'Incantation'],
+  // L'ordre suit celui des repères, pas l'inverse : les trois intitulés
+  // étaient décalés d'un cran, et « Portée : 1 action » se lisait sur chaque
+  // sort du site.
+  cantrip: ['Incantation', 'Portée', 'Durée'],
+  spell: ['Niveau', 'Portée', 'Durée'],
   equipment: ['Dégâts', 'Propriétés', 'Usage'],
   ancestry: ['Type de dégâts', 'Souffle', ''],
 };

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { SpellcastingSheet } from '../../domain/sheet';
-import { formatEmptyLevel, formatSlots, slotLevels, slotsAtLevel } from './spellbook';
+import {
+  formatEmptyLevel,
+  formatSlots,
+  slotLevels,
+  slotsAtLevel,
+  spellFacts,
+} from './spellbook';
 
 const pact = (slots: number): SpellcastingSheet => ({
   ability: 'charisme',
@@ -73,6 +79,32 @@ describe('un niveau sans sort', () => {
   it('constate le vide pour un magicien', () => {
     expect(formatEmptyLevel(caster([4], 'spellbook'))).toBe(
       'Rien à ce niveau pour l’instant.',
+    );
+  });
+});
+
+describe('repères d’un sort', () => {
+  const sort = {
+    castingTime: '1 action',
+    range: '18 mètres',
+    duration: 'instantanée',
+    concentration: false,
+    ritual: false,
+  };
+
+  it('tait le temps d’incantation quand c’est une action ordinaire', () => {
+    expect(spellFacts(sort)).toBe('18 mètres · instantanée');
+  });
+
+  it('annonce une action bonus, qui change un tour de jeu', () => {
+    expect(spellFacts({ ...sort, castingTime: '1 action bonus' })).toBe(
+      '1 action bonus · 18 mètres · instantanée',
+    );
+  });
+
+  it('garde la concentration et le rituel en fin de ligne', () => {
+    expect(spellFacts({ ...sort, concentration: true, ritual: true })).toBe(
+      '18 mètres · instantanée · concentration · rituel',
     );
   });
 });
