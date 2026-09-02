@@ -49,24 +49,36 @@ export function skillChoice(
   return { kind: 'skill', subject: 'skills', title, help, pick, from };
 }
 
-export function cantripChoice(classId: string, pick: number, help: string): SpellSpec {
+export function cantripChoice(
+  classId: string,
+  knownByLevel: readonly number[],
+  help: string,
+): SpellSpec {
   return {
     kind: 'cantrip',
     subject: 'cantrips',
     title: 'Tes tours de magie',
     help,
-    pick,
+    knownByLevel,
     listFrom: classId,
   };
 }
 
-export function spellChoice(classId: string, pick: number, help: string): SpellSpec {
+/**
+ * Le titre ne nomme pas un niveau de sort : dès que le personnage a des
+ * emplacements de niveau 2, la liste proposée en contient.
+ */
+export function spellChoice(
+  classId: string,
+  knownByLevel: readonly number[],
+  help: string,
+): SpellSpec {
   return {
     kind: 'spell',
     subject: 'spells',
-    title: 'Tes sorts de niveau 1',
+    title: 'Tes sorts',
     help,
-    pick,
+    knownByLevel,
     listFrom: classId,
   };
 }

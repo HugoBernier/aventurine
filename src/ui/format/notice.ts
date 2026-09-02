@@ -32,6 +32,10 @@ export function formatNotice(reason: NoticeReason): string {
       const count = reason.optionIds.length;
       return `${counted(count, 'option n’est', 'options ne sont')} plus disponible${count > 1 ? 's' : ''} : une autre source te ${count > 1 ? 'les' : 'la'} donne déjà.`;
     }
+    case 'too-many': {
+      const count = reason.optionIds.length;
+      return `Ce niveau t’en accorde moins : ${counted(count, 'réponse a été retirée', 'réponses ont été retirées')}.`;
+    }
     case 'abilities-reset': {
       return `Tu es passé ${METHOD_LABEL[reason.method]} : tes caractéristiques repartent de zéro.`;
     }

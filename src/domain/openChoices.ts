@@ -11,6 +11,7 @@ import type {
   UnavailableReason,
 } from './choice';
 import type { AdvancementMode, ChoiceSpec } from './choiceSpec';
+import { pickCount } from './choiceSpec';
 import {
   findAbility,
   findClass,
@@ -466,9 +467,15 @@ export function openChoices(
     const id = slotId(source, parentId, spec.subject);
     const picked = pickedFor(draft, id);
     const register = registerFor(spec.kind, granted);
+    const pick = pickCount(spec, draft.level);
+    // Zéro réponse attendue, pas de créneau : le rôdeur ne lance aucun sort
+    // avant le niveau 2, et un écran vide n'a rien à lui demander.
+    if (pick === 0) {
+      continue;
+    }
     // `slot-full` ne vaut que pour un choix multiple. Un choix unique reste un
     // bouton radio, où remplacer sa sélection est naturel et attendu (§A19).
-    const isFull = spec.pick > 1 && picked.length >= spec.pick;
+    const isFull = pick > 1 && picked.length >= pick;
 
     const options = buildOptions(owner, draft, catalogue, granted).map(
       (entry): ChoiceOption => {
@@ -497,7 +504,7 @@ export function openChoices(
       kind: spec.kind,
       title: spec.title,
       help: spec.help,
-      pick: spec.pick,
+      pick,
       options,
     });
 

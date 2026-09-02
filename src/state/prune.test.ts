@@ -119,3 +119,38 @@ describe('invalidation en cascade', () => {
     expect(pruneChoices(draft, C).draft).toBe(draft);
   });
 });
+
+describe('un niveau qui redescend', () => {
+  it('retire les réponses que le nouveau niveau n’accorde plus', () => {
+    // Le clerc du catalogue de test connaît trois tours de magie au niveau 4,
+    // deux au niveau 1 : le dernier choisi s'en va.
+    const atFour = draftWith({
+      classId: 'clerc',
+      level: 4,
+      choices: {
+        'class:clerc:cantrips': ['lumiere', 'flamme-sacree', 'assistance'],
+      },
+    });
+    const { draft, removed } = pruneChoices({ ...atFour, level: 1 }, C);
+
+    expect(draft.choices['class:clerc:cantrips']).toEqual(['lumiere', 'flamme-sacree']);
+    expect(removed).toEqual([
+      {
+        slotId: 'class:clerc:cantrips',
+        optionIds: ['assistance'],
+        reason: 'too-many',
+      },
+    ]);
+  });
+
+  it('ne touche à rien tant que le niveau tient ses promesses', () => {
+    const atFour = draftWith({
+      classId: 'clerc',
+      level: 4,
+      choices: {
+        'class:clerc:cantrips': ['lumiere', 'flamme-sacree', 'assistance'],
+      },
+    });
+    expect(pruneChoices(atFour, C).removed).toEqual([]);
+  });
+});

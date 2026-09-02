@@ -65,6 +65,13 @@ function noticeFor(removed: RemovedChoice): NoticeReason {
       lost: removed.optionIds.length,
     };
   }
+  if (removed.reason === 'too-many') {
+    return {
+      kind: 'too-many',
+      slotId: removed.slotId,
+      optionIds: removed.optionIds,
+    };
+  }
   return {
     kind: 'options-withdrawn',
     slotId: removed.slotId,

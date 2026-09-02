@@ -1,6 +1,7 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
 import { ABILITIES } from '../domain/abilities';
 import type { ChoiceSpec } from '../domain/choiceSpec';
+import { byLevel } from '../domain/choiceSpec';
 import type { Race } from '../domain/content';
 import { NO_PROFICIENCIES } from '../domain/content';
 import { ALL_SKILLS } from '../domain/skills';
@@ -195,7 +196,7 @@ export const RACE_ENTRIES: readonly Race[] = [
             subject: 'cantrip',
             title: 'Ton tour de magie elfique',
             help: 'Un petit sort appris très tôt, que tu peux relancer autant de fois que tu veux.',
-            pick: 1,
+            knownByLevel: byLevel({ 1: 1 }),
             listFrom: 'magicien',
           },
           {

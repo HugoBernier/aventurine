@@ -65,6 +65,11 @@ export type NoticeReason =
       readonly slotId: ChoiceSlotId;
       readonly optionIds: readonly string[];
     }
+  | {
+      readonly kind: 'too-many';
+      readonly slotId: ChoiceSlotId;
+      readonly optionIds: readonly string[];
+    }
   | { readonly kind: 'abilities-reset'; readonly method: AbilityMethod };
 
 export interface Notice {

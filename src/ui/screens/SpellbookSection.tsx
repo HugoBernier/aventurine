@@ -145,12 +145,16 @@ export function SpellbookSection({ onJump }: SpellbookSectionProps): ReactNode {
       </dl>
       <p className={styles.note}>{formatPreparation(casting)}</p>
 
-      <SpellList
-        title="Tes tours de magie"
-        spells={book.cantrips}
-        onChange={jump(book.cantripScreenId)}
-        emptyLabel="Tu n’as pas encore choisi tes tours de magie."
-      />
+      {/* Le paladin et le rôdeur n'ont pas de tour de magie : leur en promettre
+          un bloc vide ferait chercher un écran qui n'existe pas. */}
+      {(book.cantrips.length > 0 || book.cantripScreenId !== null) && (
+        <SpellList
+          title="Tes tours de magie"
+          spells={book.cantrips}
+          onChange={jump(book.cantripScreenId)}
+          emptyLabel="Tu n’as pas encore choisi tes tours de magie."
+        />
+      )}
       {levels.map((level) => (
         <SpellList
           key={level}

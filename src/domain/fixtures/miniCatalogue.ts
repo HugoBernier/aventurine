@@ -9,6 +9,7 @@
  * - `acolyte` donne Perception d'office, ce qui crée le doublon avec la classe ;
  * - `personnalise` est l'historique assemblé sur les règles génériques.
  */
+import { byLevel } from '../choiceSpec';
 import type { Catalogue } from '../catalogue';
 import type {
   AbilityEntry,
@@ -350,7 +351,7 @@ const classes: readonly CharacterClass[] = [
         subject: 'cantrips',
         title: 'Tes tours de magie',
         help: 'De petits sorts que tu peux relancer autant de fois que tu veux.',
-        pick: 3,
+        knownByLevel: byLevel({ 1: 2, 4: 3 }),
         listFrom: 'clerc',
       },
     ],

@@ -239,9 +239,26 @@ describe('complétude du contenu', () => {
     }
   });
 
-  it('propose au moins un tour de magie à chaque classe qui lance des sorts', () => {
+  it('propose une liste de sorts à chaque classe qui lance des sorts', () => {
     for (const entry of C.classes) {
       if (entry.spellcasting === null) {
+        continue;
+      }
+      const spells = C.spells.filter(
+        (spell) => spell.level > 0 && spell.classes.includes(entry.id),
+      );
+      expect({ id: entry.id, spells: spells.length > 0 }).toEqual({
+        id: entry.id,
+        spells: true,
+      });
+    }
+  });
+
+  // Le paladin et le rôdeur lancent des sorts sans avoir de tour de magie :
+  // l'invariant porte sur le choix déclaré, pas sur la classe.
+  it('propose des tours de magie à chaque classe qui en fait choisir', () => {
+    for (const entry of C.classes) {
+      if (entry.choices.every((choice) => choice.kind !== 'cantrip')) {
         continue;
       }
       const cantrips = C.spells.filter(

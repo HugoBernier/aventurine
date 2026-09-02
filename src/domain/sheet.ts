@@ -411,16 +411,25 @@ function spellcastingSheet(
     casting.preparation === 'prepared' || casting.preparation === 'spellbook';
   const bonus = proficiencyBonus(draft.level);
   const isPact = casting.progression === 'pact';
+  const slots = isPact ? [] : spellSlots(casting.progression, draft.level);
+  // Pas d'emplacement, pas de magie : le paladin et le rôdeur n'en ont aucun
+  // au niveau 1, et un bloc Magie vide ferait croire à un bug.
+  if (!isPact && slots.length === 0) {
+    return null;
+  }
+  // Le demi-lanceur prépare sur la moitié de son niveau, arrondie à l'inférieur.
+  const castingLevel =
+    casting.progression === 'half' ? Math.floor(draft.level / 2) : draft.level;
 
   return {
     ability: casting.ability,
     saveDc: 8 + bonus + modifier,
     attackBonus: bonus + modifier,
-    slots: isPact ? [] : spellSlots(casting.progression, draft.level),
+    slots,
     pact: isPact ? pactMagic(draft.level) : null,
     preparation: casting.preparation,
-    // Sorts préparés : modificateur + niveau, jamais moins de un.
-    preparedCount: isPrepared ? Math.max(1, modifier + draft.level) : null,
+    // Sorts préparés : modificateur + niveau de lanceur, jamais moins de un.
+    preparedCount: isPrepared ? Math.max(1, modifier + castingLevel) : null,
     cantripIds: pickedByKind(draft, catalogue, ['cantrip']),
     spellIds: pickedByKind(draft, catalogue, ['spell']),
     alwaysPreparedIds: chosenSubclass(draft, catalogue)?.alwaysPreparedSpells ?? [],

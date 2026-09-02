@@ -30,3 +30,25 @@ describe('avis de cascade', () => {
     );
   });
 });
+
+describe('avis de niveau redescendu', () => {
+  it('accorde au singulier quand une seule réponse part', () => {
+    expect(
+      formatNotice({
+        kind: 'too-many',
+        slotId: 'class:clerc:cantrips',
+        optionIds: ['assistance'],
+      }),
+    ).toBe('Ce niveau t’en accorde moins : 1 réponse a été retirée.');
+  });
+
+  it('accorde au pluriel au-delà', () => {
+    expect(
+      formatNotice({
+        kind: 'too-many',
+        slotId: 'class:barde:spells',
+        optionIds: ['soin-des-blessures', 'sommeil'],
+      }),
+    ).toBe('Ce niveau t’en accorde moins : 2 réponses ont été retirées.');
+  });
+});

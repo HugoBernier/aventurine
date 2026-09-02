@@ -6,7 +6,7 @@ import { openChoices } from '../domain/openChoices';
 export interface RemovedChoice {
   readonly slotId: ChoiceSlotId;
   readonly optionIds: readonly string[];
-  readonly reason: 'slot-closed' | 'option-withdrawn';
+  readonly reason: 'slot-closed' | 'option-withdrawn' | 'too-many';
 }
 
 export interface PruneResult {
@@ -37,8 +37,15 @@ function prunePass(draft: CharacterDraft, catalogue: Catalogue): PruneResult {
     if (withdrawn.length > 0) {
       removed.push({ slotId, optionIds: withdrawn, reason: 'option-withdrawn' });
     }
-    if (survivors.length > 0) {
-      kept[slotId] = survivors;
+    // Le niveau peut redescendre, et le nombre de sorts connus avec lui : on ne
+    // garde jamais plus de réponses que le créneau n'en attend.
+    const excess = survivors.slice(slot.pick);
+    if (excess.length > 0) {
+      removed.push({ slotId, optionIds: excess, reason: 'too-many' });
+    }
+    const remaining = survivors.slice(0, slot.pick);
+    if (remaining.length > 0) {
+      kept[slotId] = remaining;
     }
   }
 

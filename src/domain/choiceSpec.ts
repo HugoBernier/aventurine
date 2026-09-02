@@ -1,4 +1,5 @@
 import type { AbilityId } from './abilities';
+import { clampLevel, MAX_LEVEL } from './progression';
 import type { ChoiceKind } from './choice';
 import type { SkillId } from './skills';
 
@@ -92,10 +93,19 @@ export interface AdvancementOption {
   readonly blurb: string;
 }
 
-/** La liste de sorts n'est jamais recopiée : on référence celle d'une classe. */
-export interface SpellSpec extends BaseSpec {
+/**
+ * La liste de sorts n'est jamais recopiée : on référence celle d'une classe.
+ *
+ * Le nombre à choisir n'est pas fixe : un barde connaît quatre sorts au niveau
+ * 1 et vingt-deux au niveau 20. Cette spec porte donc la table de la classe et
+ * pas le `pick` d'un `BaseSpec` — sans quoi le nombre resterait celui du
+ * niveau 1. `pickCount` est le seul chemin qui la lit.
+ */
+export interface SpellSpec extends Omit<BaseSpec, 'pick'> {
   readonly kind: 'cantrip' | 'spell';
   readonly listFrom: string;
+  /** Combien on en connaît, par niveau (index 0 = niveau 1). */
+  readonly knownByLevel: readonly number[];
 }
 
 /** Options calculées à l'exécution : les compétences déjà acquises. */
@@ -123,4 +133,47 @@ const DEFERRED_KINDS = new Set<ChoiceKind>(['skill', 'language', 'tool', 'expert
 
 export function isDeferredKind(kind: ChoiceKind): boolean {
   return DEFERRED_KINDS.has(kind);
+}
+
+/**
+ * Combien de réponses ce créneau attend au niveau où on est. Fixe pour tout le
+ * reste ; lu dans la table de la classe pour les sorts et les tours de magie.
+ * Zéro ferme le créneau : un rôdeur de niveau 1 ne lance encore rien.
+ */
+export function pickCount(spec: ChoiceSpec, level: number): number {
+  switch (spec.kind) {
+    case 'cantrip':
+    case 'spell': {
+      return spec.knownByLevel[clampLevel(level) - 1] ?? 0;
+    }
+    case 'skill':
+    case 'language':
+    case 'tool':
+    case 'equipment':
+    case 'ancestry':
+    case 'fighting-style':
+    case 'ability':
+    case 'improvement':
+    case 'feat':
+    case 'advancement':
+    case 'subclass':
+    case 'expertise': {
+      return spec.pick;
+    }
+  }
+}
+
+/**
+ * Une table par niveau écrite par ses paliers : `byLevel({ 1: 2, 4: 3, 10: 4 })`
+ * donne deux tours de magie du niveau 1 au 3, trois du 4 au 9, quatre ensuite.
+ * Les tables du SRD se lisent ainsi ; vingt nombres à la file se relisent mal.
+ */
+export function byLevel(steps: Readonly<Record<number, number>>): readonly number[] {
+  const table: number[] = [];
+  let current = 0;
+  for (let level = 1; level <= MAX_LEVEL; level += 1) {
+    current = steps[level] ?? current;
+    table.push(current);
+  }
+  return table;
 }

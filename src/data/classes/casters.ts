@@ -1,4 +1,5 @@
 // Contenu dérivé du SRD 5.1 (CC BY 4.0), traduction Aventurine.
+import { byLevel } from '../../domain/choiceSpec';
 import type { CharacterClass } from '../../domain/content';
 import {
   ADVANCEMENTS,
@@ -111,8 +112,17 @@ export const BARD: CharacterClass = {
         'survie',
       ],
     ),
-    cantripChoice('barde', 2, 'De petits sorts que tu peux relancer autant que tu veux.'),
-    spellChoice('barde', 4, 'Quatre sorts que tu connais par cœur.'),
+    cantripChoice(
+      'barde',
+      byLevel({ 1: 2, 4: 3, 10: 4 }),
+      'De petits sorts que tu peux relancer autant que tu veux.',
+    ),
+    spellChoice(
+      'barde',
+      // SRD, table du barde : « Spells Known ».
+      [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22, 22],
+      'Les sorts que tu connais par cœur, sans les avoir écrits nulle part.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton arme',
@@ -259,7 +269,11 @@ export const CLERIC: CharacterClass = {
       2,
       ['histoire', 'perspicacite', 'medecine', 'persuasion', 'religion'],
     ),
-    cantripChoice('clerc', 3, 'Trois petits sorts, relançables à volonté.'),
+    cantripChoice(
+      'clerc',
+      byLevel({ 1: 3, 4: 4, 10: 5 }),
+      'De petits sorts, relançables à volonté.',
+    ),
     equipmentChoice('equipment-1', 'Ton arme', 'Le clerc frappe peu, mais il frappe.', [
       'masse-clerc',
       'marteau-clerc',
@@ -443,7 +457,11 @@ export const DRUID: CharacterClass = {
         'survie',
       ],
     ),
-    cantripChoice('druide', 2, 'Deux petits sorts, relançables à volonté.'),
+    cantripChoice(
+      'druide',
+      byLevel({ 1: 2, 4: 3, 10: 4 }),
+      'De petits sorts, relançables à volonté.',
+    ),
     equipmentChoice('equipment-1', 'Ton arme', 'Le druide reste sobre en acier.', [
       'bouclier-druide',
       'cimeterre-druide',
@@ -587,8 +605,17 @@ export const SORCERER: CharacterClass = {
         'religion',
       ],
     ),
-    cantripChoice('ensorceleur', 4, 'Quatre petits sorts, relançables à volonté.'),
-    spellChoice('ensorceleur', 2, 'Deux sorts que tu connais par cœur.'),
+    cantripChoice(
+      'ensorceleur',
+      byLevel({ 1: 4, 4: 5, 10: 6 }),
+      'De petits sorts, relançables à volonté.',
+    ),
+    spellChoice(
+      'ensorceleur',
+      // SRD, table de l'ensorceleur : « Spells Known ».
+      [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15],
+      'Les sorts que ton sang connaît, sans livre ni prière.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton arme',
@@ -736,8 +763,17 @@ export const WARLOCK: CharacterClass = {
         'religion',
       ],
     ),
-    cantripChoice('occultiste', 2, 'Deux petits sorts, relançables à volonté.'),
-    spellChoice('occultiste', 2, 'Deux sorts que ton pacte t’a enseignés.'),
+    cantripChoice(
+      'occultiste',
+      byLevel({ 1: 2, 4: 3, 10: 4 }),
+      'De petits sorts, relançables à volonté.',
+    ),
+    spellChoice(
+      'occultiste',
+      // SRD, table de l'occultiste : « Spells Known ».
+      [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15],
+      'Les sorts que ton pacte t’a enseignés.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton arme',
@@ -861,8 +897,17 @@ export const WIZARD: CharacterClass = {
       2,
       ['arcanes', 'histoire', 'perspicacite', 'investigation', 'medecine', 'religion'],
     ),
-    cantripChoice('magicien', 3, 'Trois petits sorts, relançables à volonté.'),
-    spellChoice('magicien', 6, 'Six sorts copiés dans ton grimoire.'),
+    cantripChoice(
+      'magicien',
+      byLevel({ 1: 3, 4: 4, 10: 5 }),
+      'De petits sorts, relançables à volonté.',
+    ),
+    spellChoice(
+      'magicien',
+      // SRD : six sorts au niveau 1, puis deux de plus à chaque niveau gagné.
+      [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44],
+      'Les sorts copiés dans ton grimoire. Tu en prépares une partie chaque matin.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton arme',

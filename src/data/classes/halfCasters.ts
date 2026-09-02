@@ -7,13 +7,17 @@ import {
   item,
   proficiencies,
   skillChoice,
+  spellChoice,
   subclassChoice,
 } from './helpers';
 
 /**
- * Paladin et rôdeur ne lancent aucun sort au niveau 1 : leur `spellcasting`
- * reste `null`, et la fiche n'affiche donc pas de bloc Magie. C'est correct
- * au regard des règles, et cela évite un bloc vide qui ferait croire à un bug.
+ * Paladin et rôdeur ne lancent aucun sort au niveau 1 : leur table
+ * d'emplacements est vide à ce niveau-là, et la fiche n'affiche donc pas de
+ * bloc Magie tant qu'elle l'est. Leur magie s'ouvre d'elle-même au niveau 2.
+ *
+ * Le paladin prépare depuis toute la liste de sa classe, comme le clerc : rien
+ * à choisir dans l'assistant. Le rôdeur, lui, connaît ses sorts par cœur.
  */
 export const PALADIN: CharacterClass = {
   id: 'paladin',
@@ -132,7 +136,12 @@ export const PALADIN: CharacterClass = {
     item('symbole-sacre'),
     item('paquetage-de-pretre'),
   ],
-  spellcasting: null,
+  spellcasting: {
+    ability: 'charisme',
+    progression: 'half',
+    preparation: 'prepared',
+    ritual: false,
+  },
   subclasses: [
     {
       id: 'serment-de-devotion',
@@ -266,6 +275,12 @@ export const RANGER: CharacterClass = {
         'survie',
       ],
     ),
+    spellChoice(
+      'rodeur',
+      // SRD, table du rôdeur : « Spells Known ». Rien avant le niveau 2.
+      [0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11],
+      'Les sorts que tu as appris dehors, à force de marcher et d’observer.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton armure',
@@ -315,7 +330,12 @@ export const RANGER: CharacterClass = {
     item('carquois'),
     item('paquetage-d-explorateur'),
   ],
-  spellcasting: null,
+  spellcasting: {
+    ability: 'sagesse',
+    progression: 'half',
+    preparation: 'known',
+    ritual: false,
+  },
   subclasses: [
     {
       id: 'chasseur',
