@@ -10,6 +10,14 @@
  * parce qu'elle est fonctionnelle : on cherche ses caractéristiques en haut à
  * gauche et ses compétences en colonne, sur toutes les fiches du monde.
  */
+/* Le seul bloc de ce fichier qui vaut aussi pour l'écran : un élément marqué
+   « paper-only » n'a de sens qu'avec un crayon, il est donc absent de l'écran.
+   Il est ici, avec le reste des marques d'impression, plutôt que dispersé dans
+   les modules CSS des composants qui le posent. */
+[data-print~='paper-only'] {
+  display: none;
+}
+
 @media print {
   @page {
     size: A4 portrait;
@@ -63,8 +71,13 @@
      d'une page, ses sorts sur la suivante. « break-inside » est la seule règle
      de coupure que tous les moteurs respectent : on garde donc le groupe
      entier d'un bloc. Un groupe fait quelques sorts, jamais une page. */
-  [data-print='keep-together'] {
+  [data-print~='keep-together'] {
     break-inside: avoid;
+  }
+
+  /* Un niveau que l'écran tait : il n'a de sens qu'avec un crayon. */
+  [data-print~='paper-only'] {
+    display: block !important;
   }
 
   h2 {
@@ -238,6 +251,29 @@
     block-size: 13mm;
     border: 1.5pt solid #000000;
     padding-block-end: 0.5mm;
+  }
+
+  /* Un niveau sans sort imprimé n'est pas un vide : c'est la place où le clerc
+     écrit ce qu'il a préparé ce matin. Un filet de deux lignes ne suffit pas. */
+  [data-print='write-here'] {
+    min-block-size: 16mm;
+  }
+
+  /* Un emplacement, une case, à côté des sorts de ce niveau : c'est là qu'on
+     regarde avant de lancer, donc là qu'on raye en lançant. */
+  [data-print='slots'] {
+    display: flex !important;
+    align-items: center;
+    gap: 1.2mm;
+    font-size: 6.5pt;
+    white-space: nowrap;
+  }
+
+  [data-print='slots'] > span {
+    inline-size: 3.4mm;
+    block-size: 3.4mm;
+    border: 1px solid #000000;
+    border-radius: 0.6mm;
   }
 
   /* Les cases à cocher en trois colonnes : elles servent en jeu, elles ne

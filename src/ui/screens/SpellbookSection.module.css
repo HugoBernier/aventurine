@@ -60,6 +60,12 @@
   margin: 0;
 }
 
+/* Les cases d'emplacements ne servent qu'au crayon : elles n'existent qu'à
+   l'impression, où `print.css` les révèle. */
+.slots {
+  display: none;
+}
+
 .change {
   min-height: var(--touch-target);
   padding-inline: var(--space-3);

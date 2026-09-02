@@ -7,10 +7,11 @@ import styles from './PrintBoxes.module.css';
  * cadres vides n'y seraient que du bruit.
  *
  * Une fiche imprimée sans elles est un état des lieux, pas une fiche de jeu :
- * les points de vie bougent à chaque tour, les emplacements se dépensent, et
- * les jets contre la mort se cochent quand ça tourne mal.
+ * les points de vie bougent à chaque tour et les jets contre la mort se cochent
+ * quand ça tourne mal. Les emplacements de sort, eux, se cochent à côté des
+ * sorts du niveau : c'est là qu'on lit avant de lancer.
  */
-export function PrintBoxes({ slots }: { readonly slots: readonly number[] }): ReactNode {
+export function PrintBoxes(): ReactNode {
   return (
     <div className={styles.boxes} data-print="only">
       <div className={styles.field}>
@@ -37,20 +38,6 @@ export function PrintBoxes({ slots }: { readonly slots: readonly number[] }): Re
           <span className={styles.tick} />
         </span>
       </div>
-      {slots.map((count, index) =>
-        count === 0 ? null : (
-          <div className={styles.field} key={index}>
-            <span className={styles.label}>
-              Emplacements de niveau {index + 1} dépensés
-            </span>
-            <span className={styles.ticks}>
-              {Array.from({ length: count }, (_, tick) => (
-                <span className={styles.tick} key={tick} />
-              ))}
-            </span>
-          </div>
-        ),
-      )}
     </div>
   );
 }

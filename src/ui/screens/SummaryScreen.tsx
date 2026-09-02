@@ -291,7 +291,7 @@ export function SummaryScreen({
         <Notice tone="reminder">{formatHeavyWeapons(heavyWeapons)}</Notice>
       )}
 
-      <PrintBoxes slots={sheet.spellcasting?.slots ?? []} />
+      <PrintBoxes />
 
       <PlaySection />
 

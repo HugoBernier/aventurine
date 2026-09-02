@@ -36,6 +36,32 @@ export function formatSlots(casting: SpellcastingSheet): string | null {
   return parts.length === 0 ? null : parts.join(' · ');
 }
 
+/** Les niveaux où le personnage a des emplacements, le pacte compris. */
+export function slotLevels(casting: SpellcastingSheet): readonly number[] {
+  if (casting.pact !== null) {
+    return [casting.pact.slotLevel];
+  }
+  return casting.slots.flatMap((count, index) => (count > 0 ? [index + 1] : []));
+}
+
+/** Combien de cases à cocher à ce niveau : un emplacement, une case. */
+export function slotsAtLevel(casting: SpellcastingSheet, level: number): number {
+  if (casting.pact !== null) {
+    return casting.pact.slotLevel === level ? casting.pact.slots : 0;
+  }
+  return casting.slots[level - 1] ?? 0;
+}
+
+/**
+ * Ce qu'on lit sous un niveau sans sort. Un clerc ne choisit rien à l'avance :
+ * la place vide est faite pour être remplie au crayon le matin venu.
+ */
+export function formatEmptyLevel(casting: SpellcastingSheet): string {
+  return casting.preparation === 'prepared'
+    ? 'À remplir au crayon, chaque matin.'
+    : 'Rien à ce niveau pour l’instant.';
+}
+
 /** Les repères d'un sort, dans l'ordre où on les cherche en jouant. */
 export function spellFacts(spell: {
   readonly range: string;

@@ -4,8 +4,11 @@ import { useSpellbook } from '../../state/hooks';
 import type { ScreenId } from '../../state/types';
 import {
   formatCastingAbility,
+  formatEmptyLevel,
   formatPreparation,
   formatSlots,
+  slotLevels,
+  slotsAtLevel,
   spellFacts,
 } from '../format/spellbook';
 import styles from './SpellbookSection.module.css';
@@ -13,15 +16,40 @@ import styles from './SpellbookSection.module.css';
 interface SpellListProps {
   readonly title: string;
   readonly spells: readonly Spell[];
+  /** Emplacements de ce niveau : une case à cocher par emplacement. */
+  readonly slots?: number | undefined;
   readonly onChange?: (() => void) | undefined;
   readonly emptyLabel?: string | undefined;
 }
 
-function SpellList({ title, spells, onChange, emptyLabel }: SpellListProps): ReactNode {
+function SpellList({
+  title,
+  spells,
+  slots = 0,
+  onChange,
+  emptyLabel,
+}: SpellListProps): ReactNode {
+  // Un clerc ne choisit pas ses sorts : à l'écran, trois niveaux vides ne
+  // répètent qu'une consigne. Sur papier, ce sont les lignes où il écrit ce
+  // qu'il a préparé ce matin.
+  const isPaperOnly = spells.length === 0 && onChange === undefined && slots > 0;
   return (
-    <section className={styles.block} data-print="keep-together">
+    <section
+      className={styles.block}
+      data-print={isPaperOnly ? 'keep-together paper-only' : 'keep-together'}
+    >
       <div className={styles.blockHead}>
         <h3 className={styles.blockTitle}>{title}</h3>
+        {slots > 0 && (
+          // Sur papier seulement : à l'écran, rien ne coche ces cases, et le
+          // compte des emplacements est déjà écrit en toutes lettres plus haut.
+          <span className={styles.slots} data-print="slots">
+            emplacements dépensés
+            {Array.from({ length: slots }, (_, index) => (
+              <span key={index} />
+            ))}
+          </span>
+        )}
         {onChange !== undefined && (
           <button
             type="button"
@@ -34,7 +62,9 @@ function SpellList({ title, spells, onChange, emptyLabel }: SpellListProps): Rea
         )}
       </div>
       {spells.length === 0 ? (
-        <p className={styles.empty}>{emptyLabel ?? 'Rien ici pour l’instant.'}</p>
+        <p className={styles.empty} data-print="write-here">
+          {emptyLabel ?? 'Rien ici pour l’instant.'}
+        </p>
       ) : (
         <ul className={styles.list}>
           {spells.map((spell) => (
@@ -66,6 +96,11 @@ export function SpellbookSection({ onJump }: SpellbookSectionProps): ReactNode {
     return null;
   }
   const slots = formatSlots(casting);
+  // Un niveau apparaît s'il porte des sorts ou des emplacements : le clerc ne
+  // choisit rien à l'avance, il lui faut quand même ses cases à cocher.
+  const levels = [
+    ...new Set([...book.groups.map((group) => group.level), ...slotLevels(casting)]),
+  ].toSorted((a, b) => a - b);
   const jump = (screenId: ScreenId | null) =>
     screenId === null
       ? undefined
@@ -116,15 +151,17 @@ export function SpellbookSection({ onJump }: SpellbookSectionProps): ReactNode {
         onChange={jump(book.cantripScreenId)}
         emptyLabel="Tu n’as pas encore choisi tes tours de magie."
       />
-      {book.groups.map((group) => (
+      {levels.map((level) => (
         <SpellList
-          key={group.level}
-          title={`Tes sorts de niveau ${String(group.level)}`}
-          spells={group.spells}
+          key={level}
+          title={`Tes sorts de niveau ${String(level)}`}
+          spells={book.groups.find((group) => group.level === level)?.spells ?? []}
+          slots={slotsAtLevel(casting, level)}
           onChange={jump(book.spellScreenId)}
+          emptyLabel={formatEmptyLevel(casting)}
         />
       ))}
-      {book.groups.length === 0 && (
+      {levels.length === 0 && (
         <SpellList
           title="Tes sorts"
           spells={[]}
