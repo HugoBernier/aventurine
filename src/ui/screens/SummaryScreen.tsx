@@ -28,6 +28,22 @@ import { plural } from '../format/plural';
 import styles from './SummaryScreen.module.css';
 
 const TO_CHOOSE = 'À choisir';
+
+/** Une donnée de référence : vraie, utile, mais consultée trois fois par soir. */
+function Ref({
+  label,
+  value,
+}: {
+  readonly label: string;
+  readonly value: string;
+}): ReactNode {
+  return (
+    <div className={styles.ref}>
+      <span className={styles.refLabel}>{label}</span>
+      <span className={styles.refValue}>{value}</span>
+    </div>
+  );
+}
 const SIZE_NAMES = { P: 'Petite', M: 'Moyenne' } as const;
 
 /**
@@ -39,26 +55,6 @@ const FEATURE_GROUPS = [
   ['class', 'De ta classe'],
   ['background', 'De ton historique'],
 ] as const;
-
-function Tile({
-  label,
-  value,
-  detail = null,
-}: {
-  readonly label: string;
-  readonly value: string;
-  // `| null` plutôt qu'une propriété optionnelle : c'est la convention du
-  // projet, et `exactOptionalPropertyTypes` rend l'autre forme pénible.
-  readonly detail?: string | null | undefined;
-}): ReactNode {
-  return (
-    <div className={styles.tile}>
-      <div className={styles.tileLabel}>{label}</div>
-      <div className={styles.tileValue}>{value}</div>
-      {detail === null ? null : <div className={styles.tileDetail}>{detail}</div>}
-    </div>
-  );
-}
 
 export interface SummaryScreenProps {
   /**
@@ -111,15 +107,20 @@ export function SummaryScreen({
         </p>
       </div>
 
-      <h2 className={styles.heading}>Tes caractéristiques</h2>
-      <div className={styles.tiles} data-sheet="tiles">
+      {/* On lance d20 + MODIFICATEUR. Le score ne sert qu'à deux moments : quand
+          une aptitude le référence, et quand on monte de niveau. C'est donc le
+          modificateur qui porte le bloc, et le score qui l'accompagne. */}
+      <div className={styles.abilities} data-sheet="abilities">
         {sheet.saves.map((save) => (
-          <Tile
-            key={save.id}
-            label={catalogue.abilities.find((a) => a.id === save.id)?.name ?? save.id}
-            value={String(sheet.abilities[save.ability])}
-            detail={`modificateur ${formatModifier(sheet.modifiers[save.ability])}`}
-          />
+          <div className={styles.ability} key={save.id}>
+            <div className={styles.abilityName}>
+              {catalogue.abilities.find((a) => a.id === save.id)?.name ?? save.id}
+            </div>
+            <div className={styles.abilityModifier}>
+              {formatModifier(sheet.modifiers[save.ability])}
+            </div>
+            <div className={styles.abilityScore}>{sheet.abilities[save.ability]}</div>
+          </div>
         ))}
       </div>
 
@@ -215,56 +216,73 @@ export function SummaryScreen({
       </ul>
 
       <h2 className={styles.heading}>En combat</h2>
-      <div className={styles.tiles} data-sheet="tiles">
-        <Tile
-          label="Classe d’armure"
-          value={armorClass === null ? TO_CHOOSE : String(armorClass.total)}
-          detail={
-            armorClass === null
-              ? 'Choisis ta classe et ton équipement'
-              : armorClass.parts.map((part) => String(part.value)).join(' + ')
-          }
-        />
-        <Tile label="Initiative" value={formatModifier(sheet.initiative)} />
-        <Tile
-          label="Points de vie"
-          value={sheet.maxHitPoints === null ? TO_CHOOSE : String(sheet.maxHitPoints)}
-          detail={sheet.maxHitPoints === null ? 'Choisis ta classe' : null}
-        />
-        <Tile
-          label="Vitesse"
-          value={
-            sheet.speedMeters === null
-              ? TO_CHOOSE
-              : `${formatMeters(sheet.speedMeters)} m`
-          }
-        />
-        <Tile
+
+      {/* Les trois nombres qu'on donne au meneur à chaque tour. Ils méritent
+          le tiers de la page à eux seuls : chercher sa CA dans une grille de
+          onze tuiles identiques, c'est la chercher à chaque fois. */}
+      <div className={styles.vitals} data-sheet="vitals">
+        <div className={styles.vital}>
+          <div className={styles.vitalName}>Classe d’armure</div>
+          <div className={styles.vitalValue}>
+            {armorClass === null ? '—' : armorClass.total}
+          </div>
+          <div className={styles.vitalDetail}>
+            {armorClass === null
+              ? 'Choisis ta classe'
+              : armorClass.parts.map((part) => String(part.value)).join(' + ')}
+          </div>
+        </div>
+        <div className={styles.vital}>
+          <div className={styles.vitalName}>Initiative</div>
+          <div className={styles.vitalValue}>{formatModifier(sheet.initiative)}</div>
+          <div className={styles.vitalDetail}>Dextérité</div>
+        </div>
+        <div className={styles.vital}>
+          <div className={styles.vitalName}>Vitesse</div>
+          <div className={styles.vitalValue}>
+            {sheet.speedMeters === null ? '—' : formatMeters(sheet.speedMeters)}
+          </div>
+          <div className={styles.vitalDetail}>mètres par tour</div>
+        </div>
+        {/* Les points de vie changent à chaque tour : le maximum est une
+            référence, la case vide est ce qu'on écrit vraiment. */}
+        <div className={styles.hitPoints}>
+          <div className={styles.vitalName}>Points de vie</div>
+          <div className={styles.hitPointsRow}>
+            {/* La case la plus écrite de la soirée. Elle vaut mieux qu'un filet
+                de 8 pt perdu dans une bande de cases à cocher. */}
+            <div className={styles.hitPointsCurrent} data-sheet="hp-current">
+              <span className={styles.vitalDetail}>actuels</span>
+            </div>
+            <div className={styles.hitPointsMax}>
+              <span className={styles.vitalValue}>{sheet.maxHitPoints ?? '—'}</span>
+              <span className={styles.vitalDetail}>maximum</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ce qu'on ne consulte presque jamais, ou que le meneur lit à notre
+          place. Vrai sur la fiche, mais pas au même prix en surface. */}
+      <div className={styles.reference} data-sheet="reference">
+        <Ref label="Maîtrise" value={formatModifier(sheet.proficiencyBonus)} />
+        <Ref label="Perception passive" value={String(sheet.passivePerception)} />
+        <Ref label="Niveau" value={String(draft.level)} />
+        <Ref
           label="Dés de vie"
-          value={sheet.hitDice === null ? TO_CHOOSE : `1 d${String(sheet.hitDice.die)}`}
+          value={sheet.hitDice === null ? '—' : `1 d${String(sheet.hitDice.die)}`}
         />
-        <Tile label="Niveau" value={String(draft.level)} />
-        <Tile label="Bonus de maîtrise" value={formatModifier(sheet.proficiencyBonus)} />
         {sheet.darkvisionMeters !== null && sheet.darkvisionMeters > 0 && (
-          // Rien à annoncer pour qui voit comme un humain : la tuile n'apparaît
-          // que quand la race apporte vraiment quelque chose.
-          <Tile
+          <Ref
             label="Vision dans le noir"
             value={`${formatMeters(sheet.darkvisionMeters)} m`}
           />
         )}
-        <Tile
-          label="Perception passive"
-          value={String(sheet.passivePerception)}
-          detail="Ce que tu remarques sans lancer de dé"
-        />
-        {sheet.size !== null && <Tile label="Taille" value={SIZE_NAMES[sheet.size]} />}
+        {sheet.size !== null && <Ref label="Taille" value={SIZE_NAMES[sheet.size]} />}
         {sheet.resistances.length > 0 && (
-          // Même règle que la vision : une tuile « aucune » n'apprend rien.
-          <Tile
+          <Ref
             label={plural(sheet.resistances.length, 'Résistance', 'Résistances')}
             value={formatDamageTypeList(sheet.resistances)}
-            detail="Tu encaisses moitié moins de ces dégâts"
           />
         )}
       </div>

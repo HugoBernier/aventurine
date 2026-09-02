@@ -61,37 +61,6 @@
   font-weight: 700;
 }
 
-.tiles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-}
-
-.tile {
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  padding: var(--space-3);
-  min-width: 0;
-}
-
-.tileLabel {
-  color: var(--color-text-subtle);
-  font-size: var(--font-size-100);
-}
-
-.tileValue {
-  font-size: var(--font-size-500);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-}
-
-.tileDetail {
-  color: var(--color-text-subtle);
-  font-size: var(--font-size-100);
-  overflow-wrap: anywhere;
-}
-
 .attribution {
   margin-block-start: var(--space-6);
   color: var(--color-text-subtle);
@@ -164,4 +133,127 @@
 .featureText {
   margin: 0;
   color: var(--color-text-muted);
+}
+
+/* --- La hiérarchie de la fiche --------------------------------------------
+   La taille dit la fréquence d'usage. Ce qu'on lit à chaque tour est gros,
+   ce que le meneur consulte à notre place est petit. */
+
+/* Les six caractéristiques : le modificateur porte le bloc, le score suit. */
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+}
+
+.ability {
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+.abilityName {
+  font-size: var(--font-size-100);
+  color: var(--color-text-muted);
+}
+
+.abilityModifier {
+  font-family: var(--font-title);
+  font-size: var(--font-size-500);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.abilityScore {
+  font-size: var(--font-size-100);
+  color: var(--color-text-subtle);
+}
+
+/* Les trois nombres qu'on donne au meneur, et les points de vie. */
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.vital,
+.hitPoints {
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+}
+
+.hitPoints {
+  grid-column: 1 / -1;
+}
+
+.vitalName {
+  font-size: var(--font-size-100);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vitalValue {
+  display: block;
+  font-family: var(--font-title);
+  font-size: 2rem;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.vitalDetail {
+  display: block;
+  font-size: var(--font-size-100);
+  color: var(--color-text-subtle);
+}
+
+.hitPointsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+/* La case vide n'existe qu'à l'impression : à l'écran, le maximum suffit. */
+.hitPointsCurrent {
+  display: none;
+}
+
+.hitPointsMax {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Le bandeau de références : vrai, utile, et petit. */
+.reference {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ref {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: var(--font-size-100);
+}
+
+.refLabel {
+  color: var(--color-text-muted);
+}
+
+.refValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }

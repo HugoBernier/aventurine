@@ -109,37 +109,79 @@
 
   /* --- Le recto de jeu ---------------------------------------------------
      À l'écran, une colonne au pouce. Sur A4 la page est trois fois plus large
-     et deux fois moins haute : les mêmes cartes empilées donneraient quatre
-     pages d'air. Tout se resserre en grilles. */
+     et deux fois moins haute. La hiérarchie ne change pas pour autant : ce
+     qu'on lit à chaque tour reste le plus gros de la page. */
 
-  [data-sheet='tiles'] {
+  /* Vitaux et caractéristiques côte à côte : le haut de page porte tout ce
+     qu'on donne au meneur, sans avoir à descendre. */
+  [data-sheet='vitals'] {
     display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 1.5mm !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 2mm !important;
   }
 
-  [data-sheet='tiles'] > * {
+  [data-sheet='vitals'] > * {
+    border: 1.5pt solid #000000 !important;
+    border-radius: 0 !important;
+    padding: 2mm 1mm !important;
+  }
+
+  /* Les points de vie ne prennent plus toute la largeur : ils tiennent la
+     quatrième colonne, à côté des trois autres vitaux. */
+  [data-sheet='vitals'] > :last-child {
+    grid-column: auto !important;
+  }
+
+  [data-sheet='abilities'] {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 1.5mm !important;
+    margin-block-start: 2mm !important;
+  }
+
+  [data-sheet='abilities'] > * {
     border: 1px solid #000000 !important;
     border-radius: 0 !important;
-    padding: 1.5mm !important;
-    text-align: center;
+    padding: 1.2mm !important;
   }
 
-  /* Le chiffre porte la ligne, le libellé le nomme. Un joueur qui découvre lit
-     le libellé ; un habitué ne voit que le chiffre. */
-  [data-sheet='tiles'] > * > :first-child {
-    font-size: 7pt;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+  /* Le modificateur est ce qu'on ajoute au d20 : c'est lui le grand chiffre.
+     Le score sert deux fois par soirée, il tient en petit dessous. */
+  [data-sheet='abilities'] > * > :nth-child(2) {
+    font-size: 16pt !important;
+    line-height: 1.05 !important;
   }
 
-  [data-sheet='tiles'] > * > :nth-child(2) {
-    font-size: 15pt !important;
-    line-height: 1.1;
+  [data-sheet='abilities'] > * > :first-child,
+  [data-sheet='abilities'] > * > :last-child {
+    font-size: 6.5pt !important;
   }
 
-  [data-sheet='tiles'] > * > :nth-child(3) {
-    font-size: 6.5pt;
+  [data-sheet='vitals'] > * > :first-child {
+    font-size: 6.5pt !important;
+  }
+
+  [data-sheet='vitals'] .print-vital-value,
+  [data-sheet='vitals'] > * > :nth-child(2) {
+    font-size: 20pt !important;
+    line-height: 1.05 !important;
+  }
+
+  /* Le bandeau de références sur une ligne : sept données que personne ne
+     cherche en combat n'ont pas à occuper un quart de page. */
+  [data-sheet='reference'] {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0 4mm !important;
+    border: 0 !important;
+    border-block: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    padding: 1mm 0 !important;
+    margin-block-start: 2mm !important;
+  }
+
+  [data-sheet='reference'] * {
+    font-size: 7.5pt !important;
   }
 
   /* Sauvegardes et compétences en trois colonnes : les dix-huit compétences
@@ -176,7 +218,20 @@
     break-before: page;
   }
 
-  /* Les cases à remplir en trois colonnes : elles servent en jeu, elles ne
+  /* La case des points de vie actuels : grande, encadrée, à côté du maximum.
+     C'est le nombre qu'on rature le plus souvent d'une soirée, et il valait
+     jusqu'ici un filet de 8 pt au milieu d'une bande de cases à cocher. */
+  [data-sheet='hp-current'] {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-end;
+    inline-size: 18mm;
+    block-size: 13mm;
+    border: 1.5pt solid #000000;
+    padding-block-end: 0.5mm;
+  }
+
+  /* Les cases à cocher en trois colonnes : elles servent en jeu, elles ne
      méritent pas le quart de la page. */
   [data-print='only'] {
     display: grid !important;

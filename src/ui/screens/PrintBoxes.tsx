@@ -14,10 +14,6 @@ export function PrintBoxes({ slots }: { readonly slots: readonly number[] }): Re
   return (
     <div className={styles.boxes} data-print="only">
       <div className={styles.field}>
-        <span className={styles.label}>Points de vie actuels</span>
-        <span className={styles.rule} />
-      </div>
-      <div className={styles.field}>
         <span className={styles.label}>Points de vie temporaires</span>
         <span className={styles.rule} />
       </div>
