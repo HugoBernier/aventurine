@@ -58,6 +58,15 @@
     break-inside: avoid;
   }
 
+  /* « break-after » ne suffit pas : Firefox ne l'a jamais implémenté avec la
+     valeur « avoid », et le titre d'un groupe de sorts finissait seul en bas
+     d'une page, ses sorts sur la suivante. « break-inside » est la seule règle
+     de coupure que tous les moteurs respectent : on garde donc le groupe
+     entier d'un bloc. Un groupe fait quelques sorts, jamais une page. */
+  [data-print='keep-together'] {
+    break-inside: avoid;
+  }
+
   h2 {
     font-size: 10.5pt;
     margin-block: 2.5mm 1mm;

@@ -19,7 +19,7 @@ interface SpellListProps {
 
 function SpellList({ title, spells, onChange, emptyLabel }: SpellListProps): ReactNode {
   return (
-    <section className={styles.block}>
+    <section className={styles.block} data-print="keep-together">
       <div className={styles.blockHead}>
         <h3 className={styles.blockTitle}>{title}</h3>
         {onChange !== undefined && (
