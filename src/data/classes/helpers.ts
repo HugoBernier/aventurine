@@ -2,6 +2,7 @@
 import { ABILITIES } from '../../domain/abilities';
 import type {
   ChoiceSpec,
+  FightingStyleSpec,
   SkillSpec,
   SpellSpec,
   SubclassSpec,
@@ -47,6 +48,41 @@ export function skillChoice(
   from: readonly SkillId[],
 ): SkillSpec {
   return { kind: 'skill', subject: 'skills', title, help, pick, from };
+}
+
+/**
+ * Les styles ouverts à chaque classe. Le SRD n'en donne pas les mêmes aux
+ * trois : le paladin ne tire pas à l'arc, le rôdeur ne porte pas de bouclier
+ * pour couvrir un allié.
+ */
+export const FIGHTER_STYLES = [
+  'archerie',
+  'defense',
+  'duel',
+  'combat-a-deux-mains',
+  'protection',
+  'combat-a-deux-armes',
+];
+
+export const PALADIN_STYLES = ['defense', 'duel', 'combat-a-deux-mains', 'protection'];
+
+export const RANGER_STYLES = ['archerie', 'defense', 'duel', 'combat-a-deux-armes'];
+
+/** Le style de combat, au niveau où la classe l'ouvre. */
+export function fightingStyleChoice(
+  level: number,
+  from: readonly string[],
+  help: string,
+): FightingStyleSpec {
+  return {
+    kind: 'fighting-style',
+    subject: 'fighting-style',
+    title: 'Ta façon de te battre',
+    help,
+    pick: 1,
+    level,
+    from,
+  };
 }
 
 export function cantripChoice(

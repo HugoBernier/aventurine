@@ -9,6 +9,12 @@ export type Facts = readonly [string, string, string];
 export interface Feature {
   readonly name: string;
   readonly text: string;
+  /**
+   * L'aptitude qui n'est qu'une promesse tant qu'on n'a pas choisi : le style
+   * de combat du guerrier annonce un bonus, c'est le style retenu qui le dit.
+   * La fiche affiche alors le choix à la place de l'annonce.
+   */
+  readonly filledBy?: 'fighting-style';
 }
 
 /** Une aptitude de classe, acquise à un niveau précis. */

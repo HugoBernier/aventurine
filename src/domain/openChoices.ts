@@ -417,9 +417,11 @@ function buildOptions(
       );
     }
     case 'fighting-style': {
-      return catalogue.fightingStyles.map((style) =>
-        option(style.id, style.name, style.text, [style.text, NO_FACT, NO_FACT], null),
-      );
+      return catalogue.fightingStyles
+        .filter((style) => spec.from.includes(style.id))
+        .map((style) =>
+          option(style.id, style.name, style.text, [style.text, NO_FACT, NO_FACT], null),
+        );
     }
     case 'subclass': {
       return (findClass(catalogue, draft.classId)?.subclasses ?? []).map((entry) =>

@@ -2,8 +2,11 @@
 import type { CharacterClass } from '../../domain/content';
 import {
   ADVANCEMENTS,
+  PALADIN_STYLES,
+  RANGER_STYLES,
   equipmentChoice,
   equipmentOption,
+  fightingStyleChoice,
   item,
   proficiencies,
   skillChoice,
@@ -45,7 +48,8 @@ export const PALADIN: CharacterClass = {
     {
       level: 2,
       name: 'Style de combat',
-      text: 'Une façon de te battre qui te donne un bonus précis : +1 en classe d’armure, +2 aux dégâts à une arme, et d’autres. Tu la choisis à l’écran suivant.',
+      text: 'Une façon de te battre qui te donne un bonus précis : +1 en classe d’armure, +2 aux dégâts à une arme, et d’autres.',
+      filledBy: 'fighting-style',
     },
     {
       level: 2,
@@ -106,6 +110,11 @@ export const PALADIN: CharacterClass = {
         'persuasion',
         'religion',
       ],
+    ),
+    fightingStyleChoice(
+      2,
+      PALADIN_STYLES,
+      'Une manière de te battre au service de ton serment.',
     ),
     equipmentChoice(
       'equipment-1',
@@ -216,7 +225,8 @@ export const RANGER: CharacterClass = {
     {
       level: 2,
       name: 'Style de combat',
-      text: 'Une façon de te battre qui te donne un bonus précis : +2 aux attaques à distance, +1 en classe d’armure, et d’autres. Tu la choisis à l’écran suivant.',
+      text: 'Une façon de te battre qui te donne un bonus précis : +2 aux attaques à distance, +1 en classe d’armure, et d’autres.',
+      filledBy: 'fighting-style',
     },
     {
       level: 3,
@@ -274,6 +284,11 @@ export const RANGER: CharacterClass = {
         'discretion',
         'survie',
       ],
+    ),
+    fightingStyleChoice(
+      2,
+      RANGER_STYLES,
+      'Une manière de te battre apprise loin des salles d’armes.',
     ),
     spellChoice(
       'rodeur',

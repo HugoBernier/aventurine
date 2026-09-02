@@ -3,8 +3,10 @@ import type { CharacterClass } from '../../domain/content';
 import {
   ADVANCEMENTS,
   FIGHTER_ADVANCEMENTS,
+  FIGHTER_STYLES,
   ROGUE_ADVANCEMENTS,
   equipmentChoice,
+  fightingStyleChoice,
   equipmentOption,
   item,
   proficiencies,
@@ -210,7 +212,8 @@ export const FIGHTER: CharacterClass = {
     {
       level: 1,
       name: 'Style de combat',
-      text: 'Une façon de te battre qui te donne un bonus précis : +2 aux attaques à distance, +1 en classe d’armure, +2 aux dégâts à une arme, et d’autres. Tu la choisis à l’écran suivant.',
+      text: 'Une façon de te battre qui te donne un bonus précis : +2 aux attaques à distance, +1 en classe d’armure, +2 aux dégâts à une arme, et d’autres.',
+      filledBy: 'fighting-style',
     },
     {
       level: 2,
@@ -249,13 +252,11 @@ export const FIGHTER: CharacterClass = {
         'survie',
       ],
     ),
-    {
-      kind: 'fighting-style',
-      subject: 'fighting-style',
-      title: 'Ta façon de te battre',
-      help: 'Une manière de combattre qui te distingue des autres guerriers.',
-      pick: 1,
-    },
+    fightingStyleChoice(
+      1,
+      FIGHTER_STYLES,
+      'Une manière de combattre qui te distingue des autres guerriers.',
+    ),
     equipmentChoice(
       'equipment-1',
       'Ton armure de départ',

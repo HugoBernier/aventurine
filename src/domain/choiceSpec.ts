@@ -47,8 +47,15 @@ export interface AncestrySpec extends BaseSpec {
   readonly kind: 'ancestry';
 }
 
+/**
+ * Le style de combat. Il porte SON niveau — 1 pour le guerrier, 2 pour le
+ * paladin et le rôdeur — et SA liste : le SRD n'ouvre pas les mêmes options
+ * aux trois classes.
+ */
 export interface FightingStyleSpec extends BaseSpec {
   readonly kind: 'fighting-style';
+  readonly level: number;
+  readonly from: readonly string[];
 }
 
 /**
@@ -146,12 +153,16 @@ export function pickCount(spec: ChoiceSpec, level: number): number {
     case 'spell': {
       return spec.knownByLevel[clampLevel(level) - 1] ?? 0;
     }
+    case 'fighting-style': {
+      // Le paladin et le rôdeur ne l'ouvrent qu'au niveau 2 : avant, zéro
+      // referme le créneau, et la purge retire la réponse si on redescend.
+      return clampLevel(level) >= spec.level ? spec.pick : 0;
+    }
     case 'skill':
     case 'language':
     case 'tool':
     case 'equipment':
     case 'ancestry':
-    case 'fighting-style':
     case 'ability':
     case 'improvement':
     case 'feat':

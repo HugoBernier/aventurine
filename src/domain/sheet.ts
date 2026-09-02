@@ -16,6 +16,7 @@ import type {
   CreatureSize,
   Feature,
   FeatureStep,
+  FightingStyle,
   DamageType,
   ItemLine,
   PreparationMode,
@@ -494,6 +495,19 @@ function plain(source: ChoiceSource, feature: Feature): SheetFeature {
   return { source, name: feature.name, text: feature.text, value: null };
 }
 
+/**
+ * Le style de combat retenu remplace l'annonce : la fiche d'un guerrier qui a
+ * choisi dit « Style de combat · Défense » et l'effet exact, pas « tu la
+ * choisis à l'écran suivant ».
+ */
+function chosenFightingStyle(
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): FightingStyle | null {
+  const [id] = pickedByKind(draft, catalogue, ['fighting-style']);
+  return catalogue.fightingStyles.find((entry) => entry.id === id) ?? null;
+}
+
 /** La dernière ligne du tableau que le niveau atteint. */
 function stepAt(steps: readonly FeatureStep[] | undefined, level: number): string | null {
   let found: string | null = null;
@@ -577,26 +591,22 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
   });
 
   const level = clampLevel(draft.level);
+  const fightingStyle = chosenFightingStyle(draft, catalogue);
   const features: readonly SheetFeature[] = [
     ...(race?.features ?? []).map((f) => plain('race', f)),
     ...(subrace?.features ?? []).map((f) => plain('race', f)),
     // Une aptitude de niveau 5 n'apparaît pas sur la fiche d'un niveau 3.
-    ...(characterClass?.features ?? [])
+    ...[...(characterClass?.features ?? []), ...(subclass?.features ?? [])]
       .filter((f) => f.level <= level)
-      .map((f) => ({
-        source: 'class' as const,
-        name: f.name,
-        text: f.text,
-        value: stepAt(f.steps, level),
-      })),
-    ...(subclass?.features ?? [])
-      .filter((f) => f.level <= level)
-      .map((f) => ({
-        source: 'class' as const,
-        name: f.name,
-        text: f.text,
-        value: stepAt(f.steps, level),
-      })),
+      .map((f) => {
+        const filled = f.filledBy === 'fighting-style' ? fightingStyle : null;
+        return {
+          source: 'class' as const,
+          name: f.name,
+          text: filled?.text ?? f.text,
+          value: filled?.name ?? stepAt(f.steps, level),
+        };
+      }),
     ...(background?.feature == null ? [] : [plain('background', background.feature)]),
     // Un don se lit sur la fiche comme n'importe quelle autre aptitude : le
     // joueur ne se demande pas d'où elle vient au moment de s'en servir.

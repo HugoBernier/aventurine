@@ -345,6 +345,8 @@ const classes: readonly CharacterClass[] = [
         title: 'Ta façon de te battre',
         help: 'Une manière de combattre qui te ressemble.',
         pick: 1,
+        level: 1,
+        from: ['defense', 'duel'],
       },
       {
         kind: 'cantrip',
