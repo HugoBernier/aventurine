@@ -61,6 +61,14 @@
   font-weight: 700;
 }
 
+/* Sous le bouton d'impression : la seule chose que la feuille de style ne peut
+   pas régler à la place du joueur. */
+.printHint {
+  margin-block: var(--space-2) 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
 .attribution {
   margin-block-start: var(--space-6);
   color: var(--color-text-subtle);

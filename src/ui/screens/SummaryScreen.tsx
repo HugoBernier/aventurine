@@ -168,6 +168,14 @@ export function SummaryScreen({
         <span className={styles.chevron}>Ta fiche de jeu</span>
       </button>
 
+      {/* L'adresse du site et le numéro de page sont dessinés par le navigateur
+          dans la marge de la page, hors de portée de toute feuille de style :
+          seule sa boîte d'impression peut les retirer. */}
+      <p className={styles.printHint} data-print="hide">
+        Ton navigateur ajoute parfois l’adresse du site et le numéro de page : décoche «
+        en-têtes et pieds de page » dans les options d’impression pour les enlever.
+      </p>
+
       {onOpenLibrary !== undefined && (
         <button
           type="button"
