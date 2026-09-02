@@ -1,5 +1,5 @@
 import type { AbilityId } from './abilities';
-import { clampLevel, MAX_LEVEL } from './progression';
+import { MAX_LEVEL } from './progression';
 import type { ChoiceKind } from './choice';
 import type { SkillId } from './skills';
 
@@ -101,18 +101,25 @@ export interface AdvancementOption {
 }
 
 /**
+ * D'où vient le nombre de sorts d'un créneau. Le barde lit une table ; le clerc
+ * calcule, parce que son nombre dépend de sa Sagesse autant que de son niveau.
+ */
+export type SpellCount =
+  | { readonly kind: 'known'; readonly byLevel: readonly number[] }
+  | { readonly kind: 'prepared' };
+
+/**
  * La liste de sorts n'est jamais recopiée : on référence celle d'une classe.
  *
- * Le nombre à choisir n'est pas fixe : un barde connaît quatre sorts au niveau
- * 1 et vingt-deux au niveau 20. Cette spec porte donc la table de la classe et
- * pas le `pick` d'un `BaseSpec` — sans quoi le nombre resterait celui du
- * niveau 1. `pickCount` est le seul chemin qui la lit.
+ * Le nombre à choisir n'est jamais fixe — un barde connaît quatre sorts au
+ * niveau 1 et vingt-deux au niveau 20 — donc cette spec porte sa source et pas
+ * le `pick` d'un `BaseSpec`, qui resterait au niveau 1. `openChoices` la
+ * résout : lui seul connaît les caractéristiques du personnage.
  */
 export interface SpellSpec extends Omit<BaseSpec, 'pick'> {
   readonly kind: 'cantrip' | 'spell';
   readonly listFrom: string;
-  /** Combien on en connaît, par niveau (index 0 = niveau 1). */
-  readonly knownByLevel: readonly number[];
+  readonly count: SpellCount;
 }
 
 /** Options calculées à l'exécution : les compétences déjà acquises. */
@@ -140,38 +147,6 @@ const DEFERRED_KINDS = new Set<ChoiceKind>(['skill', 'language', 'tool', 'expert
 
 export function isDeferredKind(kind: ChoiceKind): boolean {
   return DEFERRED_KINDS.has(kind);
-}
-
-/**
- * Combien de réponses ce créneau attend au niveau où on est. Fixe pour tout le
- * reste ; lu dans la table de la classe pour les sorts et les tours de magie.
- * Zéro ferme le créneau : un rôdeur de niveau 1 ne lance encore rien.
- */
-export function pickCount(spec: ChoiceSpec, level: number): number {
-  switch (spec.kind) {
-    case 'cantrip':
-    case 'spell': {
-      return spec.knownByLevel[clampLevel(level) - 1] ?? 0;
-    }
-    case 'fighting-style': {
-      // Le paladin et le rôdeur ne l'ouvrent qu'au niveau 2 : avant, zéro
-      // referme le créneau, et la purge retire la réponse si on redescend.
-      return clampLevel(level) >= spec.level ? spec.pick : 0;
-    }
-    case 'skill':
-    case 'language':
-    case 'tool':
-    case 'equipment':
-    case 'ancestry':
-    case 'ability':
-    case 'improvement':
-    case 'feat':
-    case 'advancement':
-    case 'subclass':
-    case 'expertise': {
-      return spec.pick;
-    }
-  }
 }
 
 /**

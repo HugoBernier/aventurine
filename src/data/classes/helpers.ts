@@ -95,7 +95,23 @@ export function cantripChoice(
     subject: 'cantrips',
     title: 'Tes tours de magie',
     help,
-    knownByLevel,
+    count: { kind: 'known', byLevel: knownByLevel },
+    listFrom: classId,
+  };
+}
+
+/**
+ * Les sorts qu'un lanceur PRÉPARE : leur nombre se calcule (modificateur +
+ * niveau de lanceur), il ne se lit dans aucune table. En jeu, la liste se
+ * change après un repos long, mais on la garde en général telle quelle.
+ */
+export function preparedSpellChoice(classId: string, help: string): SpellSpec {
+  return {
+    kind: 'spell',
+    subject: 'spells',
+    title: 'Tes sorts préparés',
+    help,
+    count: { kind: 'prepared' },
     listFrom: classId,
   };
 }
@@ -114,7 +130,7 @@ export function spellChoice(
     subject: 'spells',
     title: 'Tes sorts',
     help,
-    knownByLevel,
+    count: { kind: 'known', byLevel: knownByLevel },
     listFrom: classId,
   };
 }

@@ -28,10 +28,12 @@ import type { CharacterDraft } from './draft';
 import type { HitPointRow } from './progression';
 import { abilityTotals, chosenSubclass, openChoices } from './openChoices';
 import {
+  castingLevel,
   clampLevel,
   hitPointRows,
   maxHitPoints,
   pactMagic,
+  preparedSpellCount,
   proficiencyBonus,
   spellSlots,
 } from './progression';
@@ -418,9 +420,6 @@ function spellcastingSheet(
   if (!isPact && slots.length === 0) {
     return null;
   }
-  // Le demi-lanceur prépare sur la moitié de son niveau, arrondie à l'inférieur.
-  const castingLevel =
-    casting.progression === 'half' ? Math.floor(draft.level / 2) : draft.level;
 
   return {
     ability: casting.ability,
@@ -429,8 +428,11 @@ function spellcastingSheet(
     slots,
     pact: isPact ? pactMagic(draft.level) : null,
     preparation: casting.preparation,
-    // Sorts préparés : modificateur + niveau de lanceur, jamais moins de un.
-    preparedCount: isPrepared ? Math.max(1, modifier + castingLevel) : null,
+    // La même règle que le créneau de choix : le nombre annoncé ici et le
+    // nombre de sorts qu'on peut cocher ne peuvent pas diverger.
+    preparedCount: isPrepared
+      ? preparedSpellCount(castingLevel(casting.progression, draft.level), modifier)
+      : null,
     cantripIds: pickedByKind(draft, catalogue, ['cantrip']),
     spellIds: pickedByKind(draft, catalogue, ['spell']),
     alwaysPreparedIds: chosenSubclass(draft, catalogue)?.alwaysPreparedSpells ?? [],

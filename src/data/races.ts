@@ -196,7 +196,7 @@ export const RACE_ENTRIES: readonly Race[] = [
             subject: 'cantrip',
             title: 'Ton tour de magie elfique',
             help: 'Un petit sort appris très tôt, que tu peux relancer autant de fois que tu veux.',
-            knownByLevel: byLevel({ 1: 1 }),
+            count: { kind: 'known', byLevel: byLevel({ 1: 1 }) },
             listFrom: 'magicien',
           },
           {

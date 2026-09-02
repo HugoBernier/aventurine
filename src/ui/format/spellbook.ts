@@ -11,7 +11,8 @@ const ABILITY_NAMES: Record<string, string> = {
 
 const PREPARATION: Record<string, string> = {
   known: 'Tu connais tes sorts par cœur : ils ne changent qu’en montant de niveau.',
-  prepared: 'Tu prépares tes sorts chaque matin : la liste change à chaque repos long.',
+  prepared:
+    'Tu gardes ces sorts prêts. Tu peux en changer après un repos long, mais rien ne t’y oblige.',
   spellbook: 'Ton grimoire garde tout ; tu en prépares une partie chaque matin.',
 };
 
@@ -50,16 +51,6 @@ export function slotsAtLevel(casting: SpellcastingSheet, level: number): number 
     return casting.pact.slotLevel === level ? casting.pact.slots : 0;
   }
   return casting.slots[level - 1] ?? 0;
-}
-
-/**
- * Ce qu'on lit sous un niveau sans sort. Un clerc ne choisit rien à l'avance :
- * la place vide est faite pour être remplie au crayon le matin venu.
- */
-export function formatEmptyLevel(casting: SpellcastingSheet): string {
-  return casting.preparation === 'prepared'
-    ? 'À remplir au crayon, chaque matin.'
-    : 'Rien à ce niveau pour l’instant.';
 }
 
 /** Le cas ordinaire : l'annoncer sur chaque sort n'apprendrait rien. */

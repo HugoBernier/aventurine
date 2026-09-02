@@ -4,7 +4,6 @@ import { useSpellbook } from '../../state/hooks';
 import type { ScreenId } from '../../state/types';
 import {
   formatCastingAbility,
-  formatEmptyLevel,
   formatPreparation,
   formatSlots,
   slotLevels,
@@ -29,15 +28,8 @@ function SpellList({
   onChange,
   emptyLabel,
 }: SpellListProps): ReactNode {
-  // Un clerc ne choisit pas ses sorts : à l'écran, trois niveaux vides ne
-  // répètent qu'une consigne. Sur papier, ce sont les lignes où il écrit ce
-  // qu'il a préparé ce matin.
-  const isPaperOnly = spells.length === 0 && onChange === undefined && slots > 0;
   return (
-    <section
-      className={styles.block}
-      data-print={isPaperOnly ? 'keep-together paper-only' : 'keep-together'}
-    >
+    <section className={styles.block} data-print="keep-together">
       <div className={styles.blockHead}>
         <h3 className={styles.blockTitle}>{title}</h3>
         {slots > 0 && (
@@ -162,7 +154,7 @@ export function SpellbookSection({ onJump }: SpellbookSectionProps): ReactNode {
           spells={book.groups.find((group) => group.level === level)?.spells ?? []}
           slots={slotsAtLevel(casting, level)}
           onChange={jump(book.spellScreenId)}
-          emptyLabel={formatEmptyLevel(casting)}
+          emptyLabel="Rien à ce niveau pour l’instant."
         />
       ))}
       {levels.length === 0 && (

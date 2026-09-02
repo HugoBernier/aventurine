@@ -10,14 +10,6 @@
  * parce qu'elle est fonctionnelle : on cherche ses caractéristiques en haut à
  * gauche et ses compétences en colonne, sur toutes les fiches du monde.
  */
-/* Le seul bloc de ce fichier qui vaut aussi pour l'écran : un élément marqué
-   « paper-only » n'a de sens qu'avec un crayon, il est donc absent de l'écran.
-   Il est ici, avec le reste des marques d'impression, plutôt que dispersé dans
-   les modules CSS des composants qui le posent. */
-[data-print~='paper-only'] {
-  display: none;
-}
-
 @media print {
   @page {
     size: A4 portrait;
@@ -73,11 +65,6 @@
      entier d'un bloc. Un groupe fait quelques sorts, jamais une page. */
   [data-print~='keep-together'] {
     break-inside: avoid;
-  }
-
-  /* Un niveau que l'écran tait : il n'a de sens qu'avec un crayon. */
-  [data-print~='paper-only'] {
-    display: block !important;
   }
 
   h2 {

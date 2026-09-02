@@ -454,3 +454,20 @@ describe('plafond d’une amélioration de niveau', () => {
     expect(option?.unavailable).toEqual({ kind: 'max-ability', max: 20 });
   });
 });
+
+const cleric = (level: number): CharacterDraft => draftWith({ classId: 'clerc', level });
+
+describe('nombre de réponses attendues', () => {
+  it('suit la table de la classe pour les tours de magie', () => {
+    expect(slot(cleric(1), 'class:clerc:cantrips')?.pick).toBe(2);
+    expect(slot(cleric(4), 'class:clerc:cantrips')?.pick).toBe(3);
+  });
+
+  it('borne un niveau venu d’un fichier douteux', () => {
+    expect(slot(cleric(99), 'class:clerc:cantrips')?.pick).toBe(3);
+  });
+
+  it('laisse fixe le nombre des autres créneaux', () => {
+    expect(slot(cleric(9), 'class:clerc:skills')?.pick).toBe(2);
+  });
+});

@@ -353,7 +353,7 @@ const classes: readonly CharacterClass[] = [
         subject: 'cantrips',
         title: 'Tes tours de magie',
         help: 'De petits sorts que tu peux relancer autant de fois que tu veux.',
-        knownByLevel: byLevel({ 1: 2, 4: 3 }),
+        count: { kind: 'known', byLevel: byLevel({ 1: 2, 4: 3 }) },
         listFrom: 'clerc',
       },
     ],

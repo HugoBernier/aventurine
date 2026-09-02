@@ -8,6 +8,7 @@ import {
   equipmentOption,
   fightingStyleChoice,
   item,
+  preparedSpellChoice,
   proficiencies,
   skillChoice,
   spellChoice,
@@ -115,6 +116,10 @@ export const PALADIN: CharacterClass = {
       2,
       PALADIN_STYLES,
       'Une manière de te battre au service de ton serment.',
+    ),
+    preparedSpellChoice(
+      'paladin',
+      'Les sorts que tu gardes prêts. Tu peux en changer après un repos long, mais rien ne t’y oblige : on garde souvent la même liste des séances durant.',
     ),
     equipmentChoice(
       'equipment-1',

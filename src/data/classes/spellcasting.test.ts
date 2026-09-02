@@ -57,10 +57,39 @@ describe('ce qu’on connaît monte avec le niveau', () => {
     expect(spellSlot(character('magicien', 20))).toBe(44);
   });
 
-  it('n’ouvre le choix des sorts qu’aux classes qui en choisissent', () => {
-    // Le clerc prépare depuis toute la liste de sa classe : rien à choisir.
-    expect(spellSlot(character('clerc', 5))).toBeNull();
+  it('donne au clerc ses tours de magie par table', () => {
     expect(cantripSlot(character('clerc', 5))).toBe(4);
+  });
+});
+
+/**
+ * SRD, mot pour mot pour le clerc, le druide et le paladin : « choose a number
+ * of spells equal to your <caractéristique> modifier + your <classe> level ».
+ * Le joueur les choisit une fois et les garde : la liste ne change qu'après un
+ * repos long, et rien ne l'oblige à en changer.
+ */
+describe('les sorts préparés se choisissent, ils ne se laissent pas en blanc', () => {
+  it('en donne modificateur + niveau au clerc', () => {
+    // Sagesse 16 : +3, plus cinq niveaux, donc huit sorts préparés.
+    expect(spellSlot(character('clerc', 5, { sagesse: 16 }))).toBe(8);
+  });
+
+  it('en donne au moins un, même avec une caractéristique faible', () => {
+    expect(spellSlot(character('clerc', 1, { sagesse: 6 }))).toBe(1);
+  });
+
+  it('compte la moitié du niveau pour le paladin', () => {
+    // Charisme 14 : +2, plus deux niveaux de lanceur au niveau 5.
+    expect(spellSlot(character('paladin', 5, { charisme: 14 }))).toBe(4);
+  });
+
+  it('n’ouvre rien au paladin de niveau 1, qui ne lance encore rien', () => {
+    expect(spellSlot(character('paladin', 1, { charisme: 14 }))).toBeNull();
+  });
+
+  it('donne le même nombre que celui annoncé sur la fiche', () => {
+    const draft = character('druide', 7, { sagesse: 18 });
+    expect(spellSlot(draft)).toBe(buildSheet(draft, C).spellcasting?.preparedCount);
   });
 });
 

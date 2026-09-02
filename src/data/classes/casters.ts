@@ -7,6 +7,7 @@ import {
   equipmentChoice,
   equipmentOption,
   item,
+  preparedSpellChoice,
   proficiencies,
   skillChoice,
   spellChoice,
@@ -274,6 +275,10 @@ export const CLERIC: CharacterClass = {
       byLevel({ 1: 3, 4: 4, 10: 5 }),
       'De petits sorts, relançables à volonté.',
     ),
+    preparedSpellChoice(
+      'clerc',
+      'Les sorts que tu gardes prêts. Tu peux en changer après un repos long, mais rien ne t’y oblige : on garde souvent la même liste des séances durant.',
+    ),
     equipmentChoice('equipment-1', 'Ton arme', 'Le clerc frappe peu, mais il frappe.', [
       'masse-clerc',
       'marteau-clerc',
@@ -461,6 +466,10 @@ export const DRUID: CharacterClass = {
       'druide',
       byLevel({ 1: 2, 4: 3, 10: 4 }),
       'De petits sorts, relançables à volonté.',
+    ),
+    preparedSpellChoice(
+      'druide',
+      'Les sorts que tu gardes prêts. Tu peux en changer après un repos long, mais rien ne t’y oblige : on garde souvent la même liste des séances durant.',
     ),
     equipmentChoice('equipment-1', 'Ton arme', 'Le druide reste sobre en acier.', [
       'bouclier-druide',

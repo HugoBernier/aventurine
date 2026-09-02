@@ -1,4 +1,4 @@
-import { MAX_ABILITY, abilityScores } from './abilities';
+import { MAX_ABILITY, abilityModifier, abilityScores } from './abilities';
 import type { AbilityScores } from './abilities';
 import type { Catalogue } from './catalogue';
 import { slotId } from './choice';
@@ -10,8 +10,7 @@ import type {
   ChoiceSource,
   UnavailableReason,
 } from './choice';
-import type { AdvancementMode, ChoiceSpec } from './choiceSpec';
-import { pickCount } from './choiceSpec';
+import type { AdvancementMode, ChoiceSpec, SpellSpec } from './choiceSpec';
 import {
   findAbility,
   findClass,
@@ -25,7 +24,13 @@ import {
 } from './catalogue';
 import type { Advancement, EquipmentOption, Facts, Subclass } from './content';
 import { pickedFor } from './draft';
-import { clampLevel, pactMagic, spellSlots } from './progression';
+import {
+  castingLevel,
+  clampLevel,
+  pactMagic,
+  preparedSpellCount,
+  spellSlots,
+} from './progression';
 import type { CharacterDraft } from './draft';
 
 const NO_FACT = '—';
@@ -116,6 +121,63 @@ function highestSpellLevel(draft: CharacterDraft, catalogue: Catalogue): number 
     return pactMagic(draft.level).slotLevel;
   }
   return spellSlots(casting.progression, draft.level).length;
+}
+
+/**
+ * Combien de sorts ce créneau attend. Le barde lit sa table ; le clerc calcule
+ * son nombre de sorts préparés, qui dépend de sa caractéristique d'incantation
+ * autant que de son niveau. Zéro ferme le créneau : le paladin de niveau 1 ne
+ * prépare encore rien.
+ */
+function spellPickCount(
+  spec: SpellSpec,
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): number {
+  if (spec.count.kind === 'known') {
+    return spec.count.byLevel[clampLevel(draft.level) - 1] ?? 0;
+  }
+  const casting = findClass(catalogue, spec.listFrom)?.spellcasting;
+  if (casting == null || highestSpellLevel(draft, catalogue) === 0) {
+    return 0;
+  }
+  const modifier = abilityModifier(abilityTotals(draft, catalogue)[casting.ability]);
+  return preparedSpellCount(castingLevel(casting.progression, draft.level), modifier);
+}
+
+/**
+ * Combien de réponses ce créneau attend. Fixe partout ailleurs, calculé pour
+ * les sorts et les tours de magie.
+ */
+function pickCount(
+  spec: ChoiceSpec,
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): number {
+  switch (spec.kind) {
+    case 'cantrip':
+    case 'spell': {
+      return spellPickCount(spec, draft, catalogue);
+    }
+    case 'fighting-style': {
+      // Le paladin et le rôdeur ne l'ouvrent qu'au niveau 2 : avant, zéro
+      // referme le créneau, et la purge retire la réponse si on redescend.
+      return clampLevel(draft.level) >= spec.level ? spec.pick : 0;
+    }
+    case 'skill':
+    case 'language':
+    case 'tool':
+    case 'equipment':
+    case 'ancestry':
+    case 'ability':
+    case 'improvement':
+    case 'feat':
+    case 'advancement':
+    case 'subclass':
+    case 'expertise': {
+      return spec.pick;
+    }
+  }
 }
 
 /** La suite d'un palier dépend de la route retenue ; aucune tant qu'elle manque. */
@@ -381,20 +443,25 @@ function buildOptions(
       // plus haut que les emplacements du personnage ouvrent.
       const [from, to] =
         spec.kind === 'cantrip' ? [0, 0] : [1, highestSpellLevel(draft, catalogue)];
-      return spellsForClass(catalogue, spec.listFrom, from, to).map((spell) =>
-        option(
-          spell.id,
-          spell.name,
-          spell.summary,
-          // La liste mélange les niveaux dès que le personnage a plusieurs
-          // rangs d'emplacements : sans ce repère, rien ne dit lequel on
-          // prend. Un tour de magie n'a pas de niveau à annoncer.
-          spec.kind === 'cantrip'
-            ? [spell.castingTime, spell.range, spell.duration]
-            : [String(spell.level), spell.range, spell.duration],
-          null,
-        ),
-      );
+      // Les sorts de la voie sont préparés d'office et ne comptent pas dans le
+      // nombre : les proposer ferait gâcher un choix pour ce qu'on a déjà.
+      const granted = new Set(chosenSubclass(draft, catalogue)?.alwaysPreparedSpells);
+      return spellsForClass(catalogue, spec.listFrom, from, to)
+        .filter((spell) => !granted.has(spell.id))
+        .map((spell) =>
+          option(
+            spell.id,
+            spell.name,
+            spell.summary,
+            // La liste mélange les niveaux dès que le personnage a plusieurs
+            // rangs d'emplacements : sans ce repère, rien ne dit lequel on
+            // prend. Un tour de magie n'a pas de niveau à annoncer.
+            spec.kind === 'cantrip'
+              ? [spell.castingTime, spell.range, spell.duration]
+              : [String(spell.level), spell.range, spell.duration],
+            null,
+          ),
+        );
     }
     case 'equipment': {
       const available = equipmentOptions(draft, catalogue);
@@ -474,7 +541,7 @@ export function openChoices(
     const id = slotId(source, parentId, spec.subject);
     const picked = pickedFor(draft, id);
     const register = registerFor(spec.kind, granted);
-    const pick = pickCount(spec, draft.level);
+    const pick = pickCount(spec, draft, catalogue);
     // Zéro réponse attendue, pas de créneau : le rôdeur ne lance aucun sort
     // avant le niveau 2, et un écran vide n'a rien à lui demander.
     if (pick === 0) {

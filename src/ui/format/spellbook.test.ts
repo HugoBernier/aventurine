@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SpellcastingSheet } from '../../domain/sheet';
-import {
-  formatEmptyLevel,
-  formatSlots,
-  slotLevels,
-  slotsAtLevel,
-  spellFacts,
-} from './spellbook';
+import { formatSlots, slotLevels, slotsAtLevel, spellFacts } from './spellbook';
 
 const pact = (slots: number): SpellcastingSheet => ({
   ability: 'charisme',
@@ -66,20 +60,6 @@ describe('cases d’emplacements', () => {
   it('donne ses cases au niveau du pacte, et à lui seul', () => {
     expect(slotsAtLevel(pact(2), 1)).toBe(2);
     expect(slotsAtLevel(pact(2), 2)).toBe(0);
-  });
-});
-
-describe('un niveau sans sort', () => {
-  it('invite le clerc à noter ce qu’il prépare', () => {
-    expect(formatEmptyLevel(caster([4], 'prepared'))).toBe(
-      'À remplir au crayon, chaque matin.',
-    );
-  });
-
-  it('constate le vide pour un magicien', () => {
-    expect(formatEmptyLevel(caster([4], 'spellbook'))).toBe(
-      'Rien à ce niveau pour l’instant.',
-    );
   });
 });
 

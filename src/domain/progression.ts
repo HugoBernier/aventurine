@@ -1,7 +1,8 @@
 /**
- * Ce que le NIVEAU seul décide : bonus de maîtrise, points de vie, dés de vie
- * et emplacements de sorts. Aucune de ces quatre valeurs ne dépend d'un choix
- * du joueur, elles se calculent toutes depuis le niveau et la classe.
+ * Ce que le NIVEAU décide : bonus de maîtrise, points de vie, dés de vie,
+ * emplacements de sorts et nombre de sorts préparés. Aucune de ces valeurs ne
+ * dépend d'un choix du joueur ; la dernière ajoute au niveau le modificateur
+ * de la caractéristique d'incantation, et rien d'autre.
  */
 
 export const MIN_LEVEL = 1;
@@ -213,4 +214,24 @@ export function pactMagic(level: number): PactMagic {
     slots: PACT_SLOTS[index] ?? 1,
     slotLevel: PACT_SLOT_LEVEL[index] ?? 1,
   };
+}
+
+/**
+ * Le niveau qui compte pour la magie. Le paladin et le rôdeur avancent à
+ * moitié : au niveau 5, ils lancent comme un lanceur de niveau 2.
+ */
+export function castingLevel(progression: CastingProgression, level: number): number {
+  const reached = clampLevel(level);
+  return progression === 'half' ? Math.floor(reached / 2) : reached;
+}
+
+/**
+ * Sorts préparés : modificateur d'incantation + niveau de lanceur, jamais moins
+ * de un. Même formule pour le clerc, le druide, le paladin et le magicien.
+ */
+export function preparedSpellCount(
+  castingLevelReached: number,
+  abilityModifier: number,
+): number {
+  return Math.max(1, abilityModifier + castingLevelReached);
 }
