@@ -196,6 +196,45 @@ describe('un contenu absent du catalogue', () => {
   });
 });
 
+describe('un sort venu d’un pack absent', () => {
+  // Le cas que la règle du seul parent aurait manqué : le créneau appartient
+  // au clerc du SRD, il reste grand ouvert, et c'est l'OPTION qui s'en va.
+  const withPackSpell = draftWith({
+    classId: 'clerc',
+    choices: { 'class:clerc:cantrips': ['lumiere', 'karn-souffle-des-brumes'] },
+  });
+
+  it('dort au lieu d’être effacé', () => {
+    const { draft, removed } = pruneChoices(withPackSpell, C);
+    expect(draft.choices['class:clerc:cantrips']).toEqual([
+      'lumiere',
+      'karn-souffle-des-brumes',
+    ]);
+    expect(removed).toEqual([]);
+  });
+
+  it('occupe sa place : le créneau n’en rouvre pas une de plus', () => {
+    // Sans ça, le joueur choisirait un troisième tour de magie, et le retour
+    // du pack en ferait sauter un.
+    const { draft } = pruneChoices(withPackSpell, C);
+    expect(draft.choices['class:clerc:cantrips']).toHaveLength(2);
+  });
+
+  it('n’empêche pas de retirer un sort que le catalogue connaît encore', () => {
+    // « flamme-sacree » est un tour de magie du clerc : le mettre là où le
+    // créneau n'en veut plus reste un retrait légitime.
+    const tooMany = draftWith({
+      classId: 'clerc',
+      choices: {
+        'class:clerc:cantrips': ['lumiere', 'flamme-sacree', 'karn-souffle-des-brumes'],
+      },
+    });
+    const { draft, removed } = pruneChoices(tooMany, C);
+    expect(draft.choices['class:clerc:cantrips']).toEqual(['lumiere', 'flamme-sacree']);
+    expect(removed.map((entry) => entry.reason)).toEqual(['too-many']);
+  });
+});
+
 describe('le pack qui revient', () => {
   it('rend la fiche exactement telle qu’elle était', () => {
     const asPackClass = draftWith({

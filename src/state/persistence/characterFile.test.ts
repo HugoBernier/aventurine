@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { emptyDraft } from '../../domain/draft';
-import {
-  APP_MAJOR_VERSION,
-  characterFileName,
-  characterFileText,
-  readCharacterFile,
-} from './characterFile';
+import { APP_MAJOR_VERSION } from './appVersion';
+import { characterFileName, characterFileText, readCharacterFile } from './characterFile';
 
 const alric = {
   ...emptyDraft(),
@@ -23,7 +19,9 @@ describe('le fichier d’un personnage', () => {
   });
 
   it('s’écrit indenté, pour rester lisible à l’œil', () => {
-    expect(characterFileText(alric)).toContain('\n  "aventurine": 1');
+    expect(characterFileText(alric)).toContain(
+      `\n  "aventurine": ${String(APP_MAJOR_VERSION)}`,
+    );
   });
 
   it('refuse un fichier écrit par une Aventurine plus récente', () => {
@@ -71,14 +69,5 @@ describe('le nom du fichier', () => {
 
   it('a un nom de repli quand le personnage n’en a pas', () => {
     expect(characterFileName('')).toBe('personnage-sans-nom.json');
-  });
-});
-
-describe('la version d’Aventurine', () => {
-  it('suit le majeur de package.json', async () => {
-    // Deux endroits qui doivent dire la même chose : autant qu'un test le
-    // remarque avant qu'un fichier exporté ne mente sur son origine.
-    const pkg: { readonly version: string } = await import('../../../package.json');
-    expect(String(APP_MAJOR_VERSION)).toBe(pkg.version.split('.', 1)[0]);
   });
 });

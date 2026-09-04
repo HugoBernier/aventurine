@@ -1,7 +1,7 @@
 import { findBackground, findClass, findRace } from '../domain/catalogue';
 import type { Catalogue } from '../domain/catalogue';
 import { parseSlotId } from '../domain/choice';
-import type { ChoiceSlotId } from '../domain/choice';
+import type { ChoiceSlot, ChoiceSlotId } from '../domain/choice';
 import type { CharacterDraft } from '../domain/draft';
 import { openChoices } from '../domain/openChoices';
 
@@ -50,6 +50,31 @@ function isParentKnown(slotId: ChoiceSlotId, catalogue: Catalogue): boolean {
   }
 }
 
+/**
+ * L'option nomme-t-elle encore un contenu que le catalogue connaît ?
+ *
+ * C'est la troisième ligne de la règle : un créneau peut rester grand ouvert
+ * pendant que l'option, elle, s'en va — un sort venu d'un pack se choisit dans
+ * le créneau du magicien du SRD. Sans cette question, désinstaller un pack
+ * effacerait la réponse au lieu de l'endormir.
+ *
+ * Les autres genres d'options sont énumérés dans le contenu SRD lui-même
+ * (`spec.from`) : leur liste ne perd rien quand un pack s'en va, donc une
+ * absence y est toujours un retrait légitime.
+ */
+function isOptionKnown(
+  slot: ChoiceSlot,
+  optionId: string,
+  catalogue: Catalogue,
+): boolean {
+  if (slot.options.some((option) => option.id === optionId)) {
+    return true;
+  }
+  return slot.kind === 'spell' || slot.kind === 'cantrip'
+    ? catalogue.spells.some((spell) => spell.id === optionId)
+    : true;
+}
+
 function prunePass(draft: CharacterDraft, catalogue: Catalogue): PruneResult {
   const slots = new Map(openChoices(draft, catalogue).map((slot) => [slot.id, slot]));
   const kept: Record<ChoiceSlotId, readonly string[]> = {};
@@ -68,12 +93,14 @@ function prunePass(draft: CharacterDraft, catalogue: Catalogue): PruneResult {
       removed.push({ slotId, optionIds: picked, reason: 'slot-closed' });
       continue;
     }
-    const survivors = picked.filter((optionId) =>
+    // On garde ce que le créneau offre encore, ET ce qu'il n'offre plus faute
+    // du contenu qui le portait : la seconde catégorie dort, elle ne meurt pas.
+    const isKept = (optionId: string): boolean =>
       slot.options.some(
         (option) => option.id === optionId && option.unavailable === null,
-      ),
-    );
-    const withdrawn = picked.filter((optionId) => !survivors.includes(optionId));
+      ) || !isOptionKnown(slot, optionId, catalogue);
+    const survivors = picked.filter((optionId) => isKept(optionId));
+    const withdrawn = picked.filter((optionId) => !isKept(optionId));
     if (withdrawn.length > 0) {
       removed.push({ slotId, optionIds: withdrawn, reason: 'option-withdrawn' });
     }

@@ -1,15 +1,7 @@
 import { parseDraft } from '../../domain/parseDraft';
 import type { DraftWarning } from '../../domain/parseDraft';
 import type { CharacterDraft } from '../../domain/draft';
-
-/**
- * La version d'Aventurine, grosse et déclarée à la main : elle ne monte que
- * quand le projet change d'époque, pas à chaque correction. Elle doit suivre le
- * majeur de `package.json`, ce qu'un test vérifie.
- *
- * 1 : le créateur de personnage. 2 : plus le créateur de contenu.
- */
-export const APP_MAJOR_VERSION = 1;
+import { APP_MAJOR_VERSION } from './appVersion';
 
 export type CharacterFileResult =
   | {
