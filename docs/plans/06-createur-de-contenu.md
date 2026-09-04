@@ -1,7 +1,8 @@
 # 06 — Créateur de contenu
 
-> Note de réflexion, pas un plan d'exécution. Rien n'est écrit tant que les
-> décisions du §12 ne sont pas tranchées.
+> Note de conception. **Toutes les décisions sont prises** (§12 et §13) ; rien
+> n'est encore écrit. Le premier travail à sortir est la règle de purge du §7,
+> qui ne dépend d'aucune autre et protège déjà l'existant.
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
 fichier JSON qu'on garde sur son ordinateur, qu'on rouvre pour modifier, et
@@ -465,8 +466,7 @@ Les trois que la décision 3 fait apparaître, détaillées au §7 :
 Aucune des trois ne bloque le début du travail : elles se tranchent en écrivant
 la règle de purge, qui est de toute façon la première chose à faire.
 
-Au §13, cinq des neuf points suivants sont tranchés à leur tour ; quatre restent
-ouverts, aucun bloquant.
+Les neuf points du §13 sont tranchés à leur tour.
 
 ---
 
@@ -530,27 +530,50 @@ pack — c'est précisément ce que le pack-supplément permet.
 `barde`, un sort qui nomme `magicien`, ce sont des références **vers le SRD**,
 toujours présent. Aucune dépendance entre packs n'y est créée.
 
-### 4. Un pack peut-il **masquer** du contenu du SRD ?
+### 4. Un pack peut-il **masquer** du contenu du SRD ? — Non, et pas seulement en v1
 
-« Pas de tieffelins dans ma campagne. » Utile, simple à implémenter (une liste
-d'identifiants cachés), et sans risque pour les personnages existants si un
-contenu masqué reste lisible sur une fiche déjà faite.
+**Tranché : non.** Qui ne veut pas d'un tieffelin dans sa campagne ne le
+choisit pas. Le seul cas que le masquage servirait vraiment, c'est un meneur qui
+veut l'**imposer** à ses joueurs — et la gestion de campagne est hors périmètre
+par la charte, sur toute la ligne : pas de partie, pas de rôles, pas de meneur.
+Ajouter un demi-mécanisme d'autorité dans un outil qui n'en a aucun serait
+incohérent.
 
-**Recommandation : pas en v1**, parce qu'ajouter passe avant retirer. Le coût de
-l'ajouter plus tard est nul : un champ de plus qu'un ancien lecteur ignore.
+Ça ferme aussi une porte discrète : un pack qui masque est un pack qui **retire**
+quelque chose au joueur, donc qui peut casser un personnage existant fait avec
+du contenu du SRD. Tout le §7 repose sur l'inverse — un pack ajoute, et son
+absence ne coûte que lui.
 
-### 5. Quel poids maximum, par pack et au total ?
+### 5. Quel poids maximum pour un pack ?
 
-`localStorage` tient environ 5 Mio, **partagés avec les personnages**. Un pack
-bavard, trois campagnes installées, et c'est la sauvegarde des personnages qui
-échoue. S'y ajoute la décision 6 : un personnage exporté emporte ses packs, donc
-son fichier grossit d'autant.
+De quoi il s'agit : jusqu'où un fichier importé a le droit d'aller, et ce qui
+se passe au-delà. Trois choses en dépendent — la place dans `localStorage`
+(environ 5 Mio pour tout le site, personnages compris), le temps d'analyse d'un
+gros fichier sur un téléphone, et la taille d'un personnage exporté, qui emporte
+désormais ses packs.
 
-**Recommandation : 512 kio par pack, 2 Mio pour l'ensemble des packs**, vérifiés
-à l'import avec un refus clair. L'ordre de grandeur : une classe pèse quelques
-kio, tout le SRD français du projet tient dans 200 kio de sources. Les packs
-vivent sous leur propre clé, et leur échec de quota ne touche jamais les
-personnages.
+**Mesuré sur le contenu du projet, sérialisé en JSON :**
+
+| | Poids |
+| --- | --- |
+| **Tout le SRD** — 12 classes, 9 races, 320 sorts, historiques | **345 kio** |
+| Les 12 classes | 148 kio, soit ~12 kio la classe |
+| Les 320 sorts | 131 kio, soit ~0,4 kio le sort |
+| Les 9 races | 19 kio, soit ~3 kio la race |
+
+Un supplément de campagne réaliste — trois peuples, deux historiques, une classe
+et quinze sorts — pèse donc **une trentaine de kio**. Même dix packs de la taille
+du SRD entier tiendraient dans le quota.
+
+**Ce qui change la décision : le plafond ne sert pas à border les auteurs, il
+sert à arrêter l'absurde.** Un fichier de 50 Mio collé dans l'importeur fige le
+téléphone à l'analyse, avant même qu'on parle de stockage.
+
+**Tranché : un seul nombre, 1 Mio par pack** — trois fois tout le SRD — vérifié
+sur le **texte brut, avant d'analyser quoi que ce soit**. Pas de plafond global :
+c'est le travail du navigateur, et l'application sait déjà dire « le stockage
+est plein » sans rien perdre. Les packs gardent leur propre clé, pour qu'un
+échec d'écriture de leur côté ne touche jamais les personnages.
 
 ### 6. Où signale-t-on qu'un contenu n'est pas du SRD ?
 
@@ -588,11 +611,25 @@ existant : « Contient du contenu maison : Les Brumes de Karn v3 ».
 
 ### 7. Que porte un pack en plus de son nom ?
 
-Pour partager, `author` et `description` coûtent deux champs et évitent
-« pack-final-v2-vraiment.json ».
+De quoi il s'agit : ce qui est écrit dans le fichier **à côté** du contenu, et
+qui ne sert qu'à savoir ce qu'on tient. Aujourd'hui le pack porte quatre champs
+techniques — `id`, `name`, `version`, `updatedAt`. La question est de savoir
+s'il en faut d'autres.
 
-**Recommandation : les deux, facultatifs.** Pas de champ `licence` : personne ne
-le remplit sérieusement, et il donnerait un faux sentiment de couverture.
+Le cas concret : tu retrouves `pack.json` dans tes téléchargements six mois plus
+tard, ou quelqu'un t'envoie le sien. Le nom seul (« Karn ») ne dit ni ce qu'il y
+a dedans, ni qui l'a écrit.
+
+**Tranché : deux champs facultatifs, `description` et `author`.** Ils ne
+dorment pas dans le fichier : l'écran de gestion et la fenêtre de confirmation
+d'import les affichent — « Les Brumes de Karn, par Hugo. Trois peuples et une
+classe pour une campagne d'horreur gothique. » Sans eux, cette fenêtre ne peut
+montrer qu'un décompte.
+
+**Pas de champ `licence`.** Personne ne le remplit sérieusement, et son
+existence donnerait un faux sentiment de couverture juridique là où la charte
+est déjà claire : ce qu'un joueur écrit le regarde, l'application ne distribue
+rien.
 
 ### 8. Dans quel ordre s'affichent races et classes quand des packs en ajoutent ?
 
@@ -611,8 +648,13 @@ liste sous les doigts d'un joueur qui vient d'installer « Ashkar ».
 
 ### 9. Que fait-on d'un fichier écrit par une autre version du format ?
 
-**Recommandation :** refuser en avant, migrer en arrière. Un fichier
-`aventurine: 2` sur une application qui lit la 1 est refusé avec une phrase
-honnête (« ce pack vient d'une version plus récente d'Aventurine ») ; un fichier
-`aventurine: 1` sur une application plus récente est converti à la lecture. Le
-code de conversion vit à un seul endroit, avec un test par version.
+**Tranché, et au plus simple : on écrit le refus, pas la migration.** Un fichier
+`aventurine: 2` sur une application qui lit la 1 est refusé d'une phrase
+honnête (« ce pack vient d'une version plus récente d'Aventurine »). Un fichier
+d'une version *antérieure*, il n'en existe aucun : la 1 est la première. Écrire
+un convertisseur aujourd'hui, ce serait du code pour un cas qui n'existe pas,
+exactement ce que la charte appelle un « hook au cas où ».
+
+Le jour où la 2 arrive, la conversion s'écrit à ce moment-là, à un seul endroit,
+avec son test. Le champ `aventurine: 1` suffit à rendre ce jour-là possible :
+c'est lui, et lui seul, qu'il faut poser dès maintenant.
