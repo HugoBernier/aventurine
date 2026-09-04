@@ -62,14 +62,10 @@ export interface SummaryScreenProps {
    * resterait affiché par-dessus l'écran d'arrivée : la navigation aurait
    * lieu, mais le joueur ne verrait rien changer.
    */
-  readonly onNavigate?: (() => void) | undefined;
   readonly onOpenLibrary?: (() => void) | undefined;
 }
 
-export function SummaryScreen({
-  onNavigate,
-  onOpenLibrary,
-}: SummaryScreenProps): ReactNode {
+export function SummaryScreen({ onOpenLibrary }: SummaryScreenProps): ReactNode {
   const catalogue = useCatalogue();
   const draft = useDraft();
   const sheet = useCharacterSheet();
@@ -139,7 +135,6 @@ export function SummaryScreen({
                       return;
                     }
                     goTo(entry.screenId);
-                    onNavigate?.();
                   }}
                 >
                   <span>{formatMissing(entry)}</span>
@@ -211,7 +206,6 @@ export function SummaryScreen({
               className={styles.jump}
               onClick={() => {
                 goTo(target);
-                onNavigate?.();
               }}
             >
               <span>
@@ -343,7 +337,6 @@ export function SummaryScreen({
       <SpellbookSection
         onJump={(screenId) => {
           goTo(screenId);
-          onNavigate?.();
         }}
       />
 

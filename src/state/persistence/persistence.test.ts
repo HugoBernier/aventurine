@@ -18,6 +18,7 @@ const session: PersistedSession = {
     },
   ],
   currentId: 'perso-1',
+  view: 'wizard',
 };
 
 describe('stockage en mémoire', () => {
@@ -153,5 +154,26 @@ describe('reprise d’une sauvegarde de la version 1', () => {
     // Relue une fois, jamais deux : sinon un « nouveau personnage » ferait
     // réapparaître l'ancien au rechargement suivant.
     expect(globalThis.localStorage.getItem(LEGACY_KEY)).toBeNull();
+  });
+});
+
+describe('la vue rouverte', () => {
+  it('revient sur la fiche si c’est là qu’on était', () => {
+    const onSheet: PersistedSession = { ...session, view: 'summary' };
+    expect(parseSession(throughJson(onSheet))?.view).toBe('summary');
+  });
+
+  it('ramène à l’assistant quand la sauvegarde ne dit rien', () => {
+    // Les sauvegardes d’avant cette vue n’ont pas le champ.
+    const sansVue = Object.fromEntries(
+      Object.entries(session).filter(([clef]) => clef !== 'view'),
+    );
+    expect(parseSession(throughJson(sansVue))?.view).toBe('wizard');
+  });
+
+  it('ramène à l’assistant devant une valeur inconnue', () => {
+    expect(parseSession(throughJson({ ...session, view: 'ailleurs' }))?.view).toBe(
+      'wizard',
+    );
   });
 });

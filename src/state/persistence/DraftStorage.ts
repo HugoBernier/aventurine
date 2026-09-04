@@ -1,5 +1,5 @@
 import type { CharacterDraft } from '../../domain/draft';
-import type { ScreenId } from '../types';
+import type { ScreenId, WizardView } from '../types';
 
 export const STORAGE_KEY = 'aventurine:library:v2';
 /** La v1 ne gardait qu'un personnage. On la relit une fois, puis on l'oublie. */
@@ -17,6 +17,8 @@ export interface PersistedSession {
   readonly savedAt: string;
   readonly characters: readonly PersistedCharacter[];
   readonly currentId: string;
+  /** Ce qu'on regardait : recharger doit ramener au même endroit. */
+  readonly view: WizardView;
 }
 
 export type LoadResult =

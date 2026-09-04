@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   useCharacterSheet,
   useChoiceSlot,
   useNotices,
   useStorageStatus,
+  useView,
   useWizard,
 } from '../state/hooks';
 import type { Screen, StepId } from '../state/types';
@@ -123,12 +123,12 @@ export function Wizard(): ReactNode {
   const { notices, dismiss } = useNotices();
   const storage = useStorageStatus();
   const sheet = useCharacterSheet();
-  // Le récapitulatif n'est pas une étape : il s'ouvre par « Ma fiche » et se
-  // referme. C'est de l'état d'affichage, il reste donc dans l'interface.
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  // Ni la fiche ni la liste ne sont des étapes, mais recharger le téléphone
+  // doit rouvrir celle qu'on regardait : la vue vit donc dans l'état, avec le
+  // reste de ce qu'on sauvegarde.
+  const { view, setView } = useView();
 
-  if (isLibraryOpen) {
+  if (view === 'library') {
     return (
       <AppShell
         screenKey="library"
@@ -142,11 +142,10 @@ export function Wizard(): ReactNode {
             screenIndex={1}
             screenCount={1}
             onBack={() => {
-              setIsLibraryOpen(false);
+              setView('wizard');
             }}
             onOpenSummary={() => {
-              setIsLibraryOpen(false);
-              setIsSummaryOpen(true);
+              setView('summary');
             }}
           />
         }
@@ -155,22 +154,18 @@ export function Wizard(): ReactNode {
             primary={{
               label: 'Revenir à l’assistant',
               onClick: () => {
-                setIsLibraryOpen(false);
+                setView('wizard');
               },
             }}
           />
         }
       >
-        <LibraryScreen
-          onLeave={() => {
-            setIsLibraryOpen(false);
-          }}
-        />
+        <LibraryScreen />
       </AppShell>
     );
   }
 
-  if (isSummaryOpen) {
+  if (view === 'summary') {
     return (
       <AppShell
         screenKey="summary"
@@ -183,10 +178,10 @@ export function Wizard(): ReactNode {
             screenIndex={progress?.screenCount ?? 1}
             screenCount={progress?.screenCount ?? 1}
             onBack={() => {
-              setIsSummaryOpen(false);
+              setView('wizard');
             }}
             onOpenSummary={() => {
-              setIsSummaryOpen(false);
+              setView('wizard');
             }}
           />
         }
@@ -197,19 +192,15 @@ export function Wizard(): ReactNode {
             primary={{
               label: 'Revenir à l’assistant',
               onClick: () => {
-                setIsSummaryOpen(false);
+                setView('wizard');
               },
             }}
           />
         }
       >
         <SummaryScreen
-          onNavigate={() => {
-            setIsSummaryOpen(false);
-          }}
           onOpenLibrary={() => {
-            setIsSummaryOpen(false);
-            setIsLibraryOpen(true);
+            setView('library');
           }}
         />
       </AppShell>
@@ -235,7 +226,7 @@ export function Wizard(): ReactNode {
           screenCount={progress?.screenCount ?? 1}
           onBack={canGoBack ? goBack : undefined}
           onOpenSummary={() => {
-            setIsSummaryOpen(true);
+            setView('summary');
           }}
         />
       }
@@ -247,7 +238,7 @@ export function Wizard(): ReactNode {
             onClick: canGoNext
               ? goNext
               : () => {
-                  setIsSummaryOpen(true);
+                  setView('summary');
                 },
           }}
           effect={formatSheetSummary(sheet)}

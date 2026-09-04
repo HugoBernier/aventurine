@@ -1,7 +1,7 @@
 import { parseDraft } from '../../domain/parseDraft';
 import { SCHEMA_VERSION } from './DraftStorage';
 import type { PersistedCharacter, PersistedSession } from './DraftStorage';
-import type { ScreenId } from '../types';
+import type { ScreenId, WizardView } from '../types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -13,6 +13,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function asScreenId(value: unknown): ScreenId {
   return typeof value === 'string' ? value : 'race';
+}
+
+/** Une sauvegarde d'avant cette vue, ou trafiquée, ramène à l'assistant. */
+function asView(value: unknown): WizardView {
+  return value === 'summary' || value === 'library' ? value : 'wizard';
 }
 
 function parseCharacter(value: unknown, fallbackId: string): PersistedCharacter | null {
@@ -52,6 +57,7 @@ export function parseSession(value: unknown): PersistedSession | null {
     savedAt: typeof value.savedAt === 'string' ? value.savedAt : '',
     characters,
     currentId: current,
+    view: asView(value.view),
   };
 }
 
@@ -78,5 +84,6 @@ export function parseLegacySession(value: unknown): PersistedSession | null {
       },
     ],
     currentId: 'perso-1',
+    view: 'wizard',
   };
 }

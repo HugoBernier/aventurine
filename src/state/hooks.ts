@@ -27,7 +27,14 @@ import { WizardDispatchContext, WizardStateContext } from './WizardProvider';
 import type { WizardContextValue } from './WizardProvider';
 import { buildFlow, progressOf, screenForField, screenForSlot } from './flow';
 import type { Progress } from './flow';
-import type { Notice, Screen, ScreenId, StorageStatus, WizardAction } from './types';
+import type {
+  Notice,
+  Screen,
+  ScreenId,
+  StorageStatus,
+  WizardAction,
+  WizardView,
+} from './types';
 
 function useWizardContext(): WizardContextValue {
   const value = use(WizardStateContext);
@@ -244,6 +251,28 @@ export function useNotices(): NoticesView {
 
 export function useStorageStatus(): StorageStatus {
   return useWizardContext().state.storage;
+}
+
+export interface ViewState {
+  readonly view: WizardView;
+  readonly setView: (view: WizardView) => void;
+}
+
+/**
+ * Ce qu'on regarde. Dans l'état et non dans le composant, parce qu'un
+ * rechargement doit rouvrir la fiche si c'est là qu'on avait laissé le
+ * téléphone : sur mobile, l'onglet est rechargé sans prévenir.
+ */
+export function useView(): ViewState {
+  const { state } = useWizardContext();
+  const dispatch = useWizardDispatch();
+  const setView = useCallback(
+    (view: WizardView) => {
+      dispatch({ type: 'SET_VIEW', view });
+    },
+    [dispatch],
+  );
+  return { view: state.view, setView };
 }
 
 export interface DraftTextField {

@@ -41,6 +41,7 @@ function restore(storage: DraftStorage, catalogue: Catalogue): WizardState {
     ...initialState(current.draft, current.id),
     currentScreenId: isKnown ? current.currentScreenId : (flow[0]?.id ?? 'race'),
     others: characters.filter((entry) => entry.id !== current.id),
+    view: result.session.view,
   };
 }
 
@@ -64,7 +65,14 @@ export function WizardProvider({
     restore(store, catalogue),
   );
 
-  const { draft, currentScreenId, currentId, others, storage: storageStatus } = state;
+  const {
+    draft,
+    currentScreenId,
+    currentId,
+    others,
+    view,
+    storage: storageStatus,
+  } = state;
   // L'état du stockage suffit à savoir qu'il ne sert à rien de réessayer :
   // une ref de plus serait une seconde source de vérité.
   const hasStorageFailed = storageStatus === 'quota' || storageStatus === 'memory';
@@ -79,6 +87,7 @@ export function WizardProvider({
         savedAt: new Date().toISOString(),
         characters: [...others, { id: currentId, draft, currentScreenId }],
         currentId,
+        view,
       });
       if (result.kind !== 'ok') {
         // On cesse d'insister : réessayer à chaque frappe consommerait du
@@ -98,7 +107,7 @@ export function WizardProvider({
       globalThis.clearTimeout(timer);
       globalThis.removeEventListener('pagehide', flush);
     };
-  }, [draft, currentScreenId, currentId, others, store, hasStorageFailed]);
+  }, [draft, currentScreenId, currentId, others, view, store, hasStorageFailed]);
 
   const value = useMemo<WizardContextValue>(
     () => ({ state, catalogue }),

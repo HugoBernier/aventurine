@@ -4,17 +4,12 @@ import { useLibrary } from '../../state/hooks';
 import { Explainer } from '../components/Explainer';
 import styles from './LibraryScreen.module.css';
 
-export interface LibraryScreenProps {
-  /** Refermer la liste après avoir agi : on revient à l'assistant. */
-  readonly onLeave: () => void;
-}
-
 /**
  * La liste des personnages rangés. Supprimer demande confirmation sur place
  * plutôt que dans une fenêtre : sur un téléphone, une boîte de dialogue native
  * se rate au pouce, et rien ici ne se récupère après coup.
  */
-export function LibraryScreen({ onLeave }: LibraryScreenProps): ReactNode {
+export function LibraryScreen(): ReactNode {
   const { characters, create, switchTo, remove } = useLibrary();
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -33,10 +28,9 @@ export function LibraryScreen({ onLeave }: LibraryScreenProps): ReactNode {
                 type="button"
                 className={styles.pick}
                 onClick={() => {
-                  if (!entry.isCurrent) {
-                    switchTo(entry.id);
-                  }
-                  onLeave();
+                  // Changer de personnage referme la liste, y compris
+                  // quand on touche celui sur lequel on travaille déjà.
+                  switchTo(entry.id);
                 }}
               >
                 <span className={styles.name}>
@@ -91,7 +85,6 @@ export function LibraryScreen({ onLeave }: LibraryScreenProps): ReactNode {
         className={styles.create}
         onClick={() => {
           create();
-          onLeave();
         }}
       >
         + Nouveau personnage

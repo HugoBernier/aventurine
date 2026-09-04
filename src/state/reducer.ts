@@ -44,6 +44,7 @@ export function initialState(
     storage: 'ok',
     currentId: id,
     others: [],
+    view: 'wizard',
   };
 }
 
@@ -102,7 +103,9 @@ function withNotices(
  * explication du saut : `commit` le pose après coup.
  */
 function movedTo(state: WizardState, screenId: ScreenId): WizardState {
-  return { ...state, currentScreenId: screenId, notices: [] };
+  // Aller à un écran, c'est revenir à l'assistant : les raccourcis de la fiche
+  // sautent vers un choix, et refermer la fiche n'a pas à être demandé à part.
+  return { ...state, currentScreenId: screenId, notices: [], view: 'wizard' };
 }
 
 /**
@@ -313,6 +316,27 @@ function withDraft(state: WizardState, draft: CharacterDraft): WizardState {
   return { ...state, draft };
 }
 
+/**
+ * Reprendre un autre personnage : le courant rejoint la bibliothèque et on
+ * repart où il en était. Toucher celui sur lequel on travaille déjà ne change
+ * rien d'autre que la vue : c'est la façon de refermer la liste.
+ */
+function switchedTo(state: WizardState, id: string): WizardState {
+  if (id === state.currentId) {
+    return { ...state, view: 'wizard' };
+  }
+  const target = state.others.find((entry) => entry.id === id);
+  if (target === undefined) {
+    return state;
+  }
+  return {
+    ...initialState(target.draft, target.id),
+    currentScreenId: target.currentScreenId,
+    storage: state.storage,
+    others: [...state.others.filter((entry) => entry.id !== id), packed(state)],
+  };
+}
+
 export function createWizardReducer(
   catalogue: Catalogue,
 ): (state: WizardState, action: WizardAction) => WizardState {
@@ -338,19 +362,7 @@ export function createWizardReducer(
         };
       }
       case 'SWITCH_CHARACTER': {
-        const target = state.others.find((entry) => entry.id === action.id);
-        if (target === undefined || action.id === state.currentId) {
-          return state;
-        }
-        return {
-          ...initialState(target.draft, target.id),
-          currentScreenId: target.currentScreenId,
-          storage: state.storage,
-          others: [
-            ...state.others.filter((entry) => entry.id !== action.id),
-            packed(state),
-          ],
-        };
+        return switchedTo(state, action.id);
       }
       case 'DELETE_CHARACTER': {
         if (action.id !== state.currentId) {
@@ -443,6 +455,9 @@ export function createWizardReducer(
       }
       case 'RESET': {
         return { ...initialState(), storage: state.storage };
+      }
+      case 'SET_VIEW': {
+        return { ...state, view: action.view };
       }
       case 'SET_STORAGE_STATUS': {
         return { ...state, storage: action.status };

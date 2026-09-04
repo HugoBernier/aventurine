@@ -79,6 +79,13 @@ export interface Notice {
 
 export type StorageStatus = 'ok' | 'memory' | 'quota' | 'unavailable';
 
+/**
+ * Ce qu'on regarde : l'assistant, la fiche, ou la liste des personnages. La
+ * fiche et la liste ne sont pas des étapes, mais un rechargement doit ramener
+ * là où on était : elles font donc partie de l'état sauvegardé.
+ */
+export type WizardView = 'wizard' | 'summary' | 'library';
+
 export interface WizardState {
   readonly draft: CharacterDraft;
   /** Un identifiant, jamais un indice : le parcours change de longueur. */
@@ -89,6 +96,7 @@ export interface WizardState {
   readonly currentId: string;
   /** Les AUTRES personnages rangés. Le courant vit dans `draft`. */
   readonly others: readonly PersistedCharacter[];
+  readonly view: WizardView;
 }
 
 export type WizardAction =
@@ -130,4 +138,5 @@ export type WizardAction =
   | { readonly type: 'DISMISS_NOTICE'; readonly noticeId: string }
   | { readonly type: 'REPLACE_DRAFT'; readonly draft: CharacterDraft }
   | { readonly type: 'RESET' }
+  | { readonly type: 'SET_VIEW'; readonly view: WizardView }
   | { readonly type: 'SET_STORAGE_STATUS'; readonly status: StorageStatus };
