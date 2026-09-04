@@ -46,17 +46,16 @@ collision, et il a une **vie** — des versions, des mises à jour, des retraits
 Un pack, un fichier. Un pack n'est **pas** une entrée : c'est un **supplément**,
 qui porte autant de races, de classes, d'historiques et de sorts qu'on veut. Une
 campagne qui apporte trois peuples, deux historiques et une poignée de sorts,
-c'est un fichier, un nom, une version — et on l'installe ou on le retire d'un
+c'est un fichier, un nom, une date — et on l'installe ou on le retire d'un
 bloc. C'est aussi ce qui rend le partage praticable : on envoie « Les Brumes de
 Karn », pas onze fichiers.
 
 ```json
 {
-  "aventurine": 1,
+  "aventurine": 2,
   "pack": {
     "id": "karn",
     "name": "Les Brumes de Karn",
-    "version": 3,
     "updatedAt": "2026-09-04T10:12:00.000Z"
   },
   "races": [],
@@ -99,23 +98,62 @@ préfixe du pack ; toute référence pointe soit le SRD, soit le même pack.
 
 ## 3. Les versions — la question posée
 
-Il en faut **deux**, et elles ne servent pas à la même chose.
+Deux horloges seulement, et surtout pas trois.
 
 | | Ce que c'est | Ce que ça permet |
 | --- | --- | --- |
-| `aventurine: 1` | La version du **format** | Refuser proprement un fichier d'une version qu'on ne sait pas lire, plus tard migrer |
-| `pack.version` | La version du **contenu**, entier monté à chaque export | Savoir quel fichier est le plus récent, et le dire : « tu importes la v3, la v5 est déjà installée » |
+| `aventurine: 2` | La **version d'Aventurine** qui a écrit le fichier, grosse et déclarée à la main | Refuser proprement un fichier venu d'une version plus récente que la sienne |
+| `pack.updatedAt` | **La date d'export**, et rien d'autre | Dire lequel est lequel : « Les Brumes de Karn, par Hugo — version du 4 septembre 2026 » |
 
-`updatedAt` est un confort d'affichage, pas une clé de comparaison : l'horloge
-d'un téléphone se règle à la main.
+**Pas de numéro de version du pack.** Un entier incrémenté à chaque export
+paraît plus rigoureux qu'une date ; il ne l'est pas. Les deux se cassent
+exactement dans le même cas — on édite le pack sur deux appareils, chacun
+incrémente depuis sa copie, et on obtient deux « v4 » différentes. Sauf que la
+date, quand elle se casse, dit encore quelque chose (« 4 septembre » contre
+« 12 mars ») là où deux « v4 » n'apprennent rien. Elle s'affiche telle quelle,
+sans qu'il faille traduire un compteur abstrait. Et c'est un champ au lieu de
+deux.
+
+Reste le défaut connu de la date : l'horloge d'un téléphone se règle à la main.
+Il est neutralisé par la règle d'usage — **la date se montre, elle ne décide
+jamais**. En cas de conflit à l'import, c'est le pack installé qui l'emporte par
+défaut et le joueur qui tranche, quelles que soient les dates. Une date fausse
+informe donc mal ; elle ne peut ni bloquer, ni écraser.
+
+### Le premier nombre est la version d'Aventurine, pas un « format »
+
+`aventurine: 2` se lit « écrit par Aventurine 2 ». Une **grosse version
+déclarée à la main**, pas un compteur de publication : elle ne monte que quand
+le projet change d'époque. **v1**, c'est le créateur de personnage, aujourd'hui
+terminé. **v2**, c'est lui plus le créateur de contenu, races et classes écrites
+en texte.
+
+Mon objection initiale visait un numéro qui monte à chaque correction de CSS :
+le refus « ce pack vient d'une version plus récente » se déclencherait alors sur
+des fichiers parfaitement lisibles. Une version grossière l'écarte — elle ne
+bouge pas plus souvent que le format lui-même.
+
+Reste un écart théorique : une v3 qui ne changerait rien au format ferait
+refuser ses fichiers par une v2. **Ici, ça ne peut pas arriver** : le site est
+une page statique servie par GitHub Pages, tout le monde a toujours la dernière
+version, il n'existe pas de « v2 dans la nature » pour lire un fichier de v3.
+Cette décision tiendrait mal dans une application installée ; elle est juste
+pour celle-ci.
+
+Le bénéfice, lui, est immédiat : un seul nombre, qui veut dire quelque chose
+pour un humain, et un message de refus qui nomme le produit au lieu d'un
+« format 1 » qu'il faudrait expliquer.
+
+`package.json` porte encore `0.0.0` : il passe à `1.0.0` maintenant, ce qui est
+simplement vrai, et à `2.0.0` le jour où le créateur sort.
 
 **Ce dont un personnage se souvient.** Le pack dont il dépend se **déduit** de
 ses identifiants : `karn-chasseur-de-brume` dit « pack karn ». C'est le préfixe du
 §2 qui offre ça, et c'est pour cette raison qu'aucune clé n'est à stocker. En
-revanche le **nom lisible** et la **version** ne se déduisent de rien une fois le
+revanche le **nom lisible** et la **date** ne se déduisent de rien une fois le
 pack parti : ils sont écrits dans le fichier du personnage comme un simple
-repère d'affichage (« construit avec Les Brumes de Karn v3 »), jamais comme une clé de
-recherche ni comme une condition. Un repère qui vieillit n'induit personne en
+repère d'affichage (« construit avec Les Brumes de Karn, version du 4 septembre
+2026 »), jamais comme une clé de recherche ni comme une condition. Un repère qui vieillit n'induit personne en
 erreur ; une clé qui vieillit, si.
 
 ---
@@ -309,8 +347,8 @@ appelé « karn » avec un autre « chasseur de brume », et les réponses endor
 se raccrochent à un contenu qui n'est pas le leur. Deux réponses possibles :
 un suffixe opaque à la création (`karn-a7f3`), qui empoisonne tous les
 identifiants pour un cas rare ; ou l'accepter, le joueur ayant réemployé son
-propre nom. Je penche pour l'accepter, et pour afficher la version dans l'écran
-de gestion afin que la surprise soit visible.
+propre nom. Je penche pour l'accepter, et pour afficher la date dans l'écran de
+gestion afin que la surprise soit visible.
 
 ### Oublier, mais délibérément
 
@@ -324,7 +362,8 @@ joueur décide ; l'application ne décide jamais à sa place.
 Une fiche vide n'explique rien. Quand un identifiant reste sans contenu :
 
 > **Il te manque du contenu.** Ce personnage utilise « karn-chasseur-de-brume »,
-> du pack *Les Brumes de Karn* (v3). Importe-le pour retrouver ta fiche.
+> du pack *Les Brumes de Karn* (4 septembre 2026). Importe-le pour retrouver
+> ta fiche.
 
 Avec le bouton d'import juste dessous. C'est du même ordre que les avis de
 cascade existants : structuré dans le domaine, rédigé dans `ui/format/`.
@@ -346,11 +385,13 @@ Trois chemins, et il les faut tous les trois :
 Politique en cas de conflit de version, à l'import d'un personnage :
 
 - pack absent → proposer de l'installer, c'est le cas courant ;
-- même version → rien à faire, silence ;
-- versions différentes → **la version installée gagne par défaut**, parce
-  qu'elle contient peut-être des corrections que le fichier ignore. On le dit
-  (« ce personnage a été construit avec la v3, tu as la v5 »), et on laisse le
-  choix d'installer celle du fichier sous un autre identifiant de pack.
+- même date → rien à faire, silence ;
+- dates différentes → **le pack installé gagne par défaut**, parce qu'il
+  contient peut-être des corrections que le fichier ignore, et sans jamais
+  comparer les dates pour décider. On les montre (« ce personnage a été
+  construit avec la version du 4 septembre, tu as celle du 12 octobre »), et on
+  laisse le choix d'installer celle du fichier sous un autre identifiant de
+  pack.
 
 Jamais d'écrasement silencieux dans un sens ou dans l'autre.
 
@@ -370,7 +411,7 @@ Par ordre de valeur, d'après ce que ces outils ratent d'habitude :
    vue dessus, pas un second brouillon qui pourrait diverger. Ouvrir un fichier
    reconstruit le formulaire à l'identique, sinon le format perd de
    l'information.
-5. **Un écran de gestion** : ce qui est installé, en quelle version, **le
+5. **Un écran de gestion** : ce qui est installé, à quelle date, **le
    réexporter**, le retirer. Réexporter n'est pas un luxe : c'est le seul
    chemin de retour quand la copie perdue est celle de l'ordinateur.
 6. **Rien d'autre.** Pas de compte, pas de nuage, pas de galerie en ligne : le
@@ -607,14 +648,15 @@ Le repère n'est pas réservé à la carte : il suit l'entrée partout où elle 
 nommée, y compris sur la ligne d'aptitude de la fiche. Et sur la **fiche
 imprimée** — celle qu'on tend au meneur, qui a le plus besoin de savoir que la
 classe n'est pas dans le livre — une ligne s'ajoute au bandeau d'attribution
-existant : « Contient du contenu maison : Les Brumes de Karn v3 ».
+existant : « Contient du contenu maison : Les Brumes de Karn, 4 septembre
+2026 ».
 
 ### 7. Que porte un pack en plus de son nom ?
 
 De quoi il s'agit : ce qui est écrit dans le fichier **à côté** du contenu, et
 qui ne sert qu'à savoir ce qu'on tient. Aujourd'hui le pack porte quatre champs
-techniques — `id`, `name`, `version`, `updatedAt`. La question est de savoir
-s'il en faut d'autres.
+techniques — `id`, `name`, `updatedAt`. La question est de savoir s'il en faut
+d'autres.
 
 Le cas concret : tu retrouves `pack.json` dans tes téléchargements six mois plus
 tard, ou quelqu'un t'envoie le sien. Le nom seul (« Karn ») ne dit ni ce qu'il y
@@ -622,9 +664,10 @@ a dedans, ni qui l'a écrit.
 
 **Tranché : deux champs facultatifs, `description` et `author`.** Ils ne
 dorment pas dans le fichier : l'écran de gestion et la fenêtre de confirmation
-d'import les affichent — « Les Brumes de Karn, par Hugo. Trois peuples et une
-classe pour une campagne d'horreur gothique. » Sans eux, cette fenêtre ne peut
-montrer qu'un décompte.
+d'import les affichent, avec la date en guise de version — « **Les Brumes de
+Karn**, par Hugo, version du 4 septembre 2026. Trois peuples et une classe pour
+une campagne d'horreur gothique. » Sans eux, cette fenêtre ne peut montrer qu'un
+décompte.
 
 **Pas de champ `licence`.** Personne ne le remplit sérieusement, et son
 existence donnerait un faux sentiment de couverture juridique là où la charte
@@ -649,12 +692,13 @@ liste sous les doigts d'un joueur qui vient d'installer « Ashkar ».
 ### 9. Que fait-on d'un fichier écrit par une autre version du format ?
 
 **Tranché, et au plus simple : on écrit le refus, pas la migration.** Un fichier
-`aventurine: 2` sur une application qui lit la 1 est refusé d'une phrase
-honnête (« ce pack vient d'une version plus récente d'Aventurine »). Un fichier
-d'une version *antérieure*, il n'en existe aucun : la 1 est la première. Écrire
-un convertisseur aujourd'hui, ce serait du code pour un cas qui n'existe pas,
+`aventurine: 3` sur une Aventurine 2 est refusé d'une phrase honnête (« ce pack
+vient d'une version plus récente d'Aventurine »). Un fichier d'une version
+*antérieure*, il n'en existe aucun : les packs naissent avec la v2. Écrire un
+convertisseur aujourd'hui, ce serait du code pour un cas qui n'existe pas,
 exactement ce que la charte appelle un « hook au cas où ».
 
-Le jour où la 2 arrive, la conversion s'écrit à ce moment-là, à un seul endroit,
-avec son test. Le champ `aventurine: 1` suffit à rendre ce jour-là possible :
-c'est lui, et lui seul, qu'il faut poser dès maintenant.
+Le jour où la 3 change vraiment le format, la conversion s'écrit à ce
+moment-là, à un seul endroit, avec son test. Le champ `aventurine` suffit à
+rendre ce jour-là possible : c'est lui, et lui seul, qu'il faut poser
+maintenant.
