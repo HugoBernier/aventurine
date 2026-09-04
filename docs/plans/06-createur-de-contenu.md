@@ -248,22 +248,35 @@ anodin.
 
 ### La règle à écrire
 
-La purge ne juge que ce qu'elle voit. Un créneau se ferme pour deux raisons très
-différentes, et le code n'en distingue qu'une :
+**On ne purge que ce qu'on sait identifier entièrement.** Une réponse nomme deux
+choses — le créneau où elle vit, et l'option qu'elle retient. Il suffit que
+**l'une des deux** soit introuvable dans le catalogue pour qu'on n'y touche pas.
 
-| Le parent du créneau | Ce que ça veut dire | Ce qu'on fait |
+| Ce qu'on lit | Ce que ça veut dire | Ce qu'on fait |
 | --- | --- | --- |
-| **Connu du catalogue** (`roublard`) mais le créneau n'est plus ouvert | Le joueur a changé de classe, ou le niveau a refermé un palier | On retire, avec l'avis en français — comportement actuel, à garder |
-| **Inconnu du catalogue** (`karn-chasseur-de-brume`) | Le contenu est absent, peut-être temporairement | On **ne touche à rien**. Les réponses dorment. |
+| Le parent du créneau et l'option sont **tous deux connus** (`class:roublard:skills` → `discretion`) | Le joueur a changé de classe, ou le niveau a refermé un palier | On retire, avec l'avis en français — comportement actuel, à garder |
+| Le **parent** est introuvable (`class:karn-chasseur-de-brume:skills`) | La classe du pack est absente | On **ne touche à rien**. Les réponses dorment. |
+| L'**option** est introuvable (`class:barde:subclass` → `karn-college-des-brumes`) | Une greffe du pack est absente, alors que la classe, elle, est du SRD | On **ne touche à rien** non plus. |
+
+La troisième ligne est celle qu'une règle fondée sur le seul parent aurait
+manquée, et c'est la greffe du §13.1 qui la révèle : une sous-classe venue d'un
+pack se choisit dans un créneau qui appartient au barde du SRD. Le parent reste
+donc parfaitement connu quand le pack s'en va, et la réponse serait effacée sans
+que rien ne soit en cause.
+
+Formulée ainsi, la règle est aussi plus simple à écrire qu'une distinction par
+provenance : on ne cherche pas à savoir *pourquoi* un identifiant manque, on
+constate qu'il manque et on s'abstient.
 
 Une réponse endormie ne coûte que quelques octets, elle est invisible, et elle
 est bornée par le plafond de 64 créneaux déjà posé à l'entrée. Réimporter le
 pack rouvre les créneaux, retrouve les réponses, et la fiche redevient
 exactement ce qu'elle était. **Sans rien à ressaisir.**
 
-Trois tests fixent ça : la fiche survit à la disparition du pack, une
-modification du personnage pendant l'absence ne l'ampute pas, et le
-réimport rend une fiche identique au bit près à celle d'avant.
+Quatre tests fixent ça : la fiche survit à la disparition du pack, une
+modification du personnage pendant l'absence ne l'ampute pas, le réimport rend
+une fiche identique au bit près à celle d'avant, et une **sous-classe greffée**
+sur une classe du SRD survit au même traitement.
 
 Ce qui n'est **pas** en danger, vérifié aussi : la race, la classe et
 l'historique du personnage sont de simples chaînes que rien ne purge, et les
@@ -452,8 +465,8 @@ Les trois que la décision 3 fait apparaître, détaillées au §7 :
 Aucune des trois ne bloque le début du travail : elles se tranchent en écrivant
 la règle de purge, qui est de toute façon la première chose à faire.
 
-Neuf autres attendent au §13, dont trois qui décident de la forme du fichier et
-ne se rattrapent pas facilement après coup.
+Au §13, cinq des neuf points suivants sont tranchés à leur tour ; quatre restent
+ouverts, aucun bloquant.
 
 ---
 
@@ -462,19 +475,34 @@ ne se rattrapent pas facilement après coup.
 Par ordre d'importance. Les trois premiers engagent le format ou une règle de
 fond : les trancher tard coûte cher.
 
-### 1. Peut-on **modifier** une entrée du SRD, ou seulement en ajouter ?
+### 1. Peut-on **modifier** une entrée du SRD ? — Non. Mais on peut y greffer.
 
-« Chez moi le guerrier a un d12 » est une demande de campagne parfaitement
-banale. Techniquement c'est un autre mécanisme : ajouter (`karn-guerrier`) ou
-**remplacer** (`guerrier`, patché). Le remplacement casse la règle du préfixe,
-oblige à définir une sémantique de fusion champ par champ, et rend un
-personnage ambigu — son `guerrier` est-il celui du SRD ou celui du pack
-installé hier ?
+**Tranché : pas de remplacement.** « Chez moi le guerrier a un d12 » se traite
+en copiant et renommant — `karn-guerrier`, que les joueurs de la campagne
+choisissent à la place. Remplacer casserait la règle du préfixe, demanderait une
+sémantique de fusion champ par champ, et rendrait un personnage ambigu : son
+`guerrier`, c'est celui du SRD ou celui du pack installé hier ? Une fusion
+silencieuse ferait mentir toutes les fiches déjà imprimées.
 
-**Recommandation : pas de remplacement.** On copie et on renomme : « Nouvelle
-classe à partir du Guerrier » produit `karn-guerrier`, que les joueurs de la
-campagne choisissent à la place. Le prix est visible et assumé, là où une
-fusion silencieuse ferait mentir toutes les fiches déjà imprimées.
+**Mais « pas de remplacement » ne veut pas dire « pas d'ajout à une entrée
+existante », et la nuance est capitale.** Le homebrew le plus courant n'invente
+pas une classe : il ajoute une **sous-classe** à une classe qui existe. Or les
+sous-classes vivent *dans* la classe (`CharacterClass.subclasses`), donc la
+règle telle qu'écrite interdisait le cas le plus fréquent — il aurait fallu
+republier un `karn-barde` entier pour ajouter un collège. Ce n'est pas un cas
+limite, c'est le cas normal.
+
+D'où la distinction à retenir : **on n'écrase aucun champ, mais on peut ajouter
+à une liste.** Deux points de greffe, et deux seulement :
+
+| Greffe | Comment | Coût |
+| --- | --- | --- |
+| Une **sous-classe** sur une classe existante | Elle nomme son parent (`"for": "barde"`) | Un champ, et l'appartenance se lit dans l'écran de choix |
+| Un **sort** sur la liste d'une classe existante | Il se déclare `classes: ["magicien"]` | **Zéro** : le modèle le permet déjà |
+
+Tout le reste — dé de vie, sauvegardes, aptitude ajoutée au niveau 3 — reste
+interdit. La ligne est nette : ajouter un élément à une liste ne change rien à
+ce qui existe ; modifier un champ, si.
 
 ### 2. Le brouillon du créateur survit-il à un rechargement ?
 
@@ -483,7 +511,7 @@ onglet fermé au milieu de l'écriture d'une classe, et deux heures de travail
 disparaissent. C'est exactement le reproche déjà fait à l'application il y a
 deux jours, et corrigé depuis pour l'assistant.
 
-**Recommandation : le créateur enregistre son pack en cours comme l'assistant
+**Tranché : le créateur enregistre son pack en cours comme l'assistant
 enregistre un personnage**, sous sa propre clé. Le fichier reste la vérité qu'on
 emporte ; le stockage local est le filet. « Exporter » devient un geste
 délibéré, pas la seule façon de ne rien perdre.
@@ -494,9 +522,13 @@ Une classe de « Karn » qui référence un sort du pack « Brumes ». Ça para�
 inoffensif et ça introduit un **graphe de dépendances** : ordre d'installation,
 retrait qui casse un tiers, versions croisées.
 
-**Recommandation : interdit en v1**, et écrit dans le message de refus. Une
-référence pointe le SRD ou le pack lui-même. Qui veut les deux les réunit en un
-seul pack — c'est précisément ce que le pack-supplément permet.
+**Tranché : interdit en v1**, et écrit dans le message de refus. Une référence
+pointe le SRD ou le pack lui-même. Qui veut les deux les réunit en un seul
+pack — c'est précisément ce que le pack-supplément permet.
+
+À ne pas confondre avec les greffes du point 1 : une sous-classe qui nomme
+`barde`, un sort qui nomme `magicien`, ce sont des références **vers le SRD**,
+toujours présent. Aucune dépendance entre packs n'y est créée.
 
 ### 4. Un pack peut-il **masquer** du contenu du SRD ?
 
@@ -522,14 +554,37 @@ personnages.
 
 ### 6. Où signale-t-on qu'un contenu n'est pas du SRD ?
 
-La charte impose maintenant de le distinguer toujours. Reste à dire où : la
-carte de choix, la fiche à l'écran, **et la fiche imprimée** — celle qu'on tend
-au meneur, qui a le plus besoin de savoir que la classe n'est pas dans le livre.
+La charte impose maintenant de le distinguer toujours. Reste à dire où et
+comment.
 
-**Recommandation :** un repère discret sur la carte et la ligne d'aptitude, et
-une mention dans le bandeau d'attribution en bas de la fiche imprimée
-(« Contient du contenu maison : Les Brumes de Karn v3 »). C'est une ligne de
-plus dans un bandeau qui existe déjà.
+**Tranché : le nom du pack sous le nom de l'entrée, sur la carte de choix.**
+
+```
+Dampyr
+Les Brumes de Karn          ← le pack, en texte secondaire
+Un peuple né d'une malédiction, qui vit la nuit.
+Bonus     +2 Dextérité, +1 Charisme
+Vision    18 m dans le noir
+Taille    Moyenne
+```
+
+Pourquoi là plutôt qu'entre parenthèses derrière le nom (`Dampyr (Karn)`) :
+le nom d'une entrée est ce qu'on lit en balayant une liste de neuf cartes au
+pouce, et une parenthèse le rallonge au point de le faire passer à la ligne sur
+360 px. Une seconde ligne se saute des yeux quand on ne la cherche pas, et se
+trouve immédiatement quand on la cherche.
+
+Pourquoi **pas en faible opacité**, malgré l'intention juste : l'opacité fait
+baisser le contraste sans qu'on sache de combien, elle dépend du fond, et la
+charte impose AA partout. Le projet a déjà les deux jetons qu'il faut, mesurés :
+`--color-text-muted` (7,03:1) et `--color-text-subtle` (5,01:1). C'est le même
+effet visuel — un texte qui recule — mais lisible au soleil et vérifiable.
+
+Le repère n'est pas réservé à la carte : il suit l'entrée partout où elle est
+nommée, y compris sur la ligne d'aptitude de la fiche. Et sur la **fiche
+imprimée** — celle qu'on tend au meneur, qui a le plus besoin de savoir que la
+classe n'est pas dans le livre — une ligne s'ajoute au bandeau d'attribution
+existant : « Contient du contenu maison : Les Brumes de Karn v3 ».
 
 ### 7. Que porte un pack en plus de son nom ?
 
@@ -541,11 +596,18 @@ le remplit sérieusement, et il donnerait un faux sentiment de couverture.
 
 ### 8. Dans quel ordre s'affichent races et classes quand des packs en ajoutent ?
 
-À neuf races, la question ne se pose pas ; à trois packs installés, si.
+À neuf races la question ne se pose pas ; à trois packs installés, si.
 
-**Recommandation :** le SRD d'abord dans son ordre actuel, puis un groupe par
-pack sous son nom. Le joueur voit d'où vient ce qu'il choisit sans avoir à le
-deviner, et l'ordre ne bouge pas quand il installe un pack de plus.
+**Tranché : le SRD d'abord dans son ordre actuel, puis chaque pack dans l'ordre
+où il a été installé**, ses entrées dans l'ordre du fichier. Deux propriétés
+qui comptent plus que l'élégance : rien ne bouge quand on installe un pack de
+plus, et le contenu qu'on connaît reste là où on l'a toujours trouvé.
+
+Pas de titres de groupe : la décision 6 met déjà la provenance sur chaque carte,
+et des intertitres pousseraient les cartes vers le bas d'un écran de 360 px
+pour redire ce qui est écrit dessus. Un tri alphabétique par nom de pack est
+écarté pour la même raison qu'un tri alphabétique des races : il réordonne la
+liste sous les doigts d'un joueur qui vient d'installer « Ashkar ».
 
 ### 9. Que fait-on d'un fichier écrit par une autre version du format ?
 
