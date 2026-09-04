@@ -315,7 +315,7 @@ constate qu'il manque et on s'abstient.
 `state/prune.ts`, quatre tests). La troisième attend la greffe de sous-classe :
 tant qu'aucun pack n'en pose, aucune option ne peut manquer sous un parent
 présent, et l'écrire aujourd'hui serait du code sans cas d'usage. Elle partira
-avec la tranche « classes ».
+avec la tranche « sous-classes » (§9), qui est la première à en poser.
 
 Une réponse endormie ne coûte que quelques octets, elle est invisible, et elle
 est bornée par le plafond de 64 créneaux déjà posé à l'entrée. Réimporter le
@@ -436,9 +436,15 @@ Chaque tranche est utilisable seule et laisse l'application verte.
 | | Ce que ça ouvre | Difficulté |
 | --- | --- | --- |
 | 1 | **Sorts** | Plat, sans créneau de choix, référence seulement des classes. Le banc d'essai du format et de l'import. |
-| 2 | **Races** | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
-| 3 | **Historiques** | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
-| 4 | **Classes** | Aptitudes par niveau, tables, sous-classes, magie, équipement. Le gros morceau, à faire en dernier avec tout le reste éprouvé. |
+| 2 | **Sous-classes greffées** | Le homebrew le plus demandé, et **treize fois plus léger qu'une classe** : 0,9 kio et 10 champs contre 12 kio et 16. Amène les aptitudes par niveau et la troisième ligne de purge du §7. |
+| 3 | **Races** | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
+| 4 | **Historiques** | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
+| 5 | **Classes entières** | Dé de vie, sauvegardes, magie, équipement, paliers. Le gros morceau, en dernier, avec tout le reste éprouvé. |
+
+La sous-classe est passée **avant** les races et les classes après mesure : un
+collège de barde est le cas que les tables réclament en premier, et il ne coûte
+qu'un treizième d'une classe. Attendre la tranche 5 pour l'offrir aurait été
+livrer le créateur sans ce pour quoi on l'ouvre.
 
 Avant la tranche 1, une brique indépendante et déjà promise par la charte :
 **l'export et l'import du personnage**, qui n'existent nulle part dans
@@ -550,6 +556,22 @@ D'où la distinction à retenir : **on n'écrase aucun champ, mais on peut ajout
 Tout le reste — dé de vie, sauvegardes, aptitude ajoutée au niveau 3 — reste
 interdit. La ligne est nette : ajouter un élément à une liste ne change rien à
 ce qui existe ; modifier un champ, si.
+
+**Trois précisions qui décident du coût de la greffe :**
+
+- Une greffe vise **une classe du SRD**, jamais celle d'un autre pack : ce
+  serait la dépendance croisée refusée au §13.3. Greffer sur une classe du
+  **même** pack ne se pose pas — on l'écrit dans la classe, comme le SRD le
+  fait.
+- Elle se résout **au moment où l'on assemble le catalogue**, en versant la
+  sous-classe dans le tableau `subclasses` de sa classe cible. `openChoices`,
+  `buildSheet`, le parcours, l'impression : rien en aval ne change, ils voient
+  une classe qui a une sous-classe de plus. C'est ce qui rend la greffe bon
+  marché, et c'est aussi la raison de la tranche 2 du §9.
+- Le créneau qui la propose existe déjà — `class:barde:subclass`, ouvert au
+  niveau que la classe fixe. La sous-classe greffée n'est qu'une option de plus
+  dedans, ce qui rend nécessaire la troisième ligne de purge du §7 : sans elle,
+  la réponse serait effacée dès que le pack s'absente, le barde restant connu.
 
 ### 2. Le brouillon du créateur survit-il à un rechargement ?
 
