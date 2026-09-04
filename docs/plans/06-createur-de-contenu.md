@@ -98,11 +98,14 @@ Il en faut **deux**, et elles ne servent pas à la même chose.
 `updatedAt` est un confort d'affichage, pas une clé de comparaison : l'horloge
 d'un téléphone se règle à la main.
 
-**Ce qu'on ne fait pas** : graver la version du pack dans le personnage. Ce
-serait une valeur dérivée stockée, que la charte interdit, et elle vieillirait
-mal. L'écran de gestion dit ce qui est installé ; c'est suffisant. Le seul cas
-qu'on ne couvre pas — imprimer une fiche, puis modifier la classe dessous — ne
-mérite pas ce prix.
+**Ce dont un personnage se souvient.** Le pack dont il dépend se **déduit** de
+ses identifiants : `maison-artificier` dit « pack maison ». C'est le préfixe du
+§2 qui offre ça, et c'est pour cette raison qu'aucune clé n'est à stocker. En
+revanche le **nom lisible** et la **version** ne se déduisent de rien une fois le
+pack parti : ils sont écrits dans le fichier du personnage comme un simple
+repère d'affichage (« construit avec Mes ajouts v3 »), jamais comme une clé de
+recherche ni comme une condition. Un repère qui vieillit n'induit personne en
+erreur ; une clé qui vieillit, si.
 
 ---
 
@@ -176,16 +179,81 @@ ne l'accepte que valide.
 
 ---
 
-## 7. Ce qui arrive aux personnages quand le contenu bouge
+## 7. Rien ne se détruit à cause d'un contenu absent
 
-Rien à inventer, seulement à garantir par des tests :
+C'est **la** contrainte du lot, et elle prime sur le reste. Un pack peut
+disparaître pour dix raisons qui n'ont rien à voir avec une intention du
+joueur : quota du navigateur, nettoyage des données du site, un personnage
+importé sur un autre téléphone, un mode privé. Le personnage, lui, survit.
 
-- pack retiré → la fiche tolère (`null` partout où ça ne se calcule plus), la
-  purge retire les réponses devenues caduques et pose un avis ;
-- pack modifié → une option disparue se retire de la même façon ;
-- pack réinstallé → les réponses ne reviennent pas, elles ont été purgées. **À
-  décider** : est-ce acceptable, ou faut-il garder les réponses orphelines en
-  sommeil ? (§12)
+### Ce qui détruirait les données aujourd'hui
+
+Vérifié sur le code actuel, pas supposé :
+
+- `parseDraft` **ne touche pas** aux réponses d'un contenu inconnu : il ne
+  vérifie que la *forme* de l'identifiant de créneau, pas son existence. Charger
+  un personnage sans son pack ne perd donc rien.
+- `pruneChoices`, en revanche, **efface** toute réponse dont le créneau n'est
+  plus ouvert — et sans la classe, aucun de ses créneaux ne l'est. Elle ne
+  tourne qu'à la modification du brouillon, jamais au chargement. Autrement dit :
+  la fiche s'affiche vide, et **la première chose qu'on touche efface tout.**
+
+C'est le pire des comportements : silencieux, différé, et déclenché par un geste
+anodin.
+
+### La règle à écrire
+
+La purge ne juge que ce qu'elle voit. Un créneau se ferme pour deux raisons très
+différentes, et le code n'en distingue qu'une :
+
+| Le parent du créneau | Ce que ça veut dire | Ce qu'on fait |
+| --- | --- | --- |
+| **Connu du catalogue** (`roublard`) mais le créneau n'est plus ouvert | Le joueur a changé de classe, ou le niveau a refermé un palier | On retire, avec l'avis en français — comportement actuel, à garder |
+| **Inconnu du catalogue** (`maison-artificier`) | Le contenu est absent, peut-être temporairement | On **ne touche à rien**. Les réponses dorment. |
+
+Une réponse endormie ne coûte que quelques octets, elle est invisible, et elle
+est bornée par le plafond de 64 créneaux déjà posé à l'entrée. Réimporter le
+pack rouvre les créneaux, retrouve les réponses, et la fiche redevient
+exactement ce qu'elle était. **Sans rien à ressaisir.**
+
+Trois tests fixent ça : la fiche survit à la disparition du pack, une
+modification du personnage pendant l'absence ne l'ampute pas, et le
+réimport rend une fiche identique au bit près à celle d'avant.
+
+### Ce que l'application dit, au lieu de faire semblant
+
+Une fiche vide n'explique rien. Quand un identifiant reste sans contenu :
+
+> **Il te manque du contenu.** Ce personnage utilise « maison-artificier »,
+> du pack *Mes ajouts* (v3). Importe-le pour retrouver ta fiche.
+
+Avec le bouton d'import juste dessous. C'est du même ordre que les avis de
+cascade existants : structuré dans le domaine, rédigé dans `ui/format/`.
+
+### Le fichier du personnage se suffit à lui-même
+
+Le scénario « je perds mes packs mais pas mes personnages » ne se règle pas
+seulement en ne détruisant rien : encore faut-il pouvoir **récupérer le pack**.
+Trois chemins, et il les faut tous les trois :
+
+1. **Le personnage exporté emporte une copie des packs dont il dépend.** Un
+   fichier de personnage s'ouvre alors n'importe où, sur un téléphone neuf,
+   sans rien d'autre. Le coût est dérisoire : une classe pèse quelques kio.
+2. **Un pack installé se réexporte depuis l'écran de gestion.** Si la copie
+   perdue est celle de l'ordinateur, le téléphone la rend.
+3. **L'import d'un personnage propose d'installer les packs qu'il porte**, sans
+   jamais l'imposer.
+
+Politique en cas de conflit de version, à l'import d'un personnage :
+
+- pack absent → proposer de l'installer, c'est le cas courant ;
+- même version → rien à faire, silence ;
+- versions différentes → **la version installée gagne par défaut**, parce
+  qu'elle contient peut-être des corrections que le fichier ignore. On le dit
+  (« ce personnage a été construit avec la v3, tu as la v5 »), et on laisse le
+  choix d'installer celle du fichier sous un autre identifiant de pack.
+
+Jamais d'écrasement silencieux dans un sens ou dans l'autre.
 
 ---
 
@@ -203,7 +271,9 @@ Par ordre de valeur, d'après ce que ces outils ratent d'habitude :
    vue dessus, pas un second brouillon qui pourrait diverger. Ouvrir un fichier
    reconstruit le formulaire à l'identique, sinon le format perd de
    l'information.
-5. **Un écran de gestion** : ce qui est installé, en quelle version, retirer.
+5. **Un écran de gestion** : ce qui est installé, en quelle version, **le
+   réexporter**, le retirer. Réexporter n'est pas un luxe : c'est le seul
+   chemin de retour quand la copie perdue est celle de l'ordinateur.
 6. **Rien d'autre.** Pas de compte, pas de nuage, pas de galerie en ligne : le
    fichier va sur l'ordinateur du joueur et en revient.
 
@@ -251,6 +321,10 @@ n'existe qu'après avoir été validée par une fonction pure du domaine. »
 ## 11. Ce que ça coûte, en gros
 
 - Export/import du personnage : une demi-journée, dans le périmètre actuel.
+  Une demi-journée de plus pour qu'il emporte ses packs et sache les proposer
+  (§7), à faire dès que les packs existent.
+- La règle de purge du §7 : une demi-journée, tests compris. Elle est
+  indépendante du reste et pourrait même être écrite avant le créateur.
 - Tranche « sorts » : un à deux jours, dont la moitié en validation et tests.
 - Tranches « races » et « historiques » : deux à trois jours.
 - Tranche « classes » : le double, avec l'aperçu et l'aller-retour des douze
@@ -265,11 +339,16 @@ n'existe qu'après avoir été validée par une fonction pure du domaine. »
    références internes ne se réécrivent pas.)
 2. **Un pack ou plusieurs ?** Un fichier = un pack, ou un fichier qui contient
    tout ce qu'on a fait ? (Je recommande un pack par fichier, versionné à part.)
-3. **Réinstaller un pack ressuscite-t-il les réponses purgées ?** Non par
-   défaut, et c'est simple ; oui demanderait de garder des réponses orphelines,
-   ce que la purge a été écrite pour éviter.
+3. ~~Réinstaller un pack ressuscite-t-il les réponses ?~~ **Tranché : oui, et
+   c'est une contrainte, pas une option** (§7). La purge ne juge que ce qu'elle
+   voit, le personnage exporté emporte ses packs, et un pack installé se
+   réexporte.
 4. **La validation à la main ou avec un schéma ?** 500 à 700 lignes contre
    14 kio de dépendance.
 5. **Le créateur sur téléphone ?** La charte dit mobile d'abord ; écrire une
    classe au pouce est un exercice ingrat. Une décision par écran, comme
    l'assistant, ou un écran assumé « plus confortable au clavier » ?
+6. **Un personnage exporté emporte-t-il TOUJOURS ses packs** (fichier autonome,
+   quelques kio de plus), ou seulement sur demande ? Je recommande toujours :
+   un fichier qui ne s'ouvre qu'à moitié est un piège qu'on découvre le jour où
+   c'est grave.
