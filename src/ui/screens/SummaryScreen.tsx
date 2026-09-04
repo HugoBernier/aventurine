@@ -278,7 +278,13 @@ export function SummaryScreen({
         <Ref label="Niveau" value={String(draft.level)} />
         <Ref
           label="Dés de vie"
-          value={sheet.hitDice === null ? '—' : `1 d${String(sheet.hitDice.die)}`}
+          // Un personnage de niveau 5 en a cinq, pas un : c'est la réserve
+          // qu'il dépense en repos court.
+          value={
+            sheet.hitDice === null
+              ? '—'
+              : `${String(sheet.hitDice.count)} d${String(sheet.hitDice.die)}`
+          }
         />
         {sheet.darkvisionMeters !== null && sheet.darkvisionMeters > 0 && (
           <Ref

@@ -62,7 +62,8 @@ export interface HitPointRow {
   readonly level: number;
   readonly source: HitPointSource;
   /** La valeur du dé retenue pour ce niveau. */
-  readonly die: number;
+  /** Ce que le dé APPORTE à ce niveau, pas sa taille : 6 pour un d10 moyen. */
+  readonly fromDie: number;
   readonly constitution: number;
   readonly bonus: number;
   /** Le minimum de 1 a joué : la Constitution aurait donné moins. */
@@ -75,16 +76,16 @@ export interface HitPointRow {
 function row(
   level: number,
   source: HitPointSource,
-  die: number,
+  fromDie: number,
   constitutionModifier: number,
   bonusPerLevel: number,
   ignoredRoll: number | null,
 ): HitPointRow {
-  const raw = die + constitutionModifier;
+  const raw = fromDie + constitutionModifier;
   return {
     level,
     source,
-    die,
+    fromDie,
     constitution: constitutionModifier,
     bonus: bonusPerLevel,
     isFloored: raw < 1,

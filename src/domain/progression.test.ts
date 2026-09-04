@@ -152,7 +152,7 @@ describe('un niveau ne retire jamais de points de vie', () => {
 describe('le décompte des points de vie, ligne à ligne', () => {
   it('donne le dé au maximum au niveau 1, la moyenne ensuite', () => {
     const rows = hitPointRows(3, 12, -1, 0);
-    expect(rows.map((row) => [row.level, row.source, row.die, row.total])).toEqual([
+    expect(rows.map((row) => [row.level, row.source, row.fromDie, row.total])).toEqual([
       [1, 'max', 12, 11],
       [2, 'average', 7, 6],
       [3, 'average', 7, 6],
@@ -162,7 +162,7 @@ describe('le décompte des points de vie, ligne à ligne', () => {
   it('retient le dé saisi quand il est possible', () => {
     const [, second] = hitPointRows(2, 12, -1, 0, { '2': 9 });
     expect(second?.source).toBe('rolled');
-    expect(second?.die).toBe(9);
+    expect(second?.fromDie).toBe(9);
     expect(second?.total).toBe(8);
   });
 

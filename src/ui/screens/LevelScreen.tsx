@@ -114,7 +114,9 @@ export function LevelScreen(): ReactNode {
               return (
                 <li className={styles.ledgerRow} key={row.level}>
                   <span className={styles.ledgerLevel}>Niveau {row.level}</span>
-                  <span className={styles.ledgerHow}>{formatHitPointRow(row)}</span>
+                  <span className={styles.ledgerHow}>
+                    {formatHitPointRow(row, characterClass.hitDie)}
+                  </span>
                   <span className={styles.ledgerGain}>+{row.total}</span>
                   {ignored === null ? null : (
                     <span className={styles.ledgerWarning}>{ignored}</span>
