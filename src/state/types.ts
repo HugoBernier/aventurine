@@ -136,7 +136,8 @@ export type WizardAction =
   | { readonly type: 'GO_BACK' }
   | { readonly type: 'GO_TO'; readonly screenId: ScreenId }
   | { readonly type: 'DISMISS_NOTICE'; readonly noticeId: string }
-  | { readonly type: 'REPLACE_DRAFT'; readonly draft: CharacterDraft }
+  /** Le personnage importé s'AJOUTE : ouvrir un fichier ne perd jamais rien. */
+  | { readonly type: 'IMPORT_CHARACTER'; readonly draft: CharacterDraft }
   | { readonly type: 'RESET' }
   | { readonly type: 'SET_VIEW'; readonly view: WizardView }
   | { readonly type: 'SET_STORAGE_STATUS'; readonly status: StorageStatus };

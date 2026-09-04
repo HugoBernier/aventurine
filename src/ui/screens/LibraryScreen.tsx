@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import type { ReactNode } from 'react';
+import { useRef, useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { useLibrary } from '../../state/hooks';
+import { readCharacterFile } from '../../state/persistence/characterFile';
 import { Explainer } from '../components/Explainer';
+import { Notice } from '../components/Notice';
+import { formatImportResult } from '../format/characterFile';
+import type { ImportMessage } from '../format/characterFile';
 import styles from './LibraryScreen.module.css';
 
 /**
@@ -10,8 +14,28 @@ import styles from './LibraryScreen.module.css';
  * se rate au pouce, et rien ici ne se récupère après coup.
  */
 export function LibraryScreen(): ReactNode {
-  const { characters, create, switchTo, remove } = useLibrary();
+  const { characters, create, add, switchTo, remove } = useLibrary();
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [message, setMessage] = useState<ImportMessage | null>(null);
+  // Le champ garde son étiquette native plutôt qu'un bouton qui le cliquerait :
+  // c'est le mécanisme que tous les navigateurs ouvrent sans détour. La
+  // référence ne sert qu'à le vider après coup.
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const openFile = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = event.target.files?.[0];
+    // Rouvrir le MÊME fichier après une correction doit relancer la lecture :
+    // sans ça, `change` ne se déclenche pas une seconde fois.
+    if (fileInput.current !== null) {
+      fileInput.current.value = '';
+    }
+    if (file === undefined) return;
+    const result = readCharacterFile(await file.text());
+    setMessage(formatImportResult(result));
+    if (result.kind === 'ok') {
+      add(result.draft);
+    }
+  };
 
   return (
     <>
@@ -89,6 +113,38 @@ export function LibraryScreen(): ReactNode {
       >
         + Nouveau personnage
       </button>
+
+      {/* L'étiquette EST le bouton : le champ, invisible, reste au clavier, et
+          l'anneau de focus se dessine sur le libellé qui, lui, se voit. */}
+      <label className={styles.open}>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className={styles.file}
+          onChange={(event) => {
+            void openFile(event);
+          }}
+        />
+        <span className={styles.openLabel}>Ouvrir un fichier</span>
+      </label>
+
+      {message !== null && (
+        <Notice
+          tone={message.tone}
+          live
+          onDismiss={() => {
+            setMessage(null);
+          }}
+        >
+          {message.text}
+        </Notice>
+      )}
+
+      <p className={styles.hint}>
+        Un personnage que tu as enregistré depuis ta fiche, sur cet appareil ou un autre.
+        Il s’ajoute : rien de ce que tu as ici n’est remplacé.
+      </p>
     </>
   );
 }

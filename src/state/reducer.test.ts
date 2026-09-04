@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyDraft } from '../domain/draft';
 import type { CharacterDraft } from '../domain/draft';
 import { MINI_CATALOGUE as C } from '../domain/fixtures/miniCatalogue';
-import { createWizardReducer, initialState } from './reducer';
+import { createWizardReducer, initialState, newCharacterId } from './reducer';
 import type { WizardAction, WizardState } from './types';
 
 const reduce = createWizardReducer(C);
@@ -260,15 +260,38 @@ describe('texte libre et remise à zéro', () => {
     expect(state.storage).toBe('memory');
   });
 
-  it('remplace le brouillon à l’import en purgeant ce qui ne tient plus', () => {
+  it('purge à l’import ce qui ne tient plus', () => {
     const imported: CharacterDraft = {
       ...emptyDraft(),
       classId: 'clerc',
       choices: { 'class:roublard:skills': ['discretion'] },
     };
-    const next = run(from(), { type: 'REPLACE_DRAFT', draft: imported });
+    const next = run(from(), { type: 'IMPORT_CHARACTER', draft: imported });
     expect(next.draft.classId).toBe('clerc');
     expect(next.draft.choices).toEqual({});
+  });
+
+  it('range le personnage en cours au lieu de l’écraser', () => {
+    const before = from({ classId: 'roublard' });
+    const next = run(before, {
+      type: 'IMPORT_CHARACTER',
+      draft: { ...emptyDraft(), name: 'Alric', classId: 'clerc' },
+    });
+
+    expect(next.draft.name).toBe('Alric');
+    expect(next.others.map((entry) => entry.draft.classId)).toEqual(['roublard']);
+    expect(next.currentId).not.toBe(before.currentId);
+  });
+
+  it('laisse la bibliothèque ouverte : on peut enchaîner les fichiers', () => {
+    const next = run(
+      { ...from(), view: 'library' },
+      {
+        type: 'IMPORT_CHARACTER',
+        draft: emptyDraft(),
+      },
+    );
+    expect(next.view).toBe('library');
   });
 
   it('retire un avis qu’on a fermé', () => {
@@ -364,5 +387,12 @@ describe('durée de vie des avis', () => {
     });
     const next = run(state, { type: 'SELECT_CLASS', classId: 'clerc' });
     expect(next.notices.length).toBeGreaterThan(0);
+  });
+});
+
+describe('identifiants de personnage', () => {
+  it('n’en donne jamais deux fois le même, même dans la même milliseconde', () => {
+    const ids = Array.from({ length: 50 }, () => newCharacterId());
+    expect(new Set(ids).size).toBe(50);
   });
 });

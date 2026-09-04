@@ -116,3 +116,43 @@
   font-weight: 600;
   touch-action: manipulation;
 }
+
+.hint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.open {
+  display: block;
+  margin-block-start: var(--space-3);
+}
+
+/* Le champ reste au clavier, mais ne se voit pas : c'est le libellé qui porte
+   l'apparence, et l'anneau de focus avec lui. */
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.openLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-control-border);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.file:focus-visible + .openLabel {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

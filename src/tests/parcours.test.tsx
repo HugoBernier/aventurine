@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
 /**
@@ -35,6 +35,7 @@ describe('parcours de création', () => {
   });
   afterEach(() => {
     globalThis.localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it('ouvre sur le choix de la race, à la première étape', () => {
@@ -306,6 +307,63 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
     expect(screen.getAllByText(/Nain/).length).toBeGreaterThan(0);
+  });
+
+  it('enregistre la fiche dans un fichier, et rouvre ce fichier', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+
+    // Le téléchargement n'existe pas dans jsdom : on lit le texte que le lien
+    // aurait emporté, à la source, dans le Blob qu'on vient de fabriquer.
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {
+      // rien à libérer ici
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {
+      // jsdom ne télécharge pas
+    });
+    const madeBlob = vi.spyOn(globalThis, 'Blob');
+
+    await user.click(
+      screen.getByRole('button', { name: /Enregistrer sur mon appareil/ }),
+    );
+    const [parts] = madeBlob.mock.calls[0] ?? [];
+    const written = typeof parts?.[0] === 'string' ? parts[0] : '';
+    expect(written).toContain('"aventurine"');
+    expect(written).toContain('barbare');
+
+    // Table rase, puis on rouvre le fichier depuis la bibliothèque.
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+    await user.click(screen.getByRole('button', { name: /Nouveau personnage/ }));
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+
+    const file = new File([written], 'personnage.json', { type: 'application/json' });
+    await user.upload(screen.getByLabelText(/Ouvrir un fichier/), file);
+
+    // Le personnage rouvert s'AJOUTE : les deux sont là, et le nain est en cours.
+    const entries = screen.getAllByRole('listitem');
+    const [current] = entries;
+    expect(entries).toHaveLength(3);
+    expect(current).toHaveTextContent('en cours');
+    expect(current).toHaveTextContent(/Nain Barbare/);
+  });
+
+  it('refuse net un fichier qui n’est pas un personnage', async () => {
+    const user = userEvent.setup();
+    await barbarianSheet(user);
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+
+    // Un `.json` abîmé : `accept` écarte déjà les autres extensions.
+    const file = new File(['ceci n’est pas du JSON'], 'note.json', {
+      type: 'application/json',
+    });
+    await user.upload(screen.getByLabelText(/Ouvrir un fichier/), file);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /n’est pas un personnage Aventurine/,
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
 
   it('permet de monter de niveau depuis la fiche', async () => {

@@ -451,6 +451,13 @@ Avant la tranche 1, une brique indépendante et déjà promise par la charte :
 l'interface alors que `parseDraft` les attend depuis le début. C'est le même
 mécanisme de fichier, sur un objet dix fois plus simple.
 
+**Faite.** `personnage-<nom>.json` s'enregistre depuis la fiche et se rouvre
+depuis la bibliothèque. Le fichier porte `aventurine: 1` et le brouillon nu ;
+plus récent, il est refusé net. Ouvrir un fichier **ajoute** un personnage sans
+jamais en remplacer un, et laisse la bibliothèque ouverte : on enchaîne les
+fichiers d'une sauvegarde sans revenir sur ses pas. Ce que le fichier portait et
+qu'on n'a pas su relire est compté, dit sur place, et ignoré — jamais réparé.
+
 ---
 
 ## 10. Ce que la charte devra dire

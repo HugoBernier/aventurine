@@ -14,8 +14,13 @@ import {
   useMissingChoices,
   useWizard,
 } from '../../state/hooks';
+import {
+  characterFileName,
+  characterFileText,
+} from '../../state/persistence/characterFile';
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
 import { Notice } from '../components/Notice';
+import { saveFile } from '../saveFile';
 import { PlaySection } from './PlaySection';
 import { PrintBoxes } from './PrintBoxes';
 import { SpellbookSection } from './SpellbookSection';
@@ -170,6 +175,24 @@ export function SummaryScreen({ onOpenLibrary }: SummaryScreenProps): ReactNode 
         Ton navigateur ajoute parfois l’adresse du site et le numéro de page : décoche «
         en-têtes et pieds de page » dans les options d’impression pour les enlever.
       </p>
+
+      {/* Le fichier est une COPIE : l'appareil garde le personnage. C'est la
+          sauvegarde qu'on emporte, celle qui survit à un navigateur nettoyé. */}
+      <button
+        type="button"
+        className={styles.library}
+        data-print="hide"
+        onClick={() => {
+          saveFile(
+            characterFileName(draft.name),
+            characterFileText(draft),
+            'application/json',
+          );
+        }}
+      >
+        <span>Enregistrer sur mon appareil</span>
+        <span className={styles.chevron}>Un fichier à garder ou à transmettre</span>
+      </button>
 
       {onOpenLibrary !== undefined && (
         <button

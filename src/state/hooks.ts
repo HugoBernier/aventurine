@@ -361,6 +361,8 @@ export interface LibraryView {
   readonly create: () => void;
   readonly switchTo: (id: string) => void;
   readonly remove: (id: string) => void;
+  /** Le personnage lu dans un fichier s'ajoute, il n'écrase jamais le courant. */
+  readonly add: (draft: CharacterDraft) => void;
 }
 
 /** Le personnage courant en tête, puis les autres : l'ordre ne saute pas. */
@@ -402,6 +404,12 @@ export function useLibrary(): LibraryView {
     create: useCallback(() => {
       dispatch({ type: 'NEW_CHARACTER' });
     }, [dispatch]),
+    add: useCallback(
+      (draft: CharacterDraft) => {
+        dispatch({ type: 'IMPORT_CHARACTER', draft });
+      },
+      [dispatch],
+    ),
     switchTo: useCallback(
       (id: string) => {
         dispatch({ type: 'SWITCH_CHARACTER', id });

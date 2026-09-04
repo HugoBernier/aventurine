@@ -29,8 +29,18 @@ const MAX_NOTICES = 3;
  * suffit : deux personnages ne naissent pas dans la même milliseconde, et le
  * suffixe aléatoire d'un générateur cryptographique serait ici du décorum.
  */
+/**
+ * L'horodatage seul suffisait tant qu'on créait un personnage à la fois. Un
+ * nouveau puis un importé dans la même milliseconde recevaient le même
+ * identifiant, et la bibliothèque n'en voyait plus qu'un.
+ *
+ * Le suffixe aléatoire lève la collision. `getRandomValues` et non
+ * `randomUUID` : seul le second exige un contexte sécurisé, et un téléphone qui
+ * vise un serveur de développement en http n'en a pas.
+ */
 export function newCharacterId(): string {
-  return `perso-${String(Date.now())}`;
+  const [random] = globalThis.crypto.getRandomValues(new Uint32Array(1));
+  return `perso-${String(Date.now())}-${(random ?? 0).toString(36)}`;
 }
 
 export function initialState(
@@ -450,8 +460,18 @@ export function createWizardReducer(
           notices: state.notices.filter((notice) => notice.id !== action.noticeId),
         };
       }
-      case 'REPLACE_DRAFT': {
-        return commit(initialState(action.draft), action.draft, catalogue);
+      case 'IMPORT_CHARACTER': {
+        // Le personnage courant rejoint la bibliothèque, comme pour un nouveau :
+        // ouvrir un fichier ne doit jamais coûter ce qu'on avait en cours.
+        const imported = commit(initialState(action.draft), action.draft, catalogue);
+        return {
+          ...imported,
+          storage: state.storage,
+          others: [...state.others, packed(state)],
+          // On reste où l'on est : le personnage ouvert apparaît dans la liste,
+          // et l'on peut enchaîner les fichiers d'une sauvegarde sans revenir.
+          view: state.view,
+        };
       }
       case 'RESET': {
         return { ...initialState(), storage: state.storage };
