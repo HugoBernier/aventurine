@@ -18,9 +18,15 @@ standard**. Le niveau pilote le bonus de maîtrise, les points de vie, les dés
 de vie, les emplacements de sorts et les paliers d'amélioration, un choix
 entre monter ses caractéristiques et prendre un don.
 
+**Depuis la v1 :** un **créateur de contenu**. Races, classes, historiques et
+sorts écrits par le joueur, réunis en **packs** — un fichier JSON par pack,
+enregistré sur son appareil, réimportable pour modification et partageable.
+Un pack absent ne détruit jamais rien : les réponses d'un personnage dorment
+et reviennent avec lui. Voir `docs/plans/06-createur-de-contenu.md`.
+
 **Hors périmètre (YAGNI, ne pas anticiper) :** comptes utilisateurs, backend,
 base de données, multijoueur, gestion de campagne, compendium complet,
-boutique, multiclassage, homebrew, mobile natif, thème sombre,
+boutique, multiclassage, mobile natif, thème sombre,
 annulation/rétablissement, routage.
 
 **Reporté, pas abandonné** (à rouvrir quand la v1 tourne) : jets de dés 4d6
@@ -106,6 +112,14 @@ vérification qui compte est `npm ci` sur un `node_modules` supprimé.
 Le téléphone n'est pas une adaptation : **c'est la cible principale**. Le
 bureau est l'élargissement du mobile, jamais l'inverse.
 
+**Une seule exception, nommée : le créateur de contenu.** Il se conçoit **au
+clavier d'abord**. La raison n'est pas la facilité : on écrit une classe une
+fois, chez soi, avec vingt champs sous les yeux et le SRD ouvert à côté, alors
+qu'on consulte sa fiche cent fois, à table, d'une main. Prétendre l'inverse
+donnerait un formulaire de trente écrans que personne ne finirait. Ce qui se
+fait à table reste au pouce : consulter ses packs, en importer un, en retirer
+un. Toute autre entorse au mobile d'abord est un défaut, pas une exception.
+
 ### Règles de mise en page
 
 - On écrit le CSS pour **360 px de large**, puis on élargit avec
@@ -169,6 +183,11 @@ domain  →  rien
 - Aucun fichier baril à la racine de `src/` ni d'une couche : c'est le seul
   chemin par lequel une couche peut en atteindre une autre sans que le lint le
   voie. Un module d'agrégation _à l'intérieur_ d'une couche est autorisé.
+- Le contenu **importé** traverse `domain/`, jamais l'inverse : une entité
+  venue d'un fichier n'existe qu'après avoir été validée par une fonction pure
+  du domaine, qui rend soit l'entité typée, soit des raisons structurées. La
+  même fonction sert le formulaire du créateur et l'import : deux vérifications
+  finiraient par diverger.
 
 ---
 
@@ -261,6 +280,11 @@ l'interface.
 
 Règle de revue : toute entrée de `data/` doit pouvoir être pointée à une
 section du SRD 5.1. Si on ne sait pas dire où, l'entrée ne rentre pas.
+
+Le contenu **importé** n'est pas du contenu de `data/` : cette règle ne s'y
+applique pas. En échange, l'interface le distingue toujours de ce qui vient du
+SRD, l'attribution SRD ne le couvre pas, et l'application ne le distribue
+jamais — un pack va de l'appareil du joueur à un fichier, et revient.
 
 ---
 

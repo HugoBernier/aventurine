@@ -451,3 +451,106 @@ Les trois que la décision 3 fait apparaître, détaillées au §7 :
 
 Aucune des trois ne bloque le début du travail : elles se tranchent en écrivant
 la règle de purge, qui est de toute façon la première chose à faire.
+
+Neuf autres attendent au §13, dont trois qui décident de la forme du fichier et
+ne se rattrapent pas facilement après coup.
+
+---
+
+## 13. Neuf points que la première liste ne posait pas
+
+Par ordre d'importance. Les trois premiers engagent le format ou une règle de
+fond : les trancher tard coûte cher.
+
+### 1. Peut-on **modifier** une entrée du SRD, ou seulement en ajouter ?
+
+« Chez moi le guerrier a un d12 » est une demande de campagne parfaitement
+banale. Techniquement c'est un autre mécanisme : ajouter (`karn-guerrier`) ou
+**remplacer** (`guerrier`, patché). Le remplacement casse la règle du préfixe,
+oblige à définir une sémantique de fusion champ par champ, et rend un
+personnage ambigu — son `guerrier` est-il celui du SRD ou celui du pack
+installé hier ?
+
+**Recommandation : pas de remplacement.** On copie et on renomme : « Nouvelle
+classe à partir du Guerrier » produit `karn-guerrier`, que les joueurs de la
+campagne choisissent à la place. Le prix est visible et assumé, là où une
+fusion silencieuse ferait mentir toutes les fiches déjà imprimées.
+
+### 2. Le brouillon du créateur survit-il à un rechargement ?
+
+Le §8 dit « le fichier **est** l'état ». C'est élégant, et **insuffisant** : un
+onglet fermé au milieu de l'écriture d'une classe, et deux heures de travail
+disparaissent. C'est exactement le reproche déjà fait à l'application il y a
+deux jours, et corrigé depuis pour l'assistant.
+
+**Recommandation : le créateur enregistre son pack en cours comme l'assistant
+enregistre un personnage**, sous sa propre clé. Le fichier reste la vérité qu'on
+emporte ; le stockage local est le filet. « Exporter » devient un geste
+délibéré, pas la seule façon de ne rien perdre.
+
+### 3. Un pack peut-il dépendre d'un autre pack ?
+
+Une classe de « Karn » qui référence un sort du pack « Brumes ». Ça paraît
+inoffensif et ça introduit un **graphe de dépendances** : ordre d'installation,
+retrait qui casse un tiers, versions croisées.
+
+**Recommandation : interdit en v1**, et écrit dans le message de refus. Une
+référence pointe le SRD ou le pack lui-même. Qui veut les deux les réunit en un
+seul pack — c'est précisément ce que le pack-supplément permet.
+
+### 4. Un pack peut-il **masquer** du contenu du SRD ?
+
+« Pas de tieffelins dans ma campagne. » Utile, simple à implémenter (une liste
+d'identifiants cachés), et sans risque pour les personnages existants si un
+contenu masqué reste lisible sur une fiche déjà faite.
+
+**Recommandation : pas en v1**, parce qu'ajouter passe avant retirer. Le coût de
+l'ajouter plus tard est nul : un champ de plus qu'un ancien lecteur ignore.
+
+### 5. Quel poids maximum, par pack et au total ?
+
+`localStorage` tient environ 5 Mio, **partagés avec les personnages**. Un pack
+bavard, trois campagnes installées, et c'est la sauvegarde des personnages qui
+échoue. S'y ajoute la décision 6 : un personnage exporté emporte ses packs, donc
+son fichier grossit d'autant.
+
+**Recommandation : 512 kio par pack, 2 Mio pour l'ensemble des packs**, vérifiés
+à l'import avec un refus clair. L'ordre de grandeur : une classe pèse quelques
+kio, tout le SRD français du projet tient dans 200 kio de sources. Les packs
+vivent sous leur propre clé, et leur échec de quota ne touche jamais les
+personnages.
+
+### 6. Où signale-t-on qu'un contenu n'est pas du SRD ?
+
+La charte impose maintenant de le distinguer toujours. Reste à dire où : la
+carte de choix, la fiche à l'écran, **et la fiche imprimée** — celle qu'on tend
+au meneur, qui a le plus besoin de savoir que la classe n'est pas dans le livre.
+
+**Recommandation :** un repère discret sur la carte et la ligne d'aptitude, et
+une mention dans le bandeau d'attribution en bas de la fiche imprimée
+(« Contient du contenu maison : Les Brumes de Karn v3 »). C'est une ligne de
+plus dans un bandeau qui existe déjà.
+
+### 7. Que porte un pack en plus de son nom ?
+
+Pour partager, `author` et `description` coûtent deux champs et évitent
+« pack-final-v2-vraiment.json ».
+
+**Recommandation : les deux, facultatifs.** Pas de champ `licence` : personne ne
+le remplit sérieusement, et il donnerait un faux sentiment de couverture.
+
+### 8. Dans quel ordre s'affichent races et classes quand des packs en ajoutent ?
+
+À neuf races, la question ne se pose pas ; à trois packs installés, si.
+
+**Recommandation :** le SRD d'abord dans son ordre actuel, puis un groupe par
+pack sous son nom. Le joueur voit d'où vient ce qu'il choisit sans avoir à le
+deviner, et l'ordre ne bouge pas quand il installe un pack de plus.
+
+### 9. Que fait-on d'un fichier écrit par une autre version du format ?
+
+**Recommandation :** refuser en avant, migrer en arrière. Un fichier
+`aventurine: 2` sur une application qui lit la 1 est refusé avec une phrase
+honnête (« ce pack vient d'une version plus récente d'Aventurine ») ; un fichier
+`aventurine: 1` sur une application plus récente est converti à la lecture. Le
+code de conversion vit à un seul endroit, avec un test par version.
