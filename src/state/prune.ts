@@ -1,4 +1,6 @@
+import { findBackground, findClass, findRace } from '../domain/catalogue';
 import type { Catalogue } from '../domain/catalogue';
+import { parseSlotId } from '../domain/choice';
 import type { ChoiceSlotId } from '../domain/choice';
 import type { CharacterDraft } from '../domain/draft';
 import { openChoices } from '../domain/openChoices';
@@ -17,6 +19,37 @@ export interface PruneResult {
 /** Une suppression ne fait qu'élargir la disponibilité : deux passes suffisent. */
 const MAX_PASSES = 3;
 
+/**
+ * Le parent d'un créneau existe-t-il encore dans le catalogue ?
+ *
+ * Deux fermetures se ressemblent et n'ont rien à voir : le joueur a changé de
+ * classe, ou le contenu a disparu de l'appareil. Seule cette question les
+ * distingue, et elle décide si l'on efface ou si l'on attend.
+ */
+function isParentKnown(slotId: ChoiceSlotId, catalogue: Catalogue): boolean {
+  const parsed = parseSlotId(slotId);
+  if (parsed === null) {
+    return false;
+  }
+  const { source, parentId } = parsed;
+  switch (source) {
+    case 'race': {
+      return (
+        findRace(catalogue, parentId) !== null ||
+        catalogue.races.some((race) =>
+          race.subraces.some((subrace) => subrace.id === parentId),
+        )
+      );
+    }
+    case 'class': {
+      return findClass(catalogue, parentId) !== null;
+    }
+    case 'background': {
+      return findBackground(catalogue, parentId) !== null;
+    }
+  }
+}
+
 function prunePass(draft: CharacterDraft, catalogue: Catalogue): PruneResult {
   const slots = new Map(openChoices(draft, catalogue).map((slot) => [slot.id, slot]));
   const kept: Record<ChoiceSlotId, readonly string[]> = {};
@@ -25,6 +58,13 @@ function prunePass(draft: CharacterDraft, catalogue: Catalogue): PruneResult {
   for (const [slotId, picked] of Object.entries(draft.choices)) {
     const slot = slots.get(slotId);
     if (slot === undefined) {
+      // Le contenu manque : on ne sait pas ce que ces réponses valent, donc on
+      // n'y touche pas. Elles dorment, invisibles, et le jour où le contenu
+      // revient la fiche redevient exactement ce qu'elle était.
+      if (!isParentKnown(slotId, catalogue)) {
+        kept[slotId] = picked;
+        continue;
+      }
       removed.push({ slotId, optionIds: picked, reason: 'slot-closed' });
       continue;
     }

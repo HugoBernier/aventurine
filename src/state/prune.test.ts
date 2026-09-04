@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { emptyDraft } from '../domain/draft';
 import type { CharacterDraft } from '../domain/draft';
-import { MINI_CATALOGUE as C } from '../domain/fixtures/miniCatalogue';
+import { MINI_CATALOGUE as C, ROGUE } from '../domain/fixtures/miniCatalogue';
 import { pruneChoices } from './prune';
 
 const draftWith = (parts: Partial<CharacterDraft>): CharacterDraft => ({
@@ -152,5 +152,68 @@ describe('un niveau qui redescend', () => {
       },
     });
     expect(pruneChoices(atFour, C).removed).toEqual([]);
+  });
+});
+
+/**
+ * Perdre ses packs sans perdre ses personnages n'est pas un cas tordu : quota
+ * du navigateur, nettoyage des données du site, personnage ouvert sur un autre
+ * téléphone. La purge ne juge donc que ce qu'elle sait identifier.
+ */
+describe('un contenu absent du catalogue', () => {
+  const withPack = draftWith({
+    classId: 'karn-chasseur-de-brume',
+    choices: {
+      'class:karn-chasseur-de-brume:skills': ['discretion', 'survie'],
+    },
+  });
+
+  it('ne touche pas aux réponses de la classe qui manque', () => {
+    const { draft, removed } = pruneChoices(withPack, C);
+
+    expect(draft.choices['class:karn-chasseur-de-brume:skills']).toEqual([
+      'discretion',
+      'survie',
+    ]);
+    expect(removed).toEqual([]);
+  });
+
+  it('les garde même quand le joueur modifie son personnage', () => {
+    // C'est le vrai danger : la purge ne tourne qu'à la modification, donc la
+    // fiche s'affichait vide et le premier geste anodin effaçait tout.
+    const renamed = { ...withPack, name: 'Milo' };
+    expect(pruneChoices(renamed, C).draft.choices).toEqual(withPack.choices);
+  });
+
+  it('retire toujours ce qui dépend d’un contenu bien présent', () => {
+    // Changer de classe reste une décision du joueur, pas un accident.
+    const asRogue = draftWith({
+      classId: 'roublard',
+      choices: { 'class:roublard:skills': ['discretion'] },
+    });
+    const { draft } = pruneChoices({ ...asRogue, classId: 'clerc' }, C);
+    expect(draft.choices).toEqual({});
+  });
+});
+
+describe('le pack qui revient', () => {
+  it('rend la fiche exactement telle qu’elle était', () => {
+    const asPackClass = draftWith({
+      classId: 'karn-chasseur-de-brume',
+      choices: {
+        'class:karn-chasseur-de-brume:skills': ['discretion', 'acrobaties'],
+      },
+    });
+    const installed = {
+      ...C,
+      classes: [...C.classes, { ...ROGUE, id: 'karn-chasseur-de-brume' }],
+    };
+
+    // Pack absent : les réponses dorment. Pack revenu : elles sont là.
+    expect(pruneChoices(asPackClass, C).draft.choices).toEqual(asPackClass.choices);
+    expect(pruneChoices(asPackClass, installed).draft.choices).toEqual(
+      asPackClass.choices,
+    );
+    expect(pruneChoices(asPackClass, installed).removed).toEqual([]);
   });
 });

@@ -311,6 +311,12 @@ Formulée ainsi, la règle est aussi plus simple à écrire qu'une distinction p
 provenance : on ne cherche pas à savoir *pourquoi* un identifiant manque, on
 constate qu'il manque et on s'abstient.
 
+**État : les deux premières lignes sont écrites** (`isParentKnown` dans
+`state/prune.ts`, quatre tests). La troisième attend la greffe de sous-classe :
+tant qu'aucun pack n'en pose, aucune option ne peut manquer sous un parent
+présent, et l'écrire aujourd'hui serait du code sans cas d'usage. Elle partira
+avec la tranche « classes ».
+
 Une réponse endormie ne coûte que quelques octets, elle est invisible, et elle
 est bornée par le plafond de 64 créneaux déjà posé à l'entrée. Réimporter le
 pack rouvre les créneaux, retrouve les réponses, et la fiche redevient
