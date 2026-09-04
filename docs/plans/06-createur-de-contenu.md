@@ -1,8 +1,9 @@
 # 06 — Créateur de contenu
 
-> Note de conception. **Toutes les décisions sont prises** (§12 et §13) ; rien
-> n'est encore écrit. Le premier travail à sortir est la règle de purge du §7,
-> qui ne dépend d'aucune autre et protège déjà l'existant.
+> Note de conception. **Toutes les décisions sont prises** (§12 et §13) et la
+> charte est à jour (§10) ; le code, lui, n'est pas écrit. Le premier travail à
+> sortir est la règle de purge du §7, qui ne dépend d'aucune autre et protège
+> déjà l'existant.
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
 fichier JSON qu'on garde sur son ordinateur, qu'on rouvre pour modifier, et
@@ -56,6 +57,8 @@ Karn », pas onze fichiers.
   "pack": {
     "id": "karn",
     "name": "Les Brumes de Karn",
+    "author": "Hugo",
+    "description": "Trois peuples et une classe pour une campagne d'horreur gothique.",
     "updatedAt": "2026-09-04T10:12:00.000Z"
   },
   "races": [],
@@ -144,8 +147,8 @@ Le bénéfice, lui, est immédiat : un seul nombre, qui veut dire quelque chose
 pour un humain, et un message de refus qui nomme le produit au lieu d'un
 « format 1 » qu'il faudrait expliquer.
 
-`package.json` porte encore `0.0.0` : il passe à `1.0.0` maintenant, ce qui est
-simplement vrai, et à `2.0.0` le jour où le créateur sort.
+`package.json` est passé de `0.0.0` à `1.0.0`, ce qui est
+simplement vrai. Il passera à `2.0.0` le jour où le créateur sortira.
 
 **Ce dont un personnage se souvient.** Le pack dont il dépend se **déduit** de
 ses identifiants : `karn-chasseur-de-brume` dit « pack karn ». C'est le préfixe du
@@ -169,7 +172,8 @@ déclaratifs**, et ils sont dénombrables :
   choix ouverts au joueur (aujourd'hui : caractéristique, ascendance, tour de
   magie, langue, compétence, outil).
 - **Classe** : dé de vie, sauvegardes, maîtrises, aptitudes par niveau avec
-  leur table (`steps`), sous-classes, magie (caractéristique, rythme, mode de
+  leur table (`steps`), sous-classes — les siennes, ou une greffée sur une
+  classe existante par son champ `for` (§13.1) —, magie (caractéristique, rythme, mode de
   préparation, rituel), défense sans armure, points de vie de sous-classe,
   équipement de départ, paliers d'amélioration, et les choix (compétence,
   équipement, sous-classe, sorts, tours de magie, style de combat, expertise).
@@ -218,7 +222,7 @@ pour deux raisons qui n'ont rien à voir avec la politesse :
    déjà tranché ce point pour un objet dix fois plus simple — `parseDraft`
    existe précisément parce que « les clés d'un JSON ne sont pas de confiance »,
    et son commentaire dit qu'une clé `__proto__` n'atteint jamais l'état.
-2. **Le partage.** Le troisième usage du §0, c'est donner son pack à quelqu'un.
+2. **Le partage.** Le troisième usage annoncé en tête, c'est donner son pack à
    Le fichier qui arrive sur ton téléphone n'a pas été produit par **ton**
    application : version plus ancienne, main humaine, autre outil. « C'est son
    problème » ne tient plus quand le fichier est celui d'un autre et le plantage
@@ -338,7 +342,7 @@ option, découpé une classe en deux. Le parent redevient connu, donc la purge
 reprend son travail — légitimement cette fois. Mais trois avis d'affilée
 « telle option n'est plus disponible » après un import, c'est illisible : il
 faut un avis **de groupe**, posé par l'import et pas par la purge (« Les Brumes
-de Karn v5 : 3 choix de Milo ne sont plus possibles »).
+de Karn, version du 12 octobre : 3 choix de Milo ne sont plus possibles »).
 
 **c. Le même identifiant peut désigner autre chose plus tard.** Le préfixe
 protège de la collision entre packs présents en même temps, pas de la
@@ -426,7 +430,7 @@ Chaque tranche est utilisable seule et laisse l'application verte.
 | | Ce que ça ouvre | Difficulté |
 | --- | --- | --- |
 | 1 | **Sorts** | Plat, sans créneau de choix, référence seulement des classes. Le banc d'essai du format et de l'import. |
-| 2 | **Races** | Ajoute les créneaux (caractéristique, langue, compétence, outil) et les sous-races. |
+| 2 | **Races** | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
 | 3 | **Historiques** | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
 | 4 | **Classes** | Aptitudes par niveau, tables, sous-classes, magie, équipement. Le gros morceau, à faire en dernier avec tout le reste éprouvé. |
 
@@ -439,7 +443,7 @@ mécanisme de fichier, sur un objet dix fois plus simple.
 
 ## 10. Ce que la charte devra dire
 
-Trois modifications, à appliquer quand la décision est prise :
+**Appliquées.** Les quatre modifications ci-dessous sont dans `CLAUDE.md` :
 
 **§1 Périmètre.** Retirer `homebrew` de la liste hors périmètre, et ajouter au
 périmètre : « un **créateur de contenu** : races, classes, historiques et sorts
@@ -486,28 +490,24 @@ pack. » Sans cette ligne, la règle de la charte serait enfreinte en silence.
 | --- | --- | --- |
 | 1 | **Le préfixe est visible dans le fichier** et vérifié à l'import, jamais posé en douce | Rien de magique, et les références internes ne se réécrivent pas |
 | 2 | **Un pack = un fichier = un supplément** : autant de races, classes, historiques et sorts qu'il veut | On envoie « Les Brumes de Karn », pas onze fichiers ; on l'installe et on le retire d'un bloc |
-| 3 | **Réinstaller rend tout, sans rien ressaisir** — c'est une contrainte, pas une option | La purge ne juge que ce qu'elle voit (§7), et trois sous-décisions restent ouvertes ci-dessous |
+| 3 | **Réinstaller rend tout, sans rien ressaisir** — c'est une contrainte, pas une option | La purge ne juge que ce qu'elle voit (§7), et trois décisions techniques en découlent, ci-dessous |
 | 4 | **Validation écrite à la main**, dans la continuité de `parseDraft` | Refus net et sans réparation ; zod reste une porte de sortie justifiable si la tranche « classes » déborde |
 | 5 | **Le créateur est au clavier d'abord** | Exception nommée dans la charte (§10) ; consulter, importer et retirer restent au pouce |
 | 6 | **Un personnage exporté emporte toujours ses packs** | Un fichier qui ne s'ouvre qu'à moitié est un piège qu'on découvre le jour où c'est grave |
 
-### Encore ouvertes
+### Les trois que la décision 3 fait apparaître
 
-Les trois que la décision 3 fait apparaître, détaillées au §7 :
+Détaillées au §7, tranchées ici. Ce sont des décisions techniques prises au
+jugé : elles se corrigent en écrivant la règle de purge si le code dit le
+contraire.
 
-1. **Le plafond de 64 créneaux compte-t-il les réponses endormies ?** Je
-   recommande de les en exclure : la borne existe contre un fichier hostile, pas
-   contre un joueur fidèle à son pack.
-2. **Un pack qui revient modifié doit-il poser un avis de groupe** plutôt que
-   trois avis d'affilée ? Je recommande oui, posé par l'import.
-3. **Faut-il protéger de la réutilisation d'un nom de pack dans le temps ?** Je
-   recommande non : un suffixe opaque empoisonnerait tous les identifiants pour
-   un cas rare, et l'écran de gestion rend la surprise visible.
+| | Décision | Pourquoi |
+| --- | --- | --- |
+| 7 | **Le plafond de 64 créneaux ne compte pas les réponses endormies** | La borne existe contre un fichier hostile, pas contre un joueur fidèle à son pack. Sans ça, ce sont les réponses vivantes qui sauteraient, les endormies étant les plus anciennes |
+| 8 | **Un pack qui revient modifié pose un avis de groupe**, posé par l'import et non par la purge | Trois avis d'affilée « telle option n'est plus disponible » après un import, personne ne les lit |
+| 9 | **Rien ne protège de la réutilisation d'un nom de pack dans le temps** | Un suffixe opaque (`karn-a7f3`) empoisonnerait tous les identifiants pour un cas rare ; la date affichée à l'écran de gestion rend la surprise visible |
 
-Aucune des trois ne bloque le début du travail : elles se tranchent en écrivant
-la règle de purge, qui est de toute façon la première chose à faire.
-
-Les neuf points du §13 sont tranchés à leur tour.
+Les neuf points du §13 sont tranchés à leur tour : **rien ne reste ouvert.**
 
 ---
 
@@ -563,7 +563,7 @@ Une classe de « Karn » qui référence un sort du pack « Brumes ». Ça para�
 inoffensif et ça introduit un **graphe de dépendances** : ordre d'installation,
 retrait qui casse un tiers, versions croisées.
 
-**Tranché : interdit en v1**, et écrit dans le message de refus. Une référence
+**Tranché : interdit**, et écrit dans le message de refus. Une référence
 pointe le SRD ou le pack lui-même. Qui veut les deux les réunit en un seul
 pack — c'est précisément ce que le pack-supplément permet.
 
@@ -571,7 +571,7 @@ pack — c'est précisément ce que le pack-supplément permet.
 `barde`, un sort qui nomme `magicien`, ce sont des références **vers le SRD**,
 toujours présent. Aucune dépendance entre packs n'y est créée.
 
-### 4. Un pack peut-il **masquer** du contenu du SRD ? — Non, et pas seulement en v1
+### 4. Un pack peut-il **masquer** du contenu du SRD ? — Non, et pas « pas encore »
 
 **Tranché : non.** Qui ne veut pas d'un tieffelin dans sa campagne ne le
 choisit pas. Le seul cas que le masquage servirait vraiment, c'est un meneur qui
@@ -654,7 +654,7 @@ existant : « Contient du contenu maison : Les Brumes de Karn, 4 septembre
 ### 7. Que porte un pack en plus de son nom ?
 
 De quoi il s'agit : ce qui est écrit dans le fichier **à côté** du contenu, et
-qui ne sert qu'à savoir ce qu'on tient. Aujourd'hui le pack porte quatre champs
+qui ne sert qu'à savoir ce qu'on tient. Aujourd'hui le pack porte trois champs
 techniques — `id`, `name`, `updatedAt`. La question est de savoir s'il en faut
 d'autres.
 
