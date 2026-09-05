@@ -1,9 +1,12 @@
 # 06 — Créateur de contenu
 
-> Note de conception. **Toutes les décisions sont prises** (§12 et §13) et la
-> charte est à jour (§10) ; le code, lui, n'est pas écrit. Le premier travail à
-> sortir est la règle de purge du §7, qui ne dépend d'aucune autre et protège
-> déjà l'existant.
+> Note de conception, tenue à jour au fil des tranches. Les décisions sont
+> prises (§12 et §13) et la charte est à jour (§10).
+>
+> **Écrit :** la règle de purge du §7, l'export/import d'un personnage, la
+> tranche 1 (sorts) et la tranche 2 (sous-classes greffées) — voir §9.
+> **Reste :** races, historiques, classes entières.
+> **Ouvert :** le point 10 du §13, à trancher avec la tranche « classes ».
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
 fichier JSON qu'on garde sur son ordinateur, qu'on rouvre pour modifier, et
@@ -555,11 +558,13 @@ contraire.
 | 8 | **Un pack qui revient modifié pose un avis de groupe**, posé par l'import et non par la purge | Trois avis d'affilée « telle option n'est plus disponible » après un import, personne ne les lit |
 | 9 | **Rien ne protège de la réutilisation d'un nom de pack dans le temps** | Un suffixe opaque (`karn-a7f3`) empoisonnerait tous les identifiants pour un cas rare ; la date affichée à l'écran de gestion rend la surprise visible |
 
-Les neuf points du §13 sont tranchés à leur tour : **rien ne reste ouvert.**
+Les neuf points du §13 sont tranchés à leur tour. Un dixième s'est ouvert
+depuis, en écrivant la tranche 2 : les packs d'addons (§13.10), qui attendent
+la tranche « classes » pour avoir un sens.
 
 ---
 
-## 13. Neuf points que la première liste ne posait pas
+## 13. Dix points que la première liste ne posait pas
 
 Par ordre d'importance. Les trois premiers engagent le format ou une règle de
 fond : les trancher tard coûte cher.
@@ -791,3 +796,49 @@ Le jour où la 3 change vraiment le format, la conversion s'écrit à ce
 moment-là, à un seul endroit, avec son test. Le champ `aventurine` suffit à
 rendre ce jour-là possible : c'est lui, et lui seul, qu'il faut poser
 maintenant.
+
+### 10. Un pack d'« addons » : des voies qui visent la classe d'un autre pack
+
+**Ouvert. À trancher à la tranche 5, quand une classe pourra exister hors du
+SRD — pas avant : aujourd'hui un addon n'aurait aucune classe à viser.**
+
+De quoi il s'agit : « Le Brumeur », une classe, publié par quelqu'un ; « Trois
+voies pour le Brumeur », un second fichier, publié par quelqu'un d'autre. Le
+§13.3 refuse cette dépendance croisée. En relisant le code écrit depuis, **deux
+de ses trois arguments ne tiennent plus** :
+
+| L'argument de départ | Ce que le code dit aujourd'hui |
+| --- | --- |
+| « Ordre d'installation » | **Tombe.** `catalogueWithPacks` recalcule tout à chaque changement et verse chaque greffe dans la classe qui porte son `for`. Une greffe dont la cible est absente ne s'applique nulle part : elle est inerte, pas cassée. Il n'y a pas d'ordre. |
+| « Un retrait qui casse un tiers » | **Tombe.** La règle du §7 a payé la note entre-temps : sans la classe, le parent du créneau `class:<classe>:subclass` est inconnu, donc la réponse dort. La classe revient, la réponse aussi. |
+| « Versions croisées » | **Tient**, mais se réduit au point 9 : le préfixe protège de la collision entre packs présents, pas de la réutilisation d'un nom dans le temps. La date à l'écran de gestion rend la surprise visible. |
+
+**Le vrai prix, que la première liste ne voyait pas : la validation cesse
+d'être auto-suffisante.** Aujourd'hui un `for` qui ne pointe rien est refusé,
+et ce refus attrape une faute de frappe — `"for": "bard"` pour `"barde"`. Si un
+identifiant inconnu devient « en attente », la faute n'est plus attrapée : le
+pack s'installe, la voie n'apparaît jamais, et le joueur cherche pourquoi.
+
+**Contraintes à respecter le jour où on le fera :**
+
+1. **L'attente se voit, et elle nomme ce qu'elle attend.** « 3 voies attendent
+   la classe « karn-brumeur », qui n'est pas installée » — sur l'écran de
+   gestion, à côté du pack, pas seulement au moment de l'import. C'est ce qui
+   rend une faute de frappe visible au lieu de silencieuse.
+2. **Le fichier reste lisible sans sa cible.** Un addon s'installe, se
+   réexporte et se retire comme un autre ; il n'est jamais « à moitié
+   installé ».
+3. **Rien ne se purge.** Une voie en attente choisie par un personnage suit la
+   règle du §7 : elle dort, elle ne meurt pas.
+4. **Aucun ordre imposé, ni à l'installation ni au retrait.** L'assemblage
+   reste une fonction pure de l'ensemble des packs installés.
+5. **Le créateur ne propose pas les classes des autres packs** (§13.1) : viser
+   une classe qu'on ne possède pas se fait en écrivant son identifiant, jamais
+   par une liste qui donnerait l'illusion d'une dépendance gérée.
+6. **La distinction reste dicible au joueur** : « cette voie vient d'un autre
+   pack que la classe » doit pouvoir s'afficher, sinon la provenance ment.
+
+Ce qui marche **déjà**, et qu'il ne faut pas confondre avec ça : un pack qui ne
+contient **que** des voies greffées sur des classes du SRD est un pack
+parfaitement normal depuis la tranche 2 — « quatre collèges de barde » tient en
+un fichier, sans une ligne de plus.
