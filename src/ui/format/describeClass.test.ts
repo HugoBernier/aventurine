@@ -88,7 +88,9 @@ describe('fiche de classe', () => {
   it('déplie le tableau d’une aptitude qui en suit un', () => {
     const rage = bodyOf(barbarian, 'Niveau 1');
     expect(rage).toContain('Rage — ');
-    expect(rage).toContain('Niveau 9 : 4 rages par repos long, +3 aux dégâts');
+    expect(rage).toContain(
+      'À partir du niveau 9 : 4 rages par repos long, +3 aux dégâts',
+    );
   });
 
   it('range les niveaux dans l’ordre croissant', () => {

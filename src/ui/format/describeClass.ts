@@ -91,8 +91,11 @@ function advancements(entry: CharacterClass): ChoiceDetail | null {
 
 /** Une aptitude, sa règle, et le tableau qu'elle suit quand elle en a un. */
 function featureBlock(feature: LeveledFeature): string {
+  // « À partir du » et non « Niveau N » : la section porte déjà un titre de
+  // niveau, et deux « Niveau 1 » de sens différents à trois lignes d'écart se
+  // lisent comme une répétition, pas comme un tableau.
   const steps = (feature.steps ?? []).map(
-    (step) => `Niveau ${String(step.from)} : ${step.value}`,
+    (step) => `À partir du niveau ${String(step.from)} : ${step.value}`,
   );
   return [`${feature.name} — ${feature.text}`, ...steps].join('\n');
 }
