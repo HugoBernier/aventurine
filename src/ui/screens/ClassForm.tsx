@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { ClassDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
+import { ARMOR_LABELS, WEAPON_CATEGORY_LABELS } from '../format/proficiencies';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
@@ -14,17 +15,14 @@ import styles from './SpellForm.module.css';
 const HIT_DICE = [6, 8, 10, 12] as const;
 const LEVELS = Array.from({ length: 20 }, (_, index) => index + 1);
 
-const ARMOR = [
-  { id: 'legere', name: 'Armures légères' },
-  { id: 'intermediaire', name: 'Armures intermédiaires' },
-  { id: 'lourde', name: 'Armures lourdes' },
-  { id: 'bouclier', name: 'Boucliers' },
-];
+/* Les mêmes intitulés que la fiche de classe affiche : une seule liste, sinon
+   le créateur et la fiche finiraient par ne plus dire la même chose. */
+const ARMOR = Object.entries(ARMOR_LABELS).map(([id, name]) => ({ id, name }));
 
-const WEAPON_CATEGORIES = [
-  { id: 'courantes', name: 'Armes courantes' },
-  { id: 'de-guerre', name: 'Armes de guerre' },
-];
+const WEAPON_CATEGORIES = Object.entries(WEAPON_CATEGORY_LABELS).map(([id, name]) => ({
+  id,
+  name,
+}));
 
 const PROGRESSIONS = [
   ['full', 'Complet — magicien, clerc, barde'],

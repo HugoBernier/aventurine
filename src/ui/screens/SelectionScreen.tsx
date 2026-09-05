@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import type { Catalogue } from '../../domain/catalogue';
 import { findRace } from '../../domain/catalogue';
+import type { ChoiceOption } from '../../domain/choice';
 import type { Facts } from '../../domain/content';
 import type { CharacterDraft } from '../../domain/draft';
 import { useCatalogue, useDraft, useWizardDispatch } from '../../state/hooks';
 import type { WizardAction } from '../../state/types';
 import type { FactLabels } from '../components/ChoiceGroup';
+import { describeClass } from '../format/describeClass';
 import { EntityChoiceScreen } from './EntityChoiceScreen';
 import { entityOptions } from './entityOptions';
 
@@ -90,6 +92,16 @@ const CONFIG: Record<SelectionKind, SelectionConfig> = {
   },
 };
 
+/**
+ * La classe est la seule des quatre à porter une fiche : c'est celle dont le
+ * choix engage vingt niveaux, et celle qu'un joueur écrit lui-même dans un
+ * pack. Les trois autres rendront la leur quand leur `describe` existera —
+ * `entityOptions` les prend déjà.
+ */
+function classOptions(catalogue: Catalogue): readonly ChoiceOption[] {
+  return entityOptions(catalogue.classes, (entry) => describeClass(entry, catalogue));
+}
+
 export interface SelectionScreenProps {
   readonly kind: SelectionKind;
 }
@@ -106,7 +118,11 @@ export function SelectionScreen({ kind }: SelectionScreenProps): ReactNode {
       legend={config.legend}
       fieldName={kind}
       kind="ability"
-      options={entityOptions(config.entries(catalogue, draft))}
+      options={
+        kind === 'class'
+          ? classOptions(catalogue)
+          : entityOptions(config.entries(catalogue, draft))
+      }
       selectedId={selectedId}
       onSelect={(id) => {
         dispatch(config.action(id));

@@ -70,7 +70,23 @@
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 }
 
+/* La carte n'est plus le `<label>` : elle le contient, avec la fiche repliée à
+   côté. `<details>` n'est pas du contenu de phrasé et n'a donc rien à faire
+   dans un `<label>`. */
 .card {
+  display: block;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3);
+  /* Supprime le délai de 300 ms et le zoom au double-tap. */
+  touch-action: manipulation;
+  min-width: 0;
+}
+
+/* La zone qui SÉLECTIONNE, et elle seule : déplier la fiche ne choisit pas la
+   classe. */
+.pick {
   display: block;
   /* Bloc de positionnement du champ caché ci-dessous. SANS ce `relative`, le
      champ se positionne par rapport au BODY : il ne suit plus le défilement de
@@ -79,19 +95,13 @@
      Ce n'est pas de la coquetterie : c'est ce qui casse le défilement au tap. */
   position: relative;
   min-height: var(--touch-target);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  padding: var(--space-3);
   cursor: pointer;
-  /* Supprime le délai de 300 ms et le zoom au double-tap. */
-  touch-action: manipulation;
   min-width: 0;
 }
 
 /* Jamais `display: none` : cela retirerait le champ de l'ordre de tabulation
    et des lecteurs d'écran. Il reste donc dans la page, invisible, ancré sur sa
-   carte (`.card` est `position: relative`) et calé en haut à gauche : le
+   zone de choix (`.pick` est `position: relative`) et calé en haut à gauche : le
    navigateur qui le révèle au focus n'a alors rien à faire défiler. */
 .input {
   position: absolute;
@@ -189,4 +199,63 @@
 
 .empty {
   color: var(--color-text-muted);
+}
+
+/* La fiche complète, repliée. Le filet la sépare de la zone qui sélectionne :
+   deux gestes différents, deux zones visiblement différentes. */
+.sheet {
+  margin-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-rule);
+}
+
+.sheetSummary {
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: var(--font-size-100);
+  cursor: pointer;
+  /* Les deux ensemble : `list-style` couvre Firefox, le pseudo-élément couvre
+     les navigateurs WebKit. */
+  list-style: none;
+}
+
+.sheetSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* Décoratif et redondant : le libellé dit déjà ce que fait le dépliant. */
+.sheetSummary::before {
+  content: '▸';
+}
+
+.sheet[open] > .sheetSummary::before {
+  content: '⌄';
+}
+
+.sheetBody {
+  margin: 0 0 var(--space-2);
+  display: grid;
+  gap: var(--space-3);
+  font-size: var(--font-size-100);
+}
+
+.entry {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.entryTitle {
+  font-weight: 600;
+}
+
+.entryText {
+  margin: 0;
+  color: var(--color-text-muted);
+  /* Les paliers d'une aptitude font une ligne chacun : le texte porte ses
+     retours, et sans ceci ils s'écraseraient en un seul paragraphe. */
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }

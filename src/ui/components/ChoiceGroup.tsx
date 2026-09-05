@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import type { ChoiceKind, ChoiceOption } from '../../domain/choice';
+import type { ChoiceDetail, ChoiceKind, ChoiceOption } from '../../domain/choice';
 import { formatUnavailable } from '../format/unavailable';
 import { Provenance } from './Provenance';
 import styles from './ChoiceGroup.module.css';
@@ -153,6 +153,41 @@ function Band({
   );
 }
 
+/**
+ * La fiche de l'entrée, repliée, et sœur du `<label>` plutôt que fille : un
+ * `<label>` n'accepte que du contenu de phrasé, dont `<details>` ne fait pas
+ * partie. Imbriqué, le repli serait du HTML invalide au beau milieu d'une
+ * cible tactile — et le comportement des navigateurs sur cette imbrication
+ * n'est pas quelque chose sur quoi parier une cible de 44 px.
+ *
+ * Repliée par défaut : fermée, elle ne coûte pas une ligne de défilement, et
+ * douze classes tiennent à l'œil comme avant.
+ */
+function Sheet({
+  name,
+  details,
+}: {
+  readonly name: string;
+  readonly details: readonly ChoiceDetail[];
+}): ReactNode {
+  if (details.length === 0) {
+    return null;
+  }
+  return (
+    <details className={styles.sheet}>
+      <summary className={styles.sheetSummary}>La fiche de {name}</summary>
+      <dl className={styles.sheetBody}>
+        {details.map((detail) => (
+          <div key={detail.title} className={styles.entry}>
+            <dt className={styles.entryTitle}>{detail.title}</dt>
+            <dd className={styles.entryText}>{detail.body}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
 function OptionCard({
   option,
   kind,
@@ -171,33 +206,36 @@ function OptionCard({
   readonly factLabels: FactLabels | undefined;
 }): ReactNode {
   return (
-    <label className={styles.card}>
-      <input
-        className={styles.input}
-        type={inputType}
-        name={fieldName}
-        value={option.id}
-        checked={isChecked}
-        disabled={option.unavailable !== null}
-        onChange={() => {
-          onToggle(option.id);
-        }}
-      />
-      <span className={styles.body}>
-        <span className={styles.head}>
-          <span className={styles.name}>{option.label}</span>
-          {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
-        </span>
-        <Provenance id={option.id} />
-        <span className={styles.blurb}>{option.blurb}</span>
-        <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
-        {option.unavailable !== null && (
-          <span className={styles.unavailable}>
-            {formatUnavailable(option.unavailable, kind)}
+    <div className={styles.card}>
+      <label className={styles.pick}>
+        <input
+          className={styles.input}
+          type={inputType}
+          name={fieldName}
+          value={option.id}
+          checked={isChecked}
+          disabled={option.unavailable !== null}
+          onChange={() => {
+            onToggle(option.id);
+          }}
+        />
+        <span className={styles.body}>
+          <span className={styles.head}>
+            <span className={styles.name}>{option.label}</span>
+            {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
           </span>
-        )}
-      </span>
-    </label>
+          <Provenance id={option.id} />
+          <span className={styles.blurb}>{option.blurb}</span>
+          <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
+          {option.unavailable !== null && (
+            <span className={styles.unavailable}>
+              {formatUnavailable(option.unavailable, kind)}
+            </span>
+          )}
+        </span>
+      </label>
+      <Sheet name={option.label} details={option.details} />
+    </div>
   );
 }
 
