@@ -8,8 +8,9 @@ import {
   useView,
   useWizard,
 } from '../state/hooks';
-import type { Screen, StepId } from '../state/types';
+import type { Screen, StepId, WizardView } from '../state/types';
 import { loadPackDraft } from '../state/persistence/creatorStorage';
+import { emptyPackDraft, parsePackDraft } from '../domain/packDraft';
 import type { PackDraft } from '../domain/packDraft';
 import { Notice } from './components/Notice';
 import { ProgressBanner } from './components/ProgressBanner';
@@ -42,6 +43,21 @@ const CreatorScreen = lazy(async () => {
   const module = await import('./screens/CreatorScreen');
   return { default: module.CreatorScreen };
 });
+
+/**
+ * Où « revenir » ramène, et comment le dire. Les écrans d'appareil — tes
+ * packs, tes personnages, le créateur — se rejoignent depuis plusieurs
+ * endroits : leur retour suit celui qu'on a quitté, jamais une destination
+ * écrite d'avance. C'est la mémoire d'un seul cran, ce qui suffit parce que le
+ * créateur ne s'ouvre que depuis les packs.
+ */
+const RETURN_LABELS: Record<WizardView, string> = {
+  wizard: 'Revenir à l’assistant',
+  summary: 'Revenir à ma fiche',
+  library: 'Revenir à tes personnages',
+  packs: 'Revenir à tes packs',
+  creator: 'Revenir au créateur',
+};
 
 const STEP_LABELS: Record<StepId, string> = {
   race: 'Ta race',
@@ -145,6 +161,17 @@ export function Wizard(): ReactNode {
   // doit rouvrir celle qu'on regardait : la vue vit donc dans l'état, avec le
   // reste de ce qu'on sauvegarde.
   const { view, setView } = useView();
+  // Local, et non rangé avec le personnage : c'est un cran de navigation, pas
+  // une donnée de fiche. Au rechargement on retombe sur la fiche, qui est le
+  // retour juste dans le doute.
+  const [cameFrom, setCameFrom] = useState<WizardView>('summary');
+  const openView = (next: WizardView, from: WizardView): void => {
+    setCameFrom(from);
+    setView(next);
+  };
+  const leaveView = (): void => {
+    setView(cameFrom);
+  };
   // Le pack en cours d'écriture est relu une fois, au démarrage : c'est le
   // filet du créateur, et il vit sous sa propre clé.
   const [packDraft, setPackDraft] = useState<PackDraft>(loadPackDraft);
@@ -162,27 +189,23 @@ export function Wizard(): ReactNode {
             stepCount={1}
             screenIndex={1}
             screenCount={1}
-            onBack={() => {
-              setView('summary');
-            }}
+            onBack={leaveView}
             onOpenSummary={() => {
               setView('summary');
             }}
           />
         }
         actions={
-          <ActionBar
-            primary={{
-              label: 'Revenir à l’assistant',
-              onClick: () => {
-                setView('wizard');
-              },
-            }}
-          />
+          <ActionBar primary={{ label: RETURN_LABELS[cameFrom], onClick: leaveView }} />
         }
       >
         <PacksScreen
           onCreate={() => {
+            setPackDraft(emptyPackDraft());
+            setView('creator');
+          }}
+          onEdit={(file) => {
+            setPackDraft(parsePackDraft(JSON.parse(file)));
             setView('creator');
           }}
         />
@@ -242,26 +265,21 @@ export function Wizard(): ReactNode {
             stepCount={1}
             screenIndex={1}
             screenCount={1}
-            onBack={() => {
-              setView('wizard');
-            }}
+            onBack={leaveView}
             onOpenSummary={() => {
               setView('summary');
             }}
           />
         }
         actions={
-          <ActionBar
-            primary={{
-              label: 'Revenir à l’assistant',
-              onClick: () => {
-                setView('wizard');
-              },
-            }}
-          />
+          <ActionBar primary={{ label: RETURN_LABELS[cameFrom], onClick: leaveView }} />
         }
       >
-        <LibraryScreen />
+        <LibraryScreen
+          onOpenPacks={() => {
+            openView('packs', 'library');
+          }}
+        />
       </AppShell>
     );
   }
@@ -301,10 +319,10 @@ export function Wizard(): ReactNode {
       >
         <SummaryScreen
           onOpenLibrary={() => {
-            setView('library');
+            openView('library', 'summary');
           }}
           onOpenPacks={() => {
-            setView('packs');
+            openView('packs', 'summary');
           }}
         />
       </AppShell>

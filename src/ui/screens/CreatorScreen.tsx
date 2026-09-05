@@ -566,7 +566,9 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         disabled={parsed.kind !== 'ok' || isEmpty}
         onClick={() => {
           if (parsed.kind !== 'ok') return;
-          install(parsed.pack);
+          // Le pack ET le fichier qui l'écrit : c'est ce fichier qu'on rendra
+          // à l'auteur, et qu'on rouvrira ici pour modifier.
+          install(parsed.pack, packDraftFileText(draft, new Date().toISOString()));
           setInstalled(parsed.pack.info.name);
         }}
       >

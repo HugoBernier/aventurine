@@ -7,7 +7,6 @@ import {
   MAX_PACK_BYTES,
   packDraftFileText,
   packFileName,
-  packFileText,
   readPackFile,
 } from './packFile';
 
@@ -42,20 +41,6 @@ const karn: ContentPack = {
 };
 
 describe('le fichier d’un pack', () => {
-  it('revient identique après l’aller-retour', () => {
-    const parsed = readPackFile(packFileText(karn), MINI_CATALOGUE);
-    expect(parsed).toEqual({ kind: 'ok', pack: karn });
-  });
-
-  it('montre les genres qu’un pack peut porter, même vides', () => {
-    const written: unknown = JSON.parse(packFileText(karn));
-    expect(written).toMatchObject({ races: [], classes: [], backgrounds: [] });
-  });
-
-  it('porte la version d’Aventurine qui l’a écrit', () => {
-    expect(packFileText(karn)).toContain(`"aventurine": ${String(APP_MAJOR_VERSION)}`);
-  });
-
   it('prend le nom du pack pour nom de fichier', () => {
     expect(packFileName(karn)).toBe('pack-karn.json');
   });

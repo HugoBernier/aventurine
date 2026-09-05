@@ -4,15 +4,28 @@ import { catalogueWithPacks } from '../domain/packCatalogue';
 import type { AdvancementFor } from '../domain/packCatalogue';
 import type { Catalogue } from '../domain/catalogue';
 import type { ContentPack } from '../domain/pack';
-import { loadPacks, savePacks } from './persistence/packStorage';
+import { readPackFile } from './persistence/packFile';
+import { loadPackFiles, savePackFiles } from './persistence/packStorage';
+
+/** Un pack installé : ce que l'application en lit, et le fichier qui l'a écrit. */
+export interface InstalledPack {
+  readonly pack: ContentPack;
+  readonly file: string;
+}
 
 export interface PacksValue {
   readonly packs: readonly ContentPack[];
   /** Le SRD augmenté de ce qui est installé : ce que voit l'application. */
   readonly catalogue: Catalogue;
   /** Réinstaller un pack le REMPLACE : c'est la mise à jour, pas un doublon. */
-  readonly install: (pack: ContentPack) => void;
+  readonly install: (pack: ContentPack, file: string) => void;
   readonly remove: (packId: string) => void;
+  /**
+   * Le fichier tel qu'on l'a reçu. C'est lui qu'on rend à l'auteur, et lui
+   * qu'on rouvre pour modifier : reconstruire un fichier depuis ce que
+   * l'analyse en a tiré perdrait ce qu'elle n'a pas eu à comprendre.
+   */
+  readonly fileOf: (packId: string) => string | null;
   readonly isStorageFull: boolean;
 }
 
@@ -33,28 +46,46 @@ export function PacksProvider({
 }: PacksProviderProps): ReactNode {
   // Initialiseur paresseux : la relecture est synchrone, comme celle des
   // personnages, donc pas d'écran de chargement.
-  const [packs, setPacks] = useState<readonly ContentPack[]>(() => loadPacks(base));
+  const [files, setFiles] = useState<readonly string[]>(loadPackFiles);
   const [isStorageFull, setStorageFull] = useState(false);
 
-  const write = useCallback((next: readonly ContentPack[]): void => {
-    setPacks(next);
-    setStorageFull(savePacks(next).kind === 'quota');
+  const write = useCallback((next: readonly string[]): void => {
+    setFiles(next);
+    setStorageFull(savePackFiles(next).kind === 'quota');
   }, []);
 
-  const value = useMemo<PacksValue>(
-    () => ({
+  // Le MÊME lecteur que l'import : un pack rangé repasse par l'enveloppe, la
+  // borne de taille et la validation, sans quoi ce qui entre par le stockage
+  // n'aurait pas franchi ce qui entre par le fichier. Un pack qui ne repasse
+  // plus — parce que le catalogue a changé sous lui — est écarté en silence
+  // plutôt que de faire échouer le démarrage.
+  const installed = useMemo<readonly InstalledPack[]>(
+    () =>
+      files.flatMap((file) => {
+        const read = readPackFile(file, base);
+        return read.kind === 'ok' ? [{ pack: read.pack, file }] : [];
+      }),
+    [files, base],
+  );
+
+  const value = useMemo<PacksValue>(() => {
+    const packs = installed.map((entry) => entry.pack);
+    const without = (packId: string): readonly string[] =>
+      installed.filter((kept) => kept.pack.info.id !== packId).map((kept) => kept.file);
+    return {
       packs,
       catalogue: catalogueWithPacks(base, packs, advancementFor),
-      install: (pack) => {
-        write([...packs.filter((kept) => kept.info.id !== pack.info.id), pack]);
+      install: (pack, file) => {
+        write([...without(pack.info.id), file]);
       },
       remove: (packId) => {
-        write(packs.filter((kept) => kept.info.id !== packId));
+        write(without(packId));
       },
+      fileOf: (packId) =>
+        installed.find((entry) => entry.pack.info.id === packId)?.file ?? null,
       isStorageFull,
-    }),
-    [base, packs, isStorageFull, write, advancementFor],
-  );
+    };
+  }, [base, installed, isStorageFull, write, advancementFor]);
 
   return <PacksContext value={value}>{children}</PacksContext>;
 }

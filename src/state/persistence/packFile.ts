@@ -22,26 +22,6 @@ export type PackFileResult =
   | { readonly kind: 'invalid'; readonly issues: readonly PackIssue[] };
 
 /**
- * Le fichier d'un pack. Les tableaux des genres à venir sont écrits vides
- * plutôt qu'omis : le format est celui du §2 du plan, et un lecteur humain
- * doit voir ce qu'un pack peut porter.
- */
-export function packFileText(pack: ContentPack): string {
-  return JSON.stringify(
-    {
-      aventurine: APP_MAJOR_VERSION,
-      pack: pack.info,
-      races: [],
-      classes: [],
-      backgrounds: [],
-      spells: pack.spells,
-    },
-    null,
-    2,
-  );
-}
-
-/**
  * Le fichier d'un pack encore en écriture. L'enveloppe est la MÊME : un pack
  * inachevé s'enregistre, se rouvre dans le créateur, et s'installera le jour
  * où il sera complet — sans jamais changer de forme entre-temps.

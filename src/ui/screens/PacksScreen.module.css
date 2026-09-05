@@ -134,3 +134,17 @@
   margin: var(--space-2) 0 0;
   padding-inline-start: var(--space-4);
 }
+
+/* Le geste rare de la carte : offert, jamais mis en avant. Ressortir un pack
+   en fichier sert le jour où on l'a perdu ailleurs — pas tous les jours. */
+.minor {
+  align-self: start;
+  min-height: var(--touch-target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-size: var(--font-size-100);
+  text-align: start;
+  touch-action: manipulation;
+}

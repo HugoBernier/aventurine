@@ -13,7 +13,12 @@ import styles from './LibraryScreen.module.css';
  * plutôt que dans une fenêtre : sur un téléphone, une boîte de dialogue native
  * se rate au pouce, et rien ici ne se récupère après coup.
  */
-export function LibraryScreen(): ReactNode {
+export interface LibraryScreenProps {
+  /** Les packs valent pour l'appareil, comme cette liste : ils s'ouvrent d'ici. */
+  readonly onOpenPacks: () => void;
+}
+
+export function LibraryScreen({ onOpenPacks }: LibraryScreenProps): ReactNode {
   const { characters, create, add, switchTo, remove } = useLibrary();
   const [confirming, setConfirming] = useState<string | null>(null);
   const [message, setMessage] = useState<ImportMessage | null>(null);
@@ -145,6 +150,14 @@ export function LibraryScreen(): ReactNode {
         Un personnage que tu as enregistré depuis ta fiche, sur cet appareil ou un autre.
         Il s’ajoute : rien de ce que tu as ici n’est remplacé.
       </p>
+
+      {/* Les packs valent pour l'appareil, comme cette liste. Ils n'étaient
+          atteignables qu'au bas d'une fiche, donc après avoir fait défiler tout
+          un personnage pour un réglage qui n'en concerne aucun. */}
+      <button type="button" className={styles.packs} onClick={onOpenPacks}>
+        <span>Tes packs</span>
+        <span className={styles.chevron}>Du contenu écrit à la main</span>
+      </button>
     </>
   );
 }

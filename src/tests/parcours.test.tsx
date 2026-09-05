@@ -641,6 +641,8 @@ describe('parcours de création', () => {
 
     // Le catalogue de l'assistant est celui du SRD PLUS les packs installés :
     // rien d'autre n'a été branché pour que ce sort apparaisse ici.
+    // Le retour suit d'où l'on vient : la fiche, puis l'assistant depuis elle.
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     await user.click(screen.getByRole('radio', { name: /Nain/ }));
     await next(user);
@@ -669,9 +671,60 @@ describe('parcours de création', () => {
 
     // Réinstallé sans rien ressaisir, le sort est de retour sur la fiche.
     await user.upload(screen.getByLabelText(/Installer un pack/), PACK_FILE);
-    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
-    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     expect(screen.getByText('Appel des brumes')).toBeInTheDocument();
+  });
+
+  it('garde un pack entier d’un rechargement à l’autre, sa classe comprise', async () => {
+    const user = userEvent.setup();
+    const view = render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), CLASS_FILE);
+    expect(screen.getByText(/1 classe/)).toBeInTheDocument();
+
+    // Ce qui est rangé, c'est le FICHIER : le pack revient entier, et non
+    // réduit à ce qu'un résumé avait su garder.
+    globalThis.dispatchEvent(new Event('pagehide'));
+    view.unmount();
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    expect(screen.getByText(/1 classe/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await next(user);
+    expect(screen.getByRole('radio', { name: /Brumeur/ })).toBeInTheDocument();
+  });
+
+  it('rouvre un pack installé dans le créateur, sans redemander le fichier', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), CLASS_FILE);
+
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Écrire un pack',
+    );
+    // Le créateur s'ouvre SUR ce pack, pas sur un brouillon vide.
+    expect(await screen.findByDisplayValue('Les Brumes de Karn')).toBeInTheDocument();
+  });
+
+  it('revient là d’où l’on vient, et non à une destination écrite d’avance', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes personnages/ }));
+    // Les packs s'ouvrent aussi depuis la liste des personnages, qui est
+    // l'écran de l'appareil : leur retour y ramène.
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.click(screen.getByRole('button', { name: 'Revenir à tes personnages' }));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Tes personnages',
+    );
   });
 
   it('greffe une voie de pack sur une classe du SRD, sans rien y remplacer', async () => {
@@ -683,6 +736,8 @@ describe('parcours de création', () => {
     await user.upload(screen.getByLabelText(/Installer un pack/), GRAFT_FILE);
     expect(screen.getByText(/1 sous-classe/)).toBeInTheDocument();
 
+    // Le retour suit d'où l'on vient : la fiche, puis l'assistant depuis elle.
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     await user.click(screen.getByRole('radio', { name: /Nain/ }));
     await next(user);
@@ -725,6 +780,7 @@ describe('parcours de création', () => {
     await user.upload(screen.getByLabelText(/Installer un pack/), RACE_FILE);
     expect(screen.getByText(/1 peuple/)).toBeInTheDocument();
 
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     // Les neuf du SRD sont toujours là, le dixième s'ajoute à la fin.
     expect(screen.getAllByRole('radio')).toHaveLength(10);
@@ -764,6 +820,8 @@ describe('parcours de création', () => {
     await user.upload(screen.getByLabelText(/Installer un pack/), BACKGROUND_FILE);
     expect(screen.getByText(/1 historique/)).toBeInTheDocument();
 
+    // Le retour suit d'où l'on vient : la fiche, puis l'assistant depuis elle.
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     await user.click(screen.getByRole('radio', { name: /Humain/ }));
     for (let step = 0; step < 14; step++) {
@@ -790,6 +848,8 @@ describe('parcours de création', () => {
     await user.upload(screen.getByLabelText(/Installer un pack/), CLASS_FILE);
     expect(screen.getByText(/1 classe/)).toBeInTheDocument();
 
+    // Le retour suit d'où l'on vient : la fiche, puis l'assistant depuis elle.
+    await user.click(screen.getByRole('button', { name: 'Revenir à ma fiche' }));
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     await user.click(screen.getByRole('radio', { name: /Humain/ }));
     await next(user);

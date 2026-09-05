@@ -156,3 +156,30 @@
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* La porte des packs, à la même forme que celles de la fiche : un titre, et
+   ce qu'on y trouve. */
+.packs {
+  width: 100%;
+  min-height: var(--touch-target);
+  margin-block-start: var(--space-5);
+  padding: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-300);
+  font-weight: 600;
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.chevron {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: var(--font-size-100);
+}

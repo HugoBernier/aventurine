@@ -1,11 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import { usePacks } from '../../state/PacksProvider';
-import {
-  packFileName,
-  packFileText,
-  readPackFile,
-} from '../../state/persistence/packFile';
+import { packFileName, readPackFile } from '../../state/persistence/packFile';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
 import { formatPackContents, formatPackFileResult, formatPackLine } from '../format/pack';
@@ -14,17 +10,21 @@ import styles from './PacksScreen.module.css';
 
 export interface PacksScreenProps {
   readonly onCreate: () => void;
+  /** Rouvrir un pack installé dans le créateur, depuis son fichier. */
+  readonly onEdit: (file: string) => void;
 }
 
 /**
- * Ce qui est installé sur cet appareil, et les trois gestes qui vont avec :
- * en ouvrir un, le réexporter, le retirer.
+ * Ce qui est installé sur cet appareil, et les gestes qui vont avec.
  *
- * Réexporter n'est pas un luxe : quand la copie perdue est celle de
- * l'ordinateur, le téléphone est le seul chemin de retour.
+ * MODIFIER passe devant : un pack qu'on a chez soi, on le reprend bien plus
+ * souvent qu'on ne le ressort en fichier. Réexporter reste offert — quand la
+ * copie perdue est celle de l'ordinateur, le téléphone est le seul chemin de
+ * retour — mais discrètement, et sans le mot « enregistrer » en gros, qui
+ * laissait croire qu'il fallait le faire.
  */
-export function PacksScreen({ onCreate }: PacksScreenProps): ReactNode {
-  const { packs, catalogue, install, remove, isStorageFull } = usePacks();
+export function PacksScreen({ onCreate, onEdit }: PacksScreenProps): ReactNode {
+  const { packs, catalogue, install, remove, fileOf, isStorageFull } = usePacks();
   const [refusals, setRefusals] = useState<readonly string[]>([]);
   const [confirming, setConfirming] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -35,10 +35,11 @@ export function PacksScreen({ onCreate }: PacksScreenProps): ReactNode {
       fileInput.current.value = '';
     }
     if (file === undefined) return;
-    const result = readPackFile(await file.text(), catalogue);
+    const text = await file.text();
+    const result = readPackFile(text, catalogue);
     setRefusals(formatPackFileResult(result));
     if (result.kind === 'ok') {
-      install(result.pack);
+      install(result.pack, text);
     }
   };
 
@@ -76,10 +77,11 @@ export function PacksScreen({ onCreate }: PacksScreenProps): ReactNode {
                   type="button"
                   className={styles.action}
                   onClick={() => {
-                    saveFile(packFileName(pack), packFileText(pack), 'application/json');
+                    const file = fileOf(pack.info.id);
+                    if (file !== null) onEdit(file);
                   }}
                 >
-                  Enregistrer le fichier
+                  Modifier
                 </button>
                 <button
                   type="button"
@@ -91,6 +93,20 @@ export function PacksScreen({ onCreate }: PacksScreenProps): ReactNode {
                   Retirer
                 </button>
               </span>
+              <button
+                type="button"
+                className={styles.minor}
+                onClick={() => {
+                  // Les octets qu'on a reçus, rendus tels quels : rien de ce
+                  // que l'auteur a écrit ne se perd au passage.
+                  const file = fileOf(pack.info.id);
+                  if (file !== null) {
+                    saveFile(packFileName(pack), file, 'application/json');
+                  }
+                }}
+              >
+                En faire un fichier
+              </button>
 
               {confirming === pack.info.id && (
                 <p className={styles.confirm}>

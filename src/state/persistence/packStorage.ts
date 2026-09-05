@@ -1,7 +1,5 @@
-import { parsePack } from '../../domain/parsePack';
-import type { Catalogue } from '../../domain/catalogue';
-import type { ContentPack } from '../../domain/pack';
 import type { SaveResult } from './DraftStorage';
+import { APP_MAJOR_VERSION } from './appVersion';
 
 /**
  * Les packs gardent leur propre clé : un échec d'écriture de leur côté — un
@@ -30,12 +28,18 @@ function isQuotaError(error: unknown): boolean {
 }
 
 /**
- * Ce qu'on a rangé, relu par la MÊME validation que l'import : rien n'entre
- * dans l'application sans passer par elle, y compris ce qui en sort. Un pack
- * qui ne repasse plus — parce que le catalogue a changé sous lui — est écarté
- * en silence plutôt que de faire échouer le démarrage.
+ * Ce qu'on a rangé : les FICHIERS, tels qu'on les a reçus.
+ *
+ * On a d'abord rangé un résumé de ce que l'analyse en avait tiré, et ce résumé
+ * a cessé de tout dire le jour où un pack a porté des peuples, des classes et
+ * des voies : un pack de neuf kio revenait à deux cent vingt et un octets, et
+ * sa classe avait disparu au rechargement suivant. Le texte, lui, ne peut pas
+ * cesser de tout dire — c'est ce que l'auteur a écrit.
+ *
+ * Il sert aussi à le lui rendre : « enregistrer le fichier » redonne les
+ * mêmes octets, et « modifier » les rouvre dans le créateur.
  */
-export function loadPacks(catalogue: Catalogue): readonly ContentPack[] {
+export function loadPackFiles(): readonly string[] {
   const storage = probe();
   if (storage === null) {
     return [];
@@ -55,14 +59,23 @@ export function loadPacks(catalogue: Catalogue): readonly ContentPack[] {
     storage.removeItem(PACKS_KEY);
     return [];
   }
-  const packs: ContentPack[] = [];
-  for (const entry of value) {
-    const parsed = parsePack(entry, catalogue);
-    if (parsed.kind === 'ok') {
-      packs.push(parsed.pack);
-    }
+  return value.flatMap((entry) => migrated(entry));
+}
+
+/**
+ * L'ancienne forme rangeait `{ pack, spells }`. C'est exactement le fichier
+ * qu'on écrivait alors, moins son enveloppe : on la lui remet plutôt que de
+ * jeter l'entrée. Le pack revient amputé de ce que l'ancienne forme avait
+ * déjà perdu, mais il revient.
+ */
+function migrated(entry: unknown): readonly string[] {
+  if (typeof entry === 'string') {
+    return [entry];
   }
-  return packs;
+  if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+    return [];
+  }
+  return [JSON.stringify({ aventurine: APP_MAJOR_VERSION, ...entry })];
 }
 
 /**
@@ -71,16 +84,13 @@ export function loadPacks(catalogue: Catalogue): readonly ContentPack[] {
  * place — perdre un pack installé pour en écrire un autre serait un marché que
  * personne n'a demandé.
  */
-export function savePacks(packs: readonly ContentPack[]): SaveResult {
+export function savePackFiles(files: readonly string[]): SaveResult {
   const storage = probe();
   if (storage === null) {
     return { kind: 'unavailable' };
   }
   try {
-    storage.setItem(
-      PACKS_KEY,
-      JSON.stringify(packs.map((pack) => ({ pack: pack.info, spells: pack.spells }))),
-    );
+    storage.setItem(PACKS_KEY, JSON.stringify(files));
     return { kind: 'ok' };
   } catch (error) {
     return isQuotaError(error) ? { kind: 'quota' } : { kind: 'unavailable' };
