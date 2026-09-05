@@ -32,6 +32,7 @@ button,
 summary,
 input,
 select,
+textarea,
 label {
   min-height: var(--touch-target);
   font: inherit;

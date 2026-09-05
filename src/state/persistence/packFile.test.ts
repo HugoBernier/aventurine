@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from '../../domain/fixtures/miniCatalogue';
 import type { ContentPack } from '../../domain/pack';
 import { APP_MAJOR_VERSION } from './appVersion';
-import { MAX_PACK_BYTES, packFileName, packFileText, readPackFile } from './packFile';
+import { emptyPackDraft, emptySpellDraft } from '../../domain/packDraft';
+import {
+  MAX_PACK_BYTES,
+  packDraftFileText,
+  packFileName,
+  packFileText,
+  readPackFile,
+} from './packFile';
 
 const karn: ContentPack = {
   info: {
@@ -83,5 +90,31 @@ describe('le fichier d’un pack', () => {
       kind: 'invalid',
       issues: [{ kind: 'bad-prefix', at: 1, entry: 'appel-des-brumes' }],
     });
+  });
+
+  it('installe le fichier que le créateur vient d’écrire', () => {
+    // Le seul aller-retour qui compte vraiment : ce qui sort du créateur doit
+    // entrer par l'import, enveloppe comprise.
+    const written = packDraftFileText(
+      {
+        ...emptyPackDraft(),
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        spells: [
+          {
+            ...emptySpellDraft(),
+            id: 'karn-appel-des-brumes',
+            name: 'Appel des brumes',
+            level: 1,
+            school: 'invocation',
+            summary: 'Une brume épaisse se lève.',
+            classes: ['clerc'],
+          },
+        ],
+      },
+      '2026-09-04T10:12:00.000Z',
+    );
+    const parsed = readPackFile(written, MINI_CATALOGUE);
+    expect(parsed.kind).toBe('ok');
   });
 });

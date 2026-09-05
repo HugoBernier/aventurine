@@ -458,6 +458,21 @@ jamais en remplacer un, et laisse la bibliothèque ouverte : on enchaîne les
 fichiers d'une sauvegarde sans revenir sur ses pas. Ce que le fichier portait et
 qu'on n'a pas su relire est compté, dit sur place, et ignoré — jamais réparé.
 
+**Tranche 1 faite.** Un pack de sorts s'écrit dans l'application, s'enregistre
+en `pack-<id>.json`, se rouvre pour être repris, s'installe, se réexporte et se
+retire. `parsePack` juge des deux côtés — le formulaire y lit ce qui manque,
+l'import ce qui refuse — et un pack portant des races ou des classes est refusé
+plutôt que vidé en silence. Le brouillon du créateur vit sous sa propre clé,
+comme décidé au §13.2.
+
+Une chose est arrivée plus tôt que prévu : **la troisième ligne de la règle du
+§7**, qu'on attendait avec les sous-classes greffées. Un sort de pack se choisit
+dans le créneau du magicien du SRD : le créneau reste grand ouvert quand le pack
+s'en va, et seule l'option manque. Sans elle, désinstaller un pack effaçait la
+réponse. Elle est écrite (`isOptionKnown`), et une réponse endormie garde sa
+place dans le créneau — sinon le joueur en choisissait une de plus, que le
+retour du pack lui reprenait.
+
 ---
 
 ## 10. Ce que la charte devra dire

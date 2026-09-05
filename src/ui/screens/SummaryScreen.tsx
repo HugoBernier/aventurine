@@ -19,11 +19,13 @@ import {
   characterFileText,
 } from '../../state/persistence/characterFile';
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
+import { usePacks } from '../../state/PacksProvider';
 import { Notice } from '../components/Notice';
 import { saveFile } from '../saveFile';
 import { PlaySection } from './PlaySection';
 import { PrintBoxes } from './PrintBoxes';
 import { SpellbookSection } from './SpellbookSection';
+import { formatHomebrewNotice } from '../format/pack';
 import { formatMissing, formatMissingTitle } from '../format/missing';
 import { formatModifier } from '../format/abilityBlock';
 import { formatHeavyWeapons } from '../format/heavyWeapons';
@@ -68,10 +70,16 @@ export interface SummaryScreenProps {
    * lieu, mais le joueur ne verrait rien changer.
    */
   readonly onOpenLibrary?: (() => void) | undefined;
+  readonly onOpenPacks?: (() => void) | undefined;
 }
 
-export function SummaryScreen({ onOpenLibrary }: SummaryScreenProps): ReactNode {
+export function SummaryScreen({
+  onOpenLibrary,
+  onOpenPacks,
+}: SummaryScreenProps): ReactNode {
   const catalogue = useCatalogue();
+  const { packs } = usePacks();
+  const homebrew = formatHomebrewNotice(packs);
   const draft = useDraft();
   const sheet = useCharacterSheet();
   const missing = useMissingChoices();
@@ -203,6 +211,18 @@ export function SummaryScreen({ onOpenLibrary }: SummaryScreenProps): ReactNode 
         >
           <span>Tes personnages</span>
           <span className={styles.chevron}>Changer ou en créer un</span>
+        </button>
+      )}
+
+      {onOpenPacks !== undefined && (
+        <button
+          type="button"
+          className={styles.library}
+          data-print="hide"
+          onClick={onOpenPacks}
+        >
+          <span>Tes packs</span>
+          <span className={styles.chevron}>Du contenu écrit à la main</span>
         </button>
       )}
 
@@ -365,6 +385,7 @@ export function SummaryScreen({ onOpenLibrary }: SummaryScreenProps): ReactNode 
 
       <p className={styles.attribution}>
         {SRD_ATTRIBUTION_FR} {AFFILIATION_NOTICE}
+        {homebrew !== null && ` ${homebrew}`}
       </p>
     </>
   );

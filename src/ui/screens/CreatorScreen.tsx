@@ -1,0 +1,234 @@
+import { useRef, useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import {
+  emptySpellDraft,
+  packDraftFile,
+  parsePackDraft,
+  slug,
+} from '../../domain/packDraft';
+import type { PackDraft, SpellDraft } from '../../domain/packDraft';
+import { parsePack } from '../../domain/parsePack';
+import { useCatalogue } from '../../state/hooks';
+import { savePackDraft } from '../../state/persistence/creatorStorage';
+import { packDraftFileText } from '../../state/persistence/packFile';
+import { Explainer } from '../components/Explainer';
+import { Notice } from '../components/Notice';
+import { TextField } from '../components/TextField';
+import { formatPackIssue } from '../format/pack';
+import { formatSchool } from '../format/spellSchool';
+import { saveFile } from '../saveFile';
+import { SpellForm } from './SpellForm';
+import styles from './CreatorScreen.module.css';
+
+const LEVEL_LABEL = (level: number): string =>
+  level === 0 ? 'Tour de magie' : `Niveau ${String(level)}`;
+
+export interface CreatorScreenProps {
+  readonly draft: PackDraft;
+  readonly onChange: (draft: PackDraft) => void;
+}
+
+/**
+ * Écrire un pack. Le brouillon vit sur l'appareil, sous sa propre clé : un
+ * onglet fermé au milieu d'un sort ne coûte rien. « Enregistrer le fichier »
+ * est donc un geste délibéré — le fichier reste la vérité qu'on emporte, qu'on
+ * donne, et qu'on rouvre pour reprendre.
+ */
+export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNode {
+  const catalogue = useCatalogue();
+  const [editing, setEditing] = useState<SpellDraft | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const update = (parts: Partial<PackDraft>): void => {
+    const next = { ...draft, ...parts };
+    onChange(next);
+    savePackDraft(next);
+  };
+
+  if (editing !== null) {
+    return (
+      <SpellForm
+        spell={editing}
+        packId={draft.id === '' ? 'pack' : draft.id}
+        onSave={(spell) => {
+          const isKnown = draft.spells.some((entry) => entry.id === spell.id);
+          update({
+            spells: isKnown
+              ? draft.spells.map((entry) => (entry.id === spell.id ? spell : entry))
+              : [...draft.spells, spell],
+          });
+          setEditing(null);
+        }}
+        onCancel={() => {
+          setEditing(null);
+        }}
+      />
+    );
+  }
+
+  // Le même juge que l'import : ce qui manque ici est exactement ce qui ferait
+  // refuser le fichier là-bas.
+  const parsed = parsePack(packDraftFile(draft, new Date().toISOString()), catalogue);
+  const missing = parsed.kind === 'invalid' ? parsed.issues : [];
+
+  const openFile = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = event.target.files?.[0];
+    if (fileInput.current !== null) {
+      fileInput.current.value = '';
+    }
+    if (file === undefined) return;
+    const text = await file.text();
+    try {
+      // Relire POUR ÉCRIRE : un pack inachevé se rouvre, il ne se refuse pas.
+      update(parsePackDraft(JSON.parse(text)));
+    } catch {
+      update(draft);
+    }
+  };
+
+  return (
+    <>
+      <Explainer label="Comment ça marche ?">
+        Tu écris ton contenu ici, puis tu l’enregistres dans un fichier. Ce fichier
+        s’installe sur cet appareil ou sur un autre, et se donne à qui tu veux. Ton
+        travail est gardé au fur et à mesure : tu peux fermer et revenir.
+      </Explainer>
+
+      <div className={styles.fields}>
+        <TextField
+          label="Le nom de ton pack"
+          defaultValue={draft.name}
+          maxLength={60}
+          placeholder="Les Brumes de Karn"
+          onCommit={(name) => {
+            // L'identifiant se propose depuis le nom, une seule fois : il
+            // préfixe tout ce que le pack définit, et le changer ensuite
+            // couperait les fiches de leur contenu.
+            update({ name, id: draft.id === '' ? slug(name).slice(0, 24) : draft.id });
+          }}
+        />
+        <TextField
+          // Le champ garde sa frappe en local : sans cette clé, l'identifiant
+          // proposé depuis le nom vivrait dans l'état sans jamais s'afficher.
+          key={draft.id}
+          label="Son identifiant"
+          defaultValue={draft.id}
+          maxLength={24}
+          hint="Il préfixe tout ce que tu écris. Choisis-le une fois : le changer couperait les personnages de ton contenu."
+          onCommit={(id) => {
+            update({ id: slug(id) });
+          }}
+        />
+        <TextField
+          label="Ton nom"
+          defaultValue={draft.author}
+          maxLength={60}
+          hint="Facultatif. Il s’affiche à qui installe ton pack."
+          onCommit={(author) => {
+            update({ author });
+          }}
+        />
+        <TextField
+          label="Ce qu’il y a dedans"
+          defaultValue={draft.description}
+          maxLength={600}
+          multiline
+          hint="Facultatif. Une phrase, pour t’y retrouver dans six mois."
+          onCommit={(description) => {
+            update({ description });
+          }}
+        />
+      </div>
+
+      <h2 className={styles.heading}>Tes sorts</h2>
+      {draft.spells.length === 0 ? (
+        <p className={styles.empty}>Tu n’as pas encore écrit de sort.</p>
+      ) : (
+        <ul className={styles.list}>
+          {draft.spells.map((spell) => (
+            <li className={styles.item} key={spell.id}>
+              <span className={styles.name}>
+                {spell.name === '' ? 'Sans nom' : spell.name}
+              </span>
+              <p className={styles.facts}>
+                {LEVEL_LABEL(spell.level)} · {formatSchool(spell.school)}
+              </p>
+              <span className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    setEditing(spell);
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    update({
+                      spells: draft.spells.filter((entry) => entry.id !== spell.id),
+                    });
+                  }}
+                >
+                  Retirer
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          setEditing(emptySpellDraft());
+        }}
+      >
+        + Écrire un sort
+      </button>
+
+      {missing.length > 0 && (
+        <Notice tone="reminder">
+          Ce qu’il reste à faire avant que ce pack puisse s’installer :
+          <ul className={styles.missing}>
+            {missing.map((issue) => (
+              <li key={formatPackIssue(issue)}>{formatPackIssue(issue)}</li>
+            ))}
+          </ul>
+        </Notice>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          const text = packDraftFileText(draft, new Date().toISOString());
+          const name = draft.id === '' ? 'sans-nom' : draft.id;
+          saveFile(`pack-${name}.json`, text, 'application/json');
+        }}
+      >
+        Enregistrer le fichier
+      </button>
+      <p className={styles.hint}>
+        Un pack inachevé s’enregistre aussi : tu le rouvriras ici pour le finir. Il ne
+        pourra s’installer que complet.
+      </p>
+
+      <label className={styles.open}>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className={styles.file}
+          onChange={(event) => {
+            void openFile(event);
+          }}
+        />
+        <span className={styles.openLabel}>Ouvrir un fichier pour le reprendre</span>
+      </label>
+    </>
+  );
+}

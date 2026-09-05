@@ -1,0 +1,98 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.select {
+  flex: 1 1 8rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-weight: 600;
+}
+
+.input {
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  /* 16 px au moins, sinon iOS zoome tout seul à la mise au point. */
+  font-size: var(--font-size-200);
+}
+
+.group {
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: 0;
+}
+
+.legend {
+  font-weight: 600;
+  padding-inline: var(--space-2);
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+}
+
+.check input {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.identifier {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.primary,
+.cancel {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--font-size-200);
+  touch-action: manipulation;
+}
+
+.primary {
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.cancel {
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}

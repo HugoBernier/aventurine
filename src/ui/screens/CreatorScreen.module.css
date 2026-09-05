@@ -1,0 +1,114 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+
+.heading {
+  font-size: var(--font-size-300);
+  margin-block: var(--space-5) 0;
+}
+
+.list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.item {
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.name {
+  font-weight: 600;
+}
+
+.facts {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+.action {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-100);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.empty {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+}
+
+.add,
+.openLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-accent);
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.add {
+  margin-block-start: var(--space-3);
+}
+
+.open {
+  display: block;
+  margin-block-start: var(--space-3);
+}
+
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.file:focus-visible + .openLabel {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.missing {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.hint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}

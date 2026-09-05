@@ -1,5 +1,7 @@
 import { parsePack } from '../../domain/parsePack';
 import type { Catalogue } from '../../domain/catalogue';
+import { packDraftFile } from '../../domain/packDraft';
+import type { PackDraft } from '../../domain/packDraft';
 import type { ContentPack, PackIssue } from '../../domain/pack';
 import { APP_MAJOR_VERSION } from './appVersion';
 
@@ -34,6 +36,19 @@ export function packFileText(pack: ContentPack): string {
       backgrounds: [],
       spells: pack.spells,
     },
+    null,
+    2,
+  );
+}
+
+/**
+ * Le fichier d'un pack encore en écriture. L'enveloppe est la MÊME : un pack
+ * inachevé s'enregistre, se rouvre dans le créateur, et s'installera le jour
+ * où il sera complet — sans jamais changer de forme entre-temps.
+ */
+export function packDraftFileText(draft: PackDraft, updatedAt: string): string {
+  return JSON.stringify(
+    { aventurine: APP_MAJOR_VERSION, ...packDraftFile(draft, updatedAt) },
     null,
     2,
   );

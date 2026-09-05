@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ChoiceKind, ChoiceOption } from '../../domain/choice';
 import { formatUnavailable } from '../format/unavailable';
+import { Provenance } from './Provenance';
 import styles from './ChoiceGroup.module.css';
 
 export type FactLabels = readonly [string, string, string];
@@ -128,6 +129,7 @@ export function ChoiceGroup({
                   <span className={styles.name}>{option.label}</span>
                   {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
                 </span>
+                <Provenance id={option.id} />
                 <span className={styles.blurb}>{option.blurb}</span>
                 <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
                 {option.unavailable !== null && (

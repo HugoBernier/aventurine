@@ -13,6 +13,40 @@ import App from '../App';
  * tout ce qu'un test de bout en bout apporterait hors du rendu physique.
  */
 
+/** Un pack minimal, écrit comme le créateur l'écrit. */
+const PACK_FILE = new File(
+  [
+    JSON.stringify({
+      aventurine: 2,
+      pack: {
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        author: 'Hugo',
+        description: '',
+        updatedAt: '2026-09-04T10:12:00.000Z',
+      },
+      spells: [
+        {
+          id: 'karn-appel-des-brumes',
+          name: 'Appel des brumes',
+          level: 1,
+          school: 'invocation',
+          castingTime: '1 action',
+          range: '18 mètres',
+          components: { verbal: true, somatic: true, material: null },
+          duration: 'instantanée',
+          concentration: false,
+          ritual: false,
+          summary: 'Une brume épaisse se lève et masque le champ de bataille.',
+          classes: ['magicien'],
+        },
+      ],
+    }),
+  ],
+  'pack-karn.json',
+  { type: 'application/json' },
+);
+
 const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
@@ -364,6 +398,52 @@ describe('parcours de création', () => {
       /n’est pas un personnage Aventurine/,
     );
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('installe un pack, et son sort devient choisissable', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), PACK_FILE);
+
+    expect(screen.getByText('Les Brumes de Karn')).toBeInTheDocument();
+    expect(screen.getByText(/par Hugo/)).toHaveTextContent('1 sort');
+
+    // Le catalogue de l'assistant est celui du SRD PLUS les packs installés :
+    // rien d'autre n'a été branché pour que ce sort apparaisse ici.
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await next(user);
+    await next(user);
+    await user.click(screen.getByRole('radio', { name: /Magicien/ }));
+    for (let step = 0; step < 12; step++) {
+      if (screen.queryByRole('checkbox', { name: /Appel des brumes/ }) !== null) {
+        break;
+      }
+      await next(user);
+    }
+    const spell = screen.getByRole('checkbox', { name: /Appel des brumes/ });
+    expect(spell).toBeInTheDocument();
+    await user.click(spell);
+
+    // Le repère de provenance suit l'entrée : ce sort n'est pas du SRD.
+    expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
+
+    // Retirer le pack ne détruit rien : la réponse dort et revient avec lui.
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    expect(screen.getByText(/Contient du contenu maison/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.click(screen.getByRole('button', { name: 'Retirer' }));
+    await user.click(screen.getByRole('button', { name: 'Oui, retirer' }));
+    expect(screen.getByText(/aucun pack/)).toBeInTheDocument();
+
+    // Réinstallé sans rien ressaisir, le sort est de retour sur la fiche.
+    await user.upload(screen.getByLabelText(/Installer un pack/), PACK_FILE);
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    expect(screen.getByText('Appel des brumes')).toBeInTheDocument();
   });
 
   it('permet de monter de niveau depuis la fiche', async () => {

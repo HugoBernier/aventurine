@@ -1,0 +1,136 @@
+.list {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.item {
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.name {
+  font-size: var(--font-size-300);
+  font-weight: 600;
+}
+
+.line,
+.description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+.action {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-100);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.confirm {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-error);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.danger,
+.cancel {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.danger {
+  border: 1px solid var(--color-error);
+  background: var(--color-error);
+  color: var(--color-surface);
+}
+
+.cancel {
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.empty {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+}
+
+.open {
+  display: block;
+  margin-block-start: var(--space-4);
+}
+
+/* Le champ reste au clavier, mais ne se voit pas : c'est le libellé qui porte
+   l'apparence, et l'anneau de focus avec lui. */
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.openLabel,
+.create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-control-border);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-accent);
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.create {
+  margin-block-start: var(--space-3);
+}
+
+.file:focus-visible + .openLabel {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.refusals {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-4);
+}

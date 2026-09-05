@@ -10,6 +10,7 @@ import {
   slotsAtLevel,
   spellFacts,
 } from '../format/spellbook';
+import { Provenance } from '../components/Provenance';
 import styles from './SpellbookSection.module.css';
 
 interface SpellListProps {
@@ -62,6 +63,7 @@ function SpellList({
           {spells.map((spell) => (
             <li className={styles.spell} key={spell.id}>
               <div className={styles.spellName}>{spell.name}</div>
+              <Provenance id={spell.id} />
               <div className={styles.spellFacts}>{spellFacts(spell)}</div>
               <p className={styles.spellText}>{spell.summary}</p>
             </li>

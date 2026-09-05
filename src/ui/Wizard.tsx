@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   useCharacterSheet,
@@ -8,6 +9,8 @@ import {
   useWizard,
 } from '../state/hooks';
 import type { Screen, StepId } from '../state/types';
+import { loadPackDraft } from '../state/persistence/creatorStorage';
+import type { PackDraft } from '../domain/packDraft';
 import { Notice } from './components/Notice';
 import { ProgressBanner } from './components/ProgressBanner';
 import { ActionBar } from './components/ActionBar';
@@ -18,9 +21,11 @@ import { AbilityAssignScreen } from './screens/AbilityAssignScreen';
 import { AbilityMethodScreen } from './screens/AbilityMethodScreen';
 import { AlignmentScreen } from './screens/AlignmentScreen';
 import { ChoiceSlotScreen } from './screens/ChoiceSlotScreen';
+import { CreatorScreen } from './screens/CreatorScreen';
 import { LevelScreen } from './screens/LevelScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { NameScreen } from './screens/NameScreen';
+import { PacksScreen } from './screens/PacksScreen';
 import { PersonalityScreen } from './screens/PersonalityScreen';
 import { SelectionScreen } from './screens/SelectionScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
@@ -127,6 +132,87 @@ export function Wizard(): ReactNode {
   // doit rouvrir celle qu'on regardait : la vue vit donc dans l'état, avec le
   // reste de ce qu'on sauvegarde.
   const { view, setView } = useView();
+  // Le pack en cours d'écriture est relu une fois, au démarrage : c'est le
+  // filet du créateur, et il vit sous sa propre clé.
+  const [packDraft, setPackDraft] = useState<PackDraft>(loadPackDraft);
+
+  if (view === 'packs') {
+    return (
+      <AppShell
+        screenKey="packs"
+        title="Tes packs"
+        lead="Le contenu écrit à la main, le tien ou celui qu’on t’a donné."
+        header={
+          <ProgressBanner
+            stepLabel="Tes packs"
+            stepIndex={1}
+            stepCount={1}
+            screenIndex={1}
+            screenCount={1}
+            onBack={() => {
+              setView('summary');
+            }}
+            onOpenSummary={() => {
+              setView('summary');
+            }}
+          />
+        }
+        actions={
+          <ActionBar
+            primary={{
+              label: 'Revenir à l’assistant',
+              onClick: () => {
+                setView('wizard');
+              },
+            }}
+          />
+        }
+      >
+        <PacksScreen
+          onCreate={() => {
+            setView('creator');
+          }}
+        />
+      </AppShell>
+    );
+  }
+
+  if (view === 'creator') {
+    return (
+      <AppShell
+        screenKey="creator"
+        title="Écrire un pack"
+        lead="Ton contenu à toi, gardé sur cet appareil et enregistrable en fichier."
+        header={
+          <ProgressBanner
+            stepLabel="Écrire un pack"
+            stepIndex={1}
+            stepCount={1}
+            screenIndex={1}
+            screenCount={1}
+            onBack={() => {
+              setView('packs');
+            }}
+            onOpenSummary={() => {
+              setView('summary');
+            }}
+          />
+        }
+        actions={
+          <ActionBar
+            primary={{
+              label: 'Revenir à tes packs',
+              onClick: () => {
+                setView('packs');
+              },
+            }}
+          />
+        }
+      >
+        <CreatorScreen draft={packDraft} onChange={setPackDraft} />
+      </AppShell>
+    );
+  }
 
   if (view === 'library') {
     return (
@@ -201,6 +287,9 @@ export function Wizard(): ReactNode {
         <SummaryScreen
           onOpenLibrary={() => {
             setView('library');
+          }}
+          onOpenPacks={() => {
+            setView('packs');
           }}
         />
       </AppShell>

@@ -16,8 +16,10 @@ function asScreenId(value: unknown): ScreenId {
 }
 
 /** Une sauvegarde d'avant cette vue, ou trafiquée, ramène à l'assistant. */
+const VIEWS: readonly WizardView[] = ['summary', 'library', 'packs', 'creator'];
+
 function asView(value: unknown): WizardView {
-  return value === 'summary' || value === 'library' ? value : 'wizard';
+  return VIEWS.find((view) => view === value) ?? 'wizard';
 }
 
 function parseCharacter(value: unknown, fallbackId: string): PersistedCharacter | null {

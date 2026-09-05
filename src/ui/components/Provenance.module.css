@@ -1,0 +1,9 @@
+/* Une seconde ligne, pas une opacité : baisser l'opacité fait chuter le
+   contraste d'un montant qu'on ne connaît pas, et dépend du fond. Le jeton est
+   mesuré à 7,03:1, donc AA partout, et le texte recule quand même. */
+.source {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+  font-weight: 400;
+}

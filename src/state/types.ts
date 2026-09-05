@@ -84,7 +84,7 @@ export type StorageStatus = 'ok' | 'memory' | 'quota' | 'unavailable';
  * fiche et la liste ne sont pas des étapes, mais un rechargement doit ramener
  * là où on était : elles font donc partie de l'état sauvegardé.
  */
-export type WizardView = 'wizard' | 'summary' | 'library';
+export type WizardView = 'wizard' | 'summary' | 'library' | 'packs' | 'creator';
 
 export interface WizardState {
   readonly draft: CharacterDraft;

@@ -99,3 +99,21 @@ export function formatPackDate(updatedAt: string): string {
 export function formatPackContents(pack: ContentPack): string {
   return counted(pack.spells.length, 'sort', 'sorts');
 }
+
+/**
+ * Ce que l'attribution SRD ne couvre pas, dit sur la fiche — imprimée
+ * comprise, celle qu'on tend au meneur, qui a le plus besoin de savoir qu'un
+ * sort n'est pas dans le livre. `null` quand tout vient du SRD.
+ */
+export function formatHomebrewNotice(packs: readonly ContentPack[]): string | null {
+  if (packs.length === 0) {
+    return null;
+  }
+  const named = packs
+    .map((pack) => {
+      const date = formatPackDate(pack.info.updatedAt);
+      return date === '' ? pack.info.name : `${pack.info.name} (${date})`;
+    })
+    .join(', ');
+  return `Contient du contenu maison, hors SRD : ${named}.`;
+}
