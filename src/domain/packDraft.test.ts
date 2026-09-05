@@ -16,6 +16,8 @@ import {
 } from './packDraft';
 import type {
   BackgroundDraft,
+  ChoiceDraft,
+  ChoiceKindDraft,
   ClassDraft,
   PackDraft,
   RaceDraft,
@@ -33,6 +35,20 @@ const brume: SpellDraft = {
   summary: 'Une brume épaisse se lève.',
   classes: ['clerc'],
 };
+
+/** Un choix ne porte que ce que son genre emploie : le reste reste au défaut. */
+function choice(
+  kind: ChoiceKindDraft,
+  subject: string,
+  parts: Partial<ChoiceDraft> = {},
+): ChoiceDraft {
+  return {
+    ...emptyChoiceDraft(kind, subject),
+    title: 'Qu’est-ce que tu prends ?',
+    help: 'Ce qui te ressemble le plus.',
+    ...parts,
+  };
+}
 
 const karn: PackDraft = {
   ...emptyPackDraft(),
@@ -301,5 +317,253 @@ describe('les identifiants que le créateur fabrique', () => {
       'karn-brumeux',
       'karn-brumeux-des-marais',
     ]);
+  });
+});
+
+describe('les genres de choix, dans le fichier du brouillon', () => {
+  const brumeux: RaceDraft = {
+    ...emptyRaceDraft(),
+    id: 'karn-brumeux',
+    name: 'Brumeux',
+    blurb: 'Un peuple né d’une malédiction.',
+    choices: [
+      choice('ability', 'origin-2', { bonus: 2 }),
+      choice('ancestry', 'ancestry'),
+      choice('cantrip', 'cantrip', { listFrom: 'clerc' }),
+      choice('skill', 'skills', { from: ['perception', 'survie'] }),
+      choice('language', 'langues', { from: ['nain'] }),
+      choice('tool', 'outils', { from: ['outils-de-voleur'] }),
+    ],
+  };
+
+  const brumeur: ClassDraft = {
+    ...emptyClassDraft(),
+    id: 'karn-brumeur',
+    name: 'Brumeur',
+    blurb: 'Tu appelles la brume, et elle te répond.',
+    saves: ['dexterite', 'sagesse'],
+    subclassTitle: 'Ta voie de brume',
+    subclassHelp: 'La façon dont la brume te répond.',
+    equipmentOptions: [
+      {
+        id: 'hache',
+        name: 'Une hache à deux mains',
+        blurb: 'Lourde, et sans regret.',
+        facts: ['', '', ''],
+        items: [{ itemId: 'hache-a-deux-mains', quantity: 1 }],
+      },
+    ],
+    choices: [
+      choice('equipment', 'materiel', { from: ['hache'] }),
+      choice('fighting-style', 'style', { level: 2, from: ['duel'] }),
+      choice('expertise', 'expertise', { from: ['outils-de-voleur'] }),
+      choice('spell', 'sorts', {
+        listFrom: 'clerc',
+        steps: [
+          { level: 1, howMany: 2 },
+          { level: 4, howMany: 3 },
+        ],
+      }),
+    ],
+  };
+
+  const preparing: ClassDraft = {
+    ...brumeur,
+    id: 'karn-brumeur-devot',
+    name: 'Brumeur dévot',
+    choices: [choice('spell', 'sorts', { listFrom: 'clerc', prepared: true })],
+  };
+
+  const everyKind: PackDraft = {
+    ...karn,
+    spells: [],
+    races: [brumeux],
+    classes: [brumeur, preparing],
+  };
+
+  it('passe la validation de l’import, quel que soit le genre du choix', () => {
+    const parsed = parsePack(packDraftFile(everyKind, ''), MINI_CATALOGUE);
+    expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
+  });
+
+  it('revient identique après l’aller-retour, les dix genres compris', () => {
+    expect(parsePackDraft(packDraftFile(everyKind, ''))).toEqual(everyKind);
+  });
+
+  it('écrit la table des sorts en paliers, et non vingt nombres', () => {
+    const written = packDraftFile(everyKind, '') as {
+      classes: { choices: Record<string, unknown>[] }[];
+    };
+    expect(written.classes[0]?.choices[3]).toMatchObject({
+      count: { kind: 'known', steps: { 1: 2, 4: 3 } },
+    });
+  });
+
+  it('écrit « il les prépare » plutôt qu’une table, quand c’est le cas', () => {
+    const written = packDraftFile(everyKind, '') as {
+      classes: { choices: Record<string, unknown>[] }[];
+    };
+    expect(written.classes[1]?.choices[0]).toMatchObject({
+      count: { kind: 'prepared' },
+    });
+  });
+
+  it('range les outils de l’expertise sous leur propre nom', () => {
+    const written = packDraftFile(everyKind, '') as {
+      classes: { choices: Record<string, unknown>[] }[];
+    };
+    const expertise = written.classes[0]?.choices[2] ?? {};
+    expect(expertise).toMatchObject({ tools: ['outils-de-voleur'] });
+    expect(Object.keys(expertise)).not.toContain('from');
+  });
+
+  it('garde le niveau d’une aptitude de classe quand on rouvre le fichier', () => {
+    const late: PackDraft = {
+      ...everyKind,
+      classes: [
+        {
+          ...brumeur,
+          features: [{ level: 5, name: 'Brume épaisse', text: 'Elle te cache.' }],
+        },
+      ],
+    };
+    expect(parsePackDraft(packDraftFile(late, '')).classes[0]?.features).toEqual([
+      { level: 5, name: 'Brume épaisse', text: 'Elle te cache.' },
+    ]);
+  });
+});
+
+describe('rouvrir un fichier abîmé', () => {
+  it('ne garde rien d’une liste qui n’en est pas une', () => {
+    expect(
+      parsePackDraft({
+        pack: 'karn',
+        spells: 'aucun',
+        subclasses: 3,
+        races: null,
+        backgrounds: false,
+        classes: 0,
+      }),
+    ).toEqual(emptyPackDraft());
+  });
+
+  it('remplace par du vide une entrée qui n’a pas la forme attendue', () => {
+    const draft = parsePackDraft({
+      spells: ['un sort'],
+      subclasses: [null],
+      races: [3],
+      backgrounds: [false],
+      classes: ['une classe'],
+    });
+    expect(draft.spells[0]?.name).toBe('');
+    expect(draft.subclasses[0]?.forClassId).toBe('');
+    expect(draft.races[0]?.speed).toBe(emptyRaceDraft().speed);
+    expect(draft.backgrounds[0]?.skills).toEqual([]);
+    expect(draft.classes[0]?.hitDie).toBe(8);
+  });
+
+  it('rouvre un peuple dont chaque liste est abîmée', () => {
+    const draft = parsePackDraft({
+      races: [
+        {
+          name: 'Brumeux',
+          size: 'P',
+          proficiencies: 'aucune',
+          features: 'aucune',
+          choices: 'aucun',
+          subraces: 'aucune',
+          languages: ['commun', 7],
+        },
+      ],
+    });
+    expect(draft.races[0]).toMatchObject({
+      name: 'Brumeux',
+      size: 'P',
+      weapons: [],
+      tools: [],
+      features: [],
+      choices: [],
+      subraces: [],
+      languages: ['commun'],
+    });
+  });
+
+  it('rouvre une branche et une aptitude qui n’ont pas la forme attendue', () => {
+    const draft = parsePackDraft({
+      races: [{ subraces: ['une branche', { name: 'Des marais', features: [4] }] }],
+    });
+    expect(draft.races[0]?.subraces[0]?.name).toBe('');
+    expect(draft.races[0]?.subraces[1]?.features).toEqual([
+      { level: 1, name: '', text: '' },
+    ]);
+  });
+
+  it('rouvre une classe dont la magie et les lots sont abîmés', () => {
+    const draft = parsePackDraft({
+      classes: [
+        {
+          name: 'Brumeur',
+          hitDie: 5,
+          spellcasting: 'oui',
+          subclassChoice: 4,
+          equipmentOptions: ['un lot'],
+          fixedEquipment: ['une hache'],
+          advancements: ['quatre', 8],
+          features: 'aucune',
+        },
+      ],
+    });
+    expect(draft.classes[0]).toMatchObject({
+      name: 'Brumeur',
+      hitDie: 8,
+      casts: false,
+      castingAbility: emptyClassDraft().castingAbility,
+      subclassLevel: 3,
+      advancements: [8],
+      features: [],
+    });
+    expect(draft.classes[0]?.equipmentOptions[0]?.name).toBe('');
+    expect(draft.classes[0]?.fixedEquipment[0]).toEqual({ itemId: '', quantity: 1 });
+  });
+
+  it('rouvre un historique dont les amorces sont abîmées', () => {
+    const draft = parsePackDraft({
+      backgrounds: [{ name: 'Batelier', suggestedTraits: 'aucune', feature: 'aucune' }],
+    });
+    expect(draft.backgrounds[0]).toMatchObject({
+      name: 'Batelier',
+      featureName: '',
+      traits: [],
+      ideals: [],
+      bonds: [],
+      flaws: [],
+      goldPieces: 0,
+    });
+  });
+
+  it('rouvre un choix dont le genre et le nombre sont abîmés', () => {
+    const draft = parsePackDraft({
+      races: [{ choices: ['un choix', { kind: 'inconnu', pick: 'trois', count: 4 }] }],
+    });
+    expect(draft.races[0]?.choices[0]?.kind).toBe('skill');
+    expect(draft.races[0]?.choices[1]).toMatchObject({
+      kind: 'skill',
+      pick: 1,
+      prepared: false,
+      steps: [{ level: 1, howMany: 2 }],
+    });
+  });
+
+  it('rouvre un sort dont le niveau et les classes sont abîmés', () => {
+    const draft = parsePackDraft({
+      spells: [{ name: 'Brume', level: 12, components: 'aucun', classes: ['clerc', 3] }],
+    });
+    expect(draft.spells[0]).toMatchObject({
+      name: 'Brume',
+      level: 0,
+      verbal: false,
+      somatic: false,
+      classes: ['clerc'],
+    });
   });
 });

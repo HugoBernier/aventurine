@@ -632,9 +632,7 @@ function asSubclassDraft(value: unknown): SubclassDraft {
     blurb: asText(source.blurb),
     forClassId: asText(source.for),
     facts: [fact(0), fact(1), fact(2)],
-    features: Array.isArray(source.features)
-      ? source.features.slice(0, 40).map((entry) => asFeatureDraft(entry))
-      : [],
+    features: asFeatureDrafts(source.features),
   };
 }
 
@@ -703,12 +701,14 @@ function asChoiceDrafts(value: unknown): readonly ChoiceDraft[] {
     : [];
 }
 
+/**
+ * Un peuple n'écrit pas de niveau — les siennes valent dès la naissance — une
+ * classe si. `asFeatureDraft` rend 1 quand le fichier se tait, ce qui répond
+ * aux deux cas sans les distinguer.
+ */
 function asFeatureDrafts(value: unknown): readonly FeatureDraft[] {
   return Array.isArray(value)
-    ? value.slice(0, 40).map((entry) => {
-        const source = isRecord(entry) ? entry : {};
-        return { level: 1, name: asText(source.name), text: asText(source.text) };
-      })
+    ? value.slice(0, 40).map((entry) => asFeatureDraft(entry))
     : [];
 }
 

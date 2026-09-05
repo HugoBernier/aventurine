@@ -22,6 +22,11 @@ const characterClass = (over: Record<string, unknown> = {}): Record<string, unkn
 const parsed = (over: Record<string, unknown> = {}) =>
   parseClass(characterClass(over), 1, 'karn-', MINI_CATALOGUE);
 
+/** L'anomalie attendue quand un champ manque ou n'a pas la forme voulue. */
+function field(name: string, entry = 'karn-brumeur'): unknown {
+  return [{ kind: 'missing-field', at: 1, entry, what: 'class', field: name }];
+}
+
 describe('la lecture d’une classe', () => {
   it('accepte une classe complète', () => {
     const { entry, issues } = parsed();
@@ -161,5 +166,121 @@ describe('la lecture d’une classe', () => {
     expect(
       parseClass(characterClass({ id: 'brumeur' }), 1, 'karn-', MINI_CATALOGUE).issues,
     ).toEqual([{ kind: 'bad-prefix', at: 1, entry: 'brumeur', what: 'class' }]);
+  });
+});
+
+describe('ce qu’une classe doit dire avant d’entrer', () => {
+  it('refuse ce qui n’est même pas une classe', () => {
+    expect(parseClass('une classe', 1, 'karn-', MINI_CATALOGUE).issues).toEqual(
+      field('classe', ''),
+    );
+  });
+
+  it('refuse un identifiant absent ou mal formé', () => {
+    expect(parsed({ id: undefined }).issues).toEqual(field('id', 'Brumeur'));
+    expect(parsed({ id: 'karn Brumeur' }).issues).toEqual(field('id', 'karn Brumeur'));
+  });
+
+  it('exige un nom et une phrase de présentation', () => {
+    expect(parsed({ name: undefined }).issues).toEqual(field('name'));
+    expect(parsed({ blurb: '  ' }).issues).toEqual(field('blurb'));
+  });
+
+  it('refuse une aptitude sans niveau, sans nom ou sans texte', () => {
+    expect(parsed({ features: [{ name: 'Appel', text: 'La brume.' }] }).issues).toEqual(
+      field('features'),
+    );
+    expect(parsed({ features: ['Appel'] }).issues).toEqual(field('features'));
+  });
+
+  it('refuse un lot de départ sans nom ou mal nommé', () => {
+    expect(parsed({ equipmentOptions: [{ id: 'hache' }] }).issues).toEqual(
+      field('equipmentOptions'),
+    );
+    expect(
+      parsed({ equipmentOptions: [{ id: 'Hache !', name: 'Une hache' }] }).issues,
+    ).toEqual(field('equipmentOptions'));
+    expect(parsed({ equipmentOptions: ['une hache'] }).issues).toEqual(
+      field('equipmentOptions'),
+    );
+  });
+
+  it('refuse un choix qui n’a pas la forme d’un choix', () => {
+    expect(parsed({ choices: ['une compétence'] }).issues).toEqual(field('choices'));
+  });
+});
+
+describe('ce qu’une classe sait manier', () => {
+  it('ne garde que les catégories, armes et outils que le catalogue connaît', () => {
+    const { entry } = parsed({
+      proficiencies: {
+        armor: ['legere', 'magique'],
+        weaponCategories: ['courantes', 'de-siege'],
+        weapons: ['rapiere', 'arbalete-lourde'],
+        tools: ['outils-de-voleur', 'cornemuse'],
+      },
+    });
+    expect(entry?.base.proficiencies).toEqual({
+      armor: ['legere'],
+      weaponCategories: ['courantes'],
+      weapons: ['rapiere'],
+      tools: ['outils-de-voleur'],
+    });
+  });
+
+  it('ne maîtrise rien quand le fichier ne le dit pas', () => {
+    expect(parsed({ proficiencies: 'toutes' }).entry?.base.proficiencies).toEqual({
+      armor: [],
+      weaponCategories: [],
+      weapons: [],
+      tools: [],
+    });
+  });
+
+  it('jette une ligne d’équipement dont l’objet n’existe pas', () => {
+    const { entry } = parsed({
+      fixedEquipment: [
+        { itemId: 'rapiere', quantity: 2 },
+        { itemId: 'lanterne-sourde' },
+        'une corde',
+        { quantity: 1 },
+      ],
+    });
+    expect(entry?.base.fixedEquipment).toEqual([{ itemId: 'rapiere', quantity: 2 }]);
+  });
+
+  it('compte un objet quand le fichier ne dit pas combien', () => {
+    expect(
+      parsed({ fixedEquipment: [{ itemId: 'bouclier' }] }).entry?.base.fixedEquipment,
+    ).toEqual([{ itemId: 'bouclier', quantity: 1 }]);
+  });
+});
+
+describe('la défense sans armure', () => {
+  it('n’est pas obligatoire : presque aucune classe n’en a', () => {
+    expect(parsed().entry?.base.unarmoredDefense).toBeNull();
+    expect(parsed({ unarmoredDefense: null }).entry?.base.unarmoredDefense).toBeNull();
+  });
+
+  it('lit sa base, ce qu’elle ajoute et si le bouclier reste permis', () => {
+    const { entry } = parsed({
+      unarmoredDefense: {
+        base: 10,
+        addedAbilities: ['dexterite', 'constitution', 'chance'],
+        shieldAllowed: true,
+      },
+    });
+    expect(entry?.base.unarmoredDefense).toEqual({
+      base: 10,
+      addedAbilities: ['dexterite', 'constitution'],
+      shieldAllowed: true,
+    });
+  });
+
+  it('refuse une défense sans base plutôt que d’en inventer une', () => {
+    expect(
+      parsed({ unarmoredDefense: { addedAbilities: ['sagesse'] } }).entry,
+    ).toBeNull();
+    expect(parsed({ unarmoredDefense: 'sans armure' }).entry).toBeNull();
   });
 });
