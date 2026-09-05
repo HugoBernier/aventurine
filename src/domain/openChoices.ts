@@ -129,6 +129,12 @@ function highestSpellLevel(draft: CharacterDraft, catalogue: Catalogue): number 
  * autres créneaux. Une seule fonction les calcule, parce que le nombre affiché
  * et son explication doivent venir du même endroit : deux calculs finiraient
  * par se contredire à l'écran.
+ *
+ * Les règles se lisent sur la classe DU PERSONNAGE, jamais sur celle dont il
+ * emprunte la liste. Les deux sont la même pour tout le SRD, où chaque classe
+ * puise dans sa propre liste — mais une classe écrite à la main qui emprunte
+ * celle du druide reste un demi-lanceur, et compterait sinon ses sorts sur la
+ * progression complète du druide.
  */
 function pickBreakdown(
   spec: ChoiceSpec,
@@ -138,7 +144,7 @@ function pickBreakdown(
   if (spec.kind !== 'spell' || spec.count.kind !== 'prepared') {
     return null;
   }
-  const casting = findClass(catalogue, spec.listFrom)?.spellcasting;
+  const casting = findClass(catalogue, draft.classId)?.spellcasting;
   if (casting == null) {
     return null;
   }

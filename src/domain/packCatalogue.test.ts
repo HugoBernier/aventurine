@@ -324,6 +324,39 @@ describe('une classe de pack qui lance des sorts', () => {
     expect(slot?.pick).toBe(6);
   });
 
+  it('reste un demi-lanceur quand il emprunte la liste d’une autre classe', () => {
+    // Le cas que le SRD ne peut pas produire : chaque classe y puise dans SA
+    // liste. Une classe écrite à la main emprunte celle du clerc et garde sa
+    // propre progression — sinon elle compterait ses sorts comme un clerc.
+    const borrowed: PackClass = {
+      ...brumeur,
+      base: {
+        ...brumeur.base,
+        choices: [
+          {
+            kind: 'spell',
+            subject: 'spells',
+            title: 'Tes sorts de brume',
+            help: 'Ceux que tu gardes prêts.',
+            count: { kind: 'prepared' },
+            listFrom: 'clerc',
+          },
+        ],
+      },
+    };
+    const lent = catalogueWithPacks(
+      MINI_CATALOGUE,
+      [{ ...withClass, classes: [borrowed] }],
+      ADVANCEMENT,
+    );
+    const slot = openChoices(draft, lent).find((entry) => entry.kind === 'spell');
+    // Sagesse 16 et trois niveaux de lanceur : six, et non dix comme un clerc.
+    expect(slot?.pick).toBe(6);
+    expect(slot?.pickFrom).toMatchObject({ casterLevel: 3, halved: true });
+    // Et ce sont bien les sorts du clerc qu'on lui propose.
+    expect(slot?.options.map((option) => option.id)).toContain('benediction');
+  });
+
   it('dit d’où vient ce nombre, donc l’écran l’explique aussi', () => {
     const slot = openChoices(draft, augmented).find((entry) => entry.kind === 'spell');
     expect(slot?.pickFrom).toEqual({
