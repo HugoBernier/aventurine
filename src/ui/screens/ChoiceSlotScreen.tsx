@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import type { ChoiceSlotId } from '../../domain/choice';
-import { useChoiceSlot } from '../../state/hooks';
+import { useCatalogue, useChoiceSlot } from '../../state/hooks';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
-import { formatPicking } from '../format/picking';
+import { formatPickSource, formatPicking } from '../format/picking';
+import styles from './ChoiceSlotScreen.module.css';
 
 export interface ChoiceSlotScreenProps {
   readonly slotId: ChoiceSlotId;
@@ -17,6 +18,7 @@ export interface ChoiceSlotScreenProps {
  */
 export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
   const view = useChoiceSlot(slotId);
+  const catalogue = useCatalogue();
   if (view === null) {
     return (
       <Notice tone="reminder">
@@ -26,9 +28,22 @@ export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
   }
 
   const { slot, picked, remaining, toggle } = view;
+  // Un nombre qui se calcule s'explique sur place, et non derrière un dépliant
+  // qu'on n'ouvre pas : sans le calcul, deux sorts au niveau 7 passent pour une
+  // erreur de l'application.
+  const source =
+    slot.pickFrom === null
+      ? null
+      : formatPickSource(
+          slot.pick,
+          slot.pickFrom,
+          catalogue.abilities.find((entry) => entry.id === slot.pickFrom?.ability)
+            ?.name ?? slot.pickFrom.ability,
+        );
   return (
     <>
       <Explainer label="Comment ça marche ?">{slot.help}</Explainer>
+      {source !== null && <p className={styles.source}>{source}</p>}
       <ChoiceGroup
         legend={slot.title}
         legendHidden

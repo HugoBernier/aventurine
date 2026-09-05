@@ -87,6 +87,30 @@ describe('les sorts préparés se choisissent, ils ne se laissent pas en blanc',
     expect(spellSlot(character('paladin', 1, { charisme: 14 }))).toBeNull();
   });
 
+  it('n’en donne que deux à un paladin de niveau 7 au Charisme 9', () => {
+    // Le cas qui a l'air d'un bug : niveau 7, deux sorts. C'est la règle —
+    // trois pour la moitié du niveau, moins un pour le Charisme.
+    expect(spellSlot(character('paladin', 7, { charisme: 9 }))).toBe(2);
+  });
+
+  it('dit de quoi ce nombre est fait, pour que l’écran puisse l’expliquer', () => {
+    const draft = character('paladin', 7, { charisme: 9 });
+    const slot = openChoices(draft, C).find((entry) => entry.kind === 'spell');
+    expect(slot?.pickFrom).toEqual({
+      ability: 'charisme',
+      modifier: -1,
+      casterLevel: 3,
+      halved: true,
+    });
+  });
+
+  it('n’explique rien là où le nombre est écrit dans les données', () => {
+    const known = openChoices(character('barde', 5), C).find(
+      (entry) => entry.kind === 'spell',
+    );
+    expect(known?.pickFrom).toBeNull();
+  });
+
   it('donne le même nombre que celui annoncé sur la fiche', () => {
     const draft = character('druide', 7, { sagesse: 18 });
     expect(spellSlot(draft)).toBe(buildSheet(draft, C).spellcasting?.preparedCount);

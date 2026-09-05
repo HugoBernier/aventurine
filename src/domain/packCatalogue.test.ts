@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
+import { emptyDraft } from './draft';
+import { openChoices } from './openChoices';
 import { catalogueWithPacks } from './packCatalogue';
 import { findClass, findRace, spellsForClass } from './catalogue';
 import type { ContentPack, GraftedSubclass } from './pack';
@@ -222,5 +224,113 @@ describe('une classe entière venue d’un pack', () => {
     expect(
       findClass(augmented, 'karn-brumeur')?.subclasses.map((entry) => entry.id),
     ).toEqual(['karn-voie-des-marais']);
+  });
+});
+
+/**
+ * Une classe de pack qui lance des sorts n'est pas un cas à part : elle passe
+ * par le même catalogue, le même tri par niveau et le même calcul de sorts
+ * préparés que le clerc du SRD. Ces trois tests le vérifient plutôt que de le
+ * supposer — c'est la promesse faite au joueur qui écrit sa propre classe.
+ */
+describe('une classe de pack qui lance des sorts', () => {
+  const brumeur: PackClass = {
+    base: {
+      id: 'karn-brumeur',
+      name: 'Brumeur',
+      blurb: 'Tu appelles la brume, et elle te répond.',
+      facts: ['d8', 'Sagesse', 'Demi-lanceur'],
+      hitDie: 8,
+      saves: ['dexterite', 'sagesse'],
+      proficiencies: NO_PROFICIENCIES,
+      unarmoredDefense: null,
+      features: [],
+      choices: [
+        {
+          kind: 'spell',
+          subject: 'spells',
+          title: 'Tes sorts de brume',
+          help: 'Ceux que tu gardes prêts.',
+          count: { kind: 'prepared' },
+          listFrom: 'karn-brumeur',
+        },
+      ],
+      equipmentOptions: [],
+      fixedEquipment: [],
+      spellcasting: {
+        ability: 'sagesse',
+        progression: 'half',
+        preparation: 'prepared',
+        ritual: false,
+      },
+      subclasses: [],
+      subclassChoice: {
+        kind: 'subclass',
+        subject: 'subclass',
+        title: 'Ta voie de brume',
+        help: 'La façon dont la brume te répond.',
+        pick: 1,
+        level: 3,
+      },
+    },
+    advancementLevels: [4, 8],
+  };
+
+  const spell = (
+    id: string,
+    name: string,
+    level: 1 | 2,
+  ): ContentPack['spells'][number] => ({
+    id,
+    name,
+    level,
+    school: 'invocation',
+    castingTime: '1 action',
+    range: '18 mètres',
+    components: { verbal: true, somatic: true, material: null },
+    duration: 'instantanée',
+    concentration: false,
+    ritual: false,
+    summary: 'De la brume, encore.',
+    classes: ['karn-brumeur'],
+  });
+
+  const withClass: ContentPack = {
+    ...pack,
+    classes: [brumeur],
+    spells: [
+      spell('karn-voile-epais', 'Voile épais', 2),
+      spell('karn-appel-des-brumes', 'Appel des brumes', 1),
+      spell('karn-bruine', 'Bruine', 1),
+    ],
+  };
+  const augmented = catalogueWithPacks(MINI_CATALOGUE, [withClass], ADVANCEMENT);
+  const draft = {
+    ...emptyDraft(),
+    classId: 'karn-brumeur',
+    level: 7,
+    baseAbilities: { ...emptyDraft().baseAbilities, sagesse: 16 },
+  };
+
+  it('range ses sorts par niveau puis par nom, comme ceux du SRD', () => {
+    expect(
+      spellsForClass(augmented, 'karn-brumeur', 1, 2).map((entry) => entry.name),
+    ).toEqual(['Appel des brumes', 'Bruine', 'Voile épais']);
+  });
+
+  it('compte ses sorts préparés avec la même formule', () => {
+    // Sagesse 16 : +3, plus trois niveaux de lanceur au niveau 7.
+    const slot = openChoices(draft, augmented).find((entry) => entry.kind === 'spell');
+    expect(slot?.pick).toBe(6);
+  });
+
+  it('dit d’où vient ce nombre, donc l’écran l’explique aussi', () => {
+    const slot = openChoices(draft, augmented).find((entry) => entry.kind === 'spell');
+    expect(slot?.pickFrom).toEqual({
+      ability: 'sagesse',
+      modifier: 3,
+      casterLevel: 3,
+      halved: true,
+    });
   });
 });

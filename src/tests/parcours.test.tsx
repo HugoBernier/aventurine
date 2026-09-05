@@ -326,6 +326,39 @@ describe('parcours de création', () => {
     expect(screen.queryByText('Rage implacable')).not.toBeInTheDocument();
   });
 
+  it('explique d’où vient un nombre de sorts qui a l’air trop petit', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: /Humain/ }));
+    await next(user);
+    for (let step = 0; step < 6; step++) {
+      if (screen.getByRole('heading', { level: 1 }).textContent === 'Choisis ta classe') {
+        break;
+      }
+      await next(user);
+    }
+    await user.click(screen.getByRole('radio', { name: /Paladin/ }));
+    // Niveau 7, caractéristiques laissées au départ : le cas où deux sorts
+    // préparés passent pour une erreur de l'application.
+    for (let step = 0; step < 24; step++) {
+      const title = screen.getByRole('heading', { level: 1 }).textContent;
+      if (title.startsWith('À quel niveau')) {
+        for (let up = 0; up < 6; up++) {
+          await user.click(screen.getByRole('button', { name: 'Monter d’un niveau' }));
+        }
+      }
+      if (title === 'Tes sorts préparés') break;
+      await next(user);
+    }
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Tes sorts préparés',
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('Encore 2 sorts à choisir');
+    expect(
+      screen.getByText(/la moitié de ton niveau \(3\) plus ton Charisme \(-1\)/),
+    ).toBeInTheDocument();
+  });
+
   it('range les sorts par niveau, et dit combien il en reste à choisir', async () => {
     const user = userEvent.setup();
     render(<App />);

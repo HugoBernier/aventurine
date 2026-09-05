@@ -55,6 +55,22 @@ export interface ChoiceOption {
   readonly unavailable: UnavailableReason | null;
 }
 
+/**
+ * D'où vient `pick` quand il se CALCULE au lieu de se lire dans une table.
+ * Structuré, jamais rédigé : `ui/format/` en compose la phrase.
+ *
+ * Un paladin de niveau 7 au Charisme 9 prépare deux sorts. C'est la règle, et
+ * c'est incompréhensible sans le calcul sous les yeux : le joueur lit son
+ * niveau 7, compte deux sorts, et conclut que l'application se trompe.
+ */
+export interface PickBreakdown {
+  readonly ability: string;
+  readonly modifier: number;
+  /** Le niveau qui entre dans le compte : la moitié pour un demi-lanceur. */
+  readonly casterLevel: number;
+  readonly halved: boolean;
+}
+
 export interface ChoiceSlot {
   readonly id: ChoiceSlotId;
   readonly source: ChoiceSource;
@@ -63,6 +79,8 @@ export interface ChoiceSlot {
   readonly title: string;
   readonly help: string;
   readonly pick: number;
+  /** `null` dès que le nombre est écrit dans les données : rien à expliquer. */
+  readonly pickFrom: PickBreakdown | null;
   readonly options: readonly ChoiceOption[];
 }
 

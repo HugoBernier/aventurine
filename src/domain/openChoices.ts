@@ -8,6 +8,7 @@ import type {
   ChoiceOption,
   ChoiceSlot,
   ChoiceSource,
+  PickBreakdown,
   UnavailableReason,
 } from './choice';
 import type { AdvancementMode, ChoiceSpec, SpellSpec } from './choiceSpec';
@@ -124,6 +125,32 @@ function highestSpellLevel(draft: CharacterDraft, catalogue: Catalogue): number 
 }
 
 /**
+ * Les deux nombres qui composent un compte de sorts PRÉPARÉS, et rien pour les
+ * autres créneaux. Une seule fonction les calcule, parce que le nombre affiché
+ * et son explication doivent venir du même endroit : deux calculs finiraient
+ * par se contredire à l'écran.
+ */
+function pickBreakdown(
+  spec: ChoiceSpec,
+  draft: CharacterDraft,
+  catalogue: Catalogue,
+): PickBreakdown | null {
+  if (spec.kind !== 'spell' || spec.count.kind !== 'prepared') {
+    return null;
+  }
+  const casting = findClass(catalogue, spec.listFrom)?.spellcasting;
+  if (casting == null) {
+    return null;
+  }
+  return {
+    ability: casting.ability,
+    modifier: abilityModifier(abilityTotals(draft, catalogue)[casting.ability]),
+    casterLevel: castingLevel(casting.progression, draft.level),
+    halved: casting.progression === 'half',
+  };
+}
+
+/**
  * Combien de sorts ce créneau attend. Le barde lit sa table ; le clerc calcule
  * son nombre de sorts préparés, qui dépend de sa caractéristique d'incantation
  * autant que de son niveau. Zéro ferme le créneau : le paladin de niveau 1 ne
@@ -137,12 +164,11 @@ function spellPickCount(
   if (spec.count.kind === 'known') {
     return spec.count.byLevel[clampLevel(draft.level) - 1] ?? 0;
   }
-  const casting = findClass(catalogue, spec.listFrom)?.spellcasting;
-  if (casting == null || highestSpellLevel(draft, catalogue) === 0) {
+  const from = pickBreakdown(spec, draft, catalogue);
+  if (from === null || highestSpellLevel(draft, catalogue) === 0) {
     return 0;
   }
-  const modifier = abilityModifier(abilityTotals(draft, catalogue)[casting.ability]);
-  return preparedSpellCount(castingLevel(casting.progression, draft.level), modifier);
+  return preparedSpellCount(from.casterLevel, from.modifier);
 }
 
 /**
@@ -579,6 +605,7 @@ export function openChoices(
       title: spec.title,
       help: spec.help,
       pick,
+      pickFrom: pickBreakdown(spec, draft, catalogue),
       options,
     });
 

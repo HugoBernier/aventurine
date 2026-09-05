@@ -1,0 +1,7 @@
+/* Le calcul qui donne le nombre. Il précède le bandeau collant : on le lit une
+   fois en arrivant, il s'en va quand on parcourt la liste, et le bandeau garde
+   ensuite le seul chiffre qui compte. */
+.source {
+  margin-block: 0 var(--space-3);
+  color: var(--color-text-muted);
+}
