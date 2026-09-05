@@ -81,6 +81,59 @@ const GRAFT_FILE = new File(
   { type: 'application/json' },
 );
 
+/** Un peuple entier, avec sa branche et le bonus que le joueur place. */
+const RACE_FILE = new File(
+  [
+    JSON.stringify({
+      aventurine: 2,
+      pack: {
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        author: 'Hugo',
+        description: '',
+        updatedAt: '2026-09-04T10:12:00.000Z',
+      },
+      races: [
+        {
+          id: 'karn-brumeux',
+          name: 'Brumeux',
+          blurb: 'Un peuple né d’une malédiction, qui vit la nuit.',
+          facts: ['+2 au choix', '7,50 m', 'Vision 18 m'],
+          size: 'M',
+          speed: 7.5,
+          darkvision: 18,
+          languages: ['commun'],
+          resistances: ['poison'],
+          features: [{ name: 'Voile natal', text: 'La brume ne te ralentit jamais.' }],
+          choices: [
+            {
+              kind: 'ability',
+              subject: 'origin-2',
+              title: 'Où mettre ton +2 ?',
+              help: 'Dans ce que ton personnage fera le plus souvent.',
+              pick: 1,
+              bonus: 2,
+            },
+          ],
+          subraces: [
+            {
+              id: 'karn-brumeux-des-marais',
+              name: 'Brumeux des marais',
+              blurb: 'Plus vif, plus silencieux.',
+              bonusHitPointsPerLevel: 1,
+              features: [
+                { name: 'Pas feutré', text: 'Tu ne fais aucun bruit dans l’eau.' },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+  ],
+  'pack-karn.json',
+  { type: 'application/json' },
+);
+
 const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
@@ -519,6 +572,45 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     // L'aptitude de la voie est sur la fiche, et elle dit d'où elle vient.
     expect(screen.getByText('Voile')).toBeInTheDocument();
+    expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
+  });
+
+  it('ajoute un peuple de pack au choix de race, sa branche et son bonus', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), RACE_FILE);
+    expect(screen.getByText(/1 peuple/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    // Les neuf du SRD sont toujours là, le dixième s'ajoute à la fin.
+    expect(screen.getAllByRole('radio')).toHaveLength(10);
+    await user.click(screen.getByRole('radio', { name: /Brumeux/ }));
+
+    // Sa branche ouvre son propre écran, comme celle d'un peuple du SRD.
+    await next(user);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Choisis ta branche',
+    );
+    await user.click(screen.getByRole('radio', { name: /Brumeux des marais/ }));
+
+    // Le bonus d'origine que le pack déclare devient un écran de l'assistant.
+    for (let step = 0; step < 12; step++) {
+      if (screen.queryByRole('heading', { name: /Où mettre ton \+2/ }) !== null) {
+        break;
+      }
+      await next(user);
+    }
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Où mettre ton +2 ?',
+    );
+    await user.click(screen.getByRole('radio', { name: /Force/ }));
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    expect(screen.getByText('Voile natal')).toBeInTheDocument();
+    expect(screen.getByText('Pas feutré')).toBeInTheDocument();
     expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
   });
 

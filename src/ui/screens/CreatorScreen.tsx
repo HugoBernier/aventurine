@@ -1,13 +1,19 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
+  emptyRaceDraft,
   emptySpellDraft,
   emptySubclassDraft,
   packDraftFile,
   parsePackDraft,
   slug,
 } from '../../domain/packDraft';
-import type { PackDraft, SpellDraft, SubclassDraft } from '../../domain/packDraft';
+import type {
+  PackDraft,
+  RaceDraft,
+  SpellDraft,
+  SubclassDraft,
+} from '../../domain/packDraft';
 import { findClass } from '../../domain/catalogue';
 import type { Catalogue } from '../../domain/catalogue';
 import { parsePack } from '../../domain/parsePack';
@@ -21,6 +27,7 @@ import { formatPackIssue } from '../format/pack';
 import { counted } from '../format/plural';
 import { formatSchool } from '../format/spellSchool';
 import { saveFile } from '../saveFile';
+import { RaceForm } from './RaceForm';
 import { SpellForm } from './SpellForm';
 import { SubclassForm } from './SubclassForm';
 import styles from './CreatorScreen.module.css';
@@ -48,6 +55,7 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   const catalogue = useCatalogue();
   const [editing, setEditing] = useState<SpellDraft | null>(null);
   const [editingVoie, setEditingVoie] = useState<SubclassDraft | null>(null);
+  const [editingRace, setEditingRace] = useState<RaceDraft | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const update = (parts: Partial<PackDraft>): void => {
@@ -57,6 +65,27 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   };
 
   const packId = draft.id === '' ? 'pack' : draft.id;
+
+  if (editingRace !== null) {
+    return (
+      <RaceForm
+        race={editingRace}
+        packId={packId}
+        onSave={(race) => {
+          const isKnown = draft.races.some((entry) => entry.id === race.id);
+          update({
+            races: isKnown
+              ? draft.races.map((entry) => (entry.id === race.id ? race : entry))
+              : [...draft.races, race],
+          });
+          setEditingRace(null);
+        }}
+        onCancel={() => {
+          setEditingRace(null);
+        }}
+      />
+    );
+  }
 
   if (editingVoie !== null) {
     return (
@@ -281,6 +310,58 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         }}
       >
         + Écrire une voie
+      </button>
+
+      <h2 className={styles.heading}>Tes peuples</h2>
+      {draft.races.length === 0 ? (
+        <p className={styles.empty}>Tu n’as pas encore écrit de peuple.</p>
+      ) : (
+        <ul className={styles.list}>
+          {draft.races.map((race) => (
+            <li className={styles.item} key={race.id}>
+              <span className={styles.name}>
+                {race.name === '' ? 'Sans nom' : race.name}
+              </span>
+              <p className={styles.facts}>
+                {counted(race.features.length, 'aptitude', 'aptitudes')}
+                {race.subraces.length > 0 &&
+                  ` · ${counted(race.subraces.length, 'branche', 'branches')}`}
+              </p>
+              <span className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    setEditingRace(race);
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    update({
+                      races: draft.races.filter((entry) => entry.id !== race.id),
+                    });
+                  }}
+                >
+                  Retirer
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          setEditingRace(emptyRaceDraft());
+        }}
+      >
+        + Écrire un peuple
       </button>
 
       {missing.length > 0 && (

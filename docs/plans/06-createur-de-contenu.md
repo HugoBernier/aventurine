@@ -3,9 +3,9 @@
 > Note de conception, tenue à jour au fil des tranches. Les décisions sont
 > prises (§12 et §13) et la charte est à jour (§10).
 >
-> **Écrit :** la règle de purge du §7, l'export/import d'un personnage, la
-> tranche 1 (sorts) et la tranche 2 (sous-classes greffées) — voir §9.
-> **Reste :** races, historiques, classes entières.
+> **Écrit :** la règle de purge du §7, l'export/import d'un personnage, et les
+> tranches 1 à 3 — sorts, sous-classes greffées, peuples — voir §9.
+> **Reste :** historiques, classes entières.
 > **Ouvert :** le point 10 du §13, à trancher avec la tranche « classes ».
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
@@ -438,9 +438,9 @@ Chaque tranche est utilisable seule et laisse l'application verte.
 
 | | Ce que ça ouvre | Difficulté |
 | --- | --- | --- |
-| 1 | **Sorts** | Plat, sans créneau de choix, référence seulement des classes. Le banc d'essai du format et de l'import. |
-| 2 | **Sous-classes greffées** | Le homebrew le plus demandé, et **treize fois plus léger qu'une classe** : 0,9 kio et 10 champs contre 12 kio et 16. Amène les aptitudes par niveau et la troisième ligne de purge du §7. |
-| 3 | **Races** | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
+| 1 | **Sorts** ✅ | Plat, sans créneau de choix, référence seulement des classes. Le banc d'essai du format et de l'import. |
+| 2 | **Sous-classes greffées** ✅ | Le homebrew le plus demandé, et **treize fois plus léger qu'une classe** : 0,9 kio et 10 champs contre 12 kio et 16. Amène les aptitudes par niveau et la troisième ligne de purge du §7. |
+| 3 | **Races** ✅ | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
 | 4 | **Historiques** | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
 | 5 | **Classes entières** | Dé de vie, sauvegardes, magie, équipement, paliers. Le gros morceau, en dernier, avec tout le reste éprouvé. |
 
@@ -489,6 +489,27 @@ La marque de provenance descend maintenant jusqu'à la **ligne d'aptitude de la
 fiche**, comme le §13.6 le demandait : chaque aptitude porte l'identifiant de
 ce qui la donne (`SheetFeature.fromId`), donc « Voile » affiche « Les Brumes de
 Karn » sous son nom là où « Expertise » n'affiche rien.
+
+**Tranche 3 faite.** Un peuple entier s'écrit : corps, langues, compétences,
+maîtrises, résistances, aptitudes, ses branches, et les **choix** qu'il ouvre —
+les six genres qu'un peuple peut ouvrir, pas un de plus, les autres appartenant
+à une classe. Il s'ajoute à la fin de la liste des races, sans en toucher une
+seule.
+
+Trois choses que l'écriture a tranchées :
+
+- **Les bonus de caractéristique suivent la règle d'origine personnalisée de la
+  charte**, pas la forme du SRD : `abilityBonuses` reste vide et le peuple
+  déclare un créneau `ability` par valeur à placer. La seule exception est
+  l'humain, qui demande ses six +1 par un champ nommé.
+- **Une référence morte et une définition manquante ne se traitent pas de la
+  même façon.** Une langue inexistante dans une liste est écartée, et le peuple
+  reste jouable ; un nom ou une vitesse manquants refusent l'entrée. Une liste
+  garde ce qui existe ; une entrée est entière ou n'est pas.
+- **Le préfixe d'une branche est celui du pack, pas du peuple.** Écrit d'abord
+  avec le peuple, il donnait `karn-brumeux-brumeux-des-marais` là où le SRD
+  écrit `nain-des-collines` sous `nain`. Corrigé avant que le moindre
+  identifiant ne parte dans un fichier.
 
 ---
 

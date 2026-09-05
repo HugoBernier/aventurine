@@ -30,6 +30,12 @@ export function damageTypeName(type: DamageType): string {
   return LABELS[type].name;
 }
 
+/** Les treize types, prêts à cocher dans le créateur. */
+export const DAMAGE_TYPE_OPTIONS: readonly {
+  readonly id: string;
+  readonly name: string;
+}[] = Object.entries(LABELS).map(([id, label]) => ({ id, name: label.name }));
+
 /** « résiste au feu », « résiste à la foudre », « résiste à l’acide ». */
 export function formatResistances(types: readonly DamageType[]): string | null {
   return types.length === 0
