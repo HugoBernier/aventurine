@@ -96,11 +96,17 @@ export function findSubrace(
   return byId(race.subraces, subraceId);
 }
 
-/** Dérivée de `Spell.classes` : les listes ne sont jamais recopiées ailleurs. */
 /**
- * Les sorts d'une classe, du niveau `from` au niveau `to` inclus. Une plage
- * plutôt qu'un niveau : à partir du niveau 3, un lanceur choisit parmi tout ce
- * qu'il sait lancer, pas seulement parmi le dernier palier ouvert.
+ * Les sorts d'une classe, dérivés de `Spell.classes` : une liste de classe
+ * n'est jamais recopiée ailleurs. Du niveau `from` au niveau `to` inclus : une
+ * plage plutôt qu'un niveau, parce qu'à partir du niveau 3 un lanceur choisit
+ * parmi tout ce qu'il sait lancer, pas seulement parmi le dernier palier.
+ *
+ * Rangés par NIVEAU d'abord, par nom ensuite. C'est l'ordre dans lequel on
+ * choisit un sort — on sait quel niveau on veut remplir avant de savoir lequel
+ * on prend — et c'est déjà l'ordre de la fiche. L'ordre des fichiers de
+ * contenu ne le donne pas : un pack s'ajoute à la fin, et le complément SRD
+ * lui-même range ses niveaux 0 et 1 après les niveaux 9.
  */
 export function spellsForClass(
   catalogue: Catalogue,
@@ -111,8 +117,10 @@ export function spellsForClass(
   if (classId === null) {
     return [];
   }
-  return catalogue.spells.filter(
-    (spell) =>
-      spell.level >= from && spell.level <= to && spell.classes.includes(classId),
-  );
+  return catalogue.spells
+    .filter(
+      (spell) =>
+        spell.level >= from && spell.level <= to && spell.classes.includes(classId),
+    )
+    .toSorted((a, b) => a.level - b.level || a.name.localeCompare(b.name, 'fr'));
 }

@@ -70,7 +70,17 @@ describe('sous-races', () => {
 describe('listes de sorts', () => {
   it('dérive la liste d’une classe des sorts eux-mêmes', () => {
     const cantrips = spellsForClass(C, 'clerc', 0).map((spell) => spell.id);
-    expect(cantrips).toEqual(['lumiere', 'flamme-sacree', 'assistance']);
+    expect(cantrips).toEqual(['assistance', 'flamme-sacree', 'lumiere']);
+  });
+
+  it('range par niveau d’abord : c’est ainsi qu’on choisit un sort', () => {
+    const levels = spellsForClass(C, 'clerc', 0, 1).map((spell) => spell.level);
+    expect(levels).toEqual([...levels].toSorted((a, b) => a - b));
+  });
+
+  it('range par nom à l’intérieur d’un niveau, pour retrouver celui qu’on cherche', () => {
+    const names = spellsForClass(C, 'clerc', 0).map((spell) => spell.name);
+    expect(names).toEqual([...names].toSorted((a, b) => a.localeCompare(b, 'fr')));
   });
 
   it('sépare les tours de magie des sorts de niveau 1', () => {

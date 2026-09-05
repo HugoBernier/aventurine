@@ -71,9 +71,9 @@ describe('ouverture des créneaux', () => {
   it('propose les tours de magie du clerc', () => {
     const draft = draftWith({ classId: 'clerc' });
     expect(optionIds(draft, 'class:clerc:cantrips')).toEqual([
-      'lumiere',
-      'flamme-sacree',
       'assistance',
+      'flamme-sacree',
+      'lumiere',
     ]);
   });
 

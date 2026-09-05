@@ -326,6 +326,36 @@ describe('parcours de création', () => {
     expect(screen.queryByText('Rage implacable')).not.toBeInTheDocument();
   });
 
+  it('range les sorts par niveau, et dit combien il en reste à choisir', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await next(user);
+    await next(user);
+    await user.click(screen.getByRole('radio', { name: /Magicien/ }));
+    // Jusqu'à l'écran des sorts, qui n'est pas celui des tours de magie.
+    for (let step = 0; step < 14; step++) {
+      const title = screen.getByRole('heading', { level: 1 });
+      if (title.textContent === 'Tes sorts') break;
+      await next(user);
+    }
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tes sorts');
+
+    // Un intertitre par niveau : on cherche un niveau, pas une initiale.
+    expect(screen.getByRole('heading', { level: 2, name: 'Niveau 1' })).toBeVisible();
+    // Le compteur dit ce qui MANQUE, pas ce qui est fait, et il se met à jour.
+    const counter = screen.getByRole('status');
+    const left = (): number => Number(/Encore (\d+)/.exec(counter.textContent)?.[1]);
+    const before = left();
+    expect(before).toBeGreaterThan(0);
+
+    const [first] = screen.getAllByRole('checkbox');
+    if (first !== undefined) {
+      await user.click(first);
+    }
+    expect(left()).toBe(before - 1);
+  });
+
   it('montre les sorts choisis sur la fiche, et permet d’en changer', async () => {
     const user = userEvent.setup();
     render(<App />);

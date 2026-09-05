@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import type { ChoiceKind, ChoiceOption } from '../../domain/choice';
 import { formatUnavailable } from '../format/unavailable';
@@ -19,7 +20,9 @@ const FACT_LABELS: Partial<Record<ChoiceKind, FactLabels>> = {
   // étaient décalés d'un cran, et « Portée : 1 action » se lisait sur chaque
   // sort du site.
   cantrip: ['Incantation', 'Portée', 'Durée'],
-  spell: ['Niveau', 'Portée', 'Durée'],
+  // Le niveau est le titre de son groupe : le répéter sur chacune des trente
+  // cartes coûterait une ligne par carte pour redire l'intertitre juste au-dessus.
+  spell: ['', 'Portée', 'Durée'],
   equipment: ['Dégâts', 'Propriétés', 'Usage'],
   ancestry: ['Type de dégâts', 'Souffle', ''],
 };
@@ -70,6 +73,88 @@ function Facts({
   );
 }
 
+interface Section {
+  /** `null` quand le genre ne se range pas : une seule liste, sans intertitre. */
+  readonly heading: string | null;
+  readonly options: readonly ChoiceOption[];
+}
+
+/**
+ * Les sorts se rangent par niveau, comme sur la fiche. Un lanceur sait quel
+ * niveau il veut remplir avant de savoir quel sort il prend : trente noms par
+ * ordre alphabétique lui font chercher ce que six intertitres lui montrent.
+ *
+ * Le niveau est le premier repère d'un sort — `FACT_LABELS.spell` le déclare —
+ * et le domaine rend déjà la liste triée, donc les groupes sortent dans l'ordre.
+ */
+function sectionsOf(
+  kind: ChoiceKind,
+  options: readonly ChoiceOption[],
+): readonly Section[] {
+  if (kind !== 'spell') {
+    return [{ heading: null, options }];
+  }
+  const byLevel = new Map<string, ChoiceOption[]>();
+  for (const option of options) {
+    const heading = `Niveau ${option.facts[0]}`;
+    const kept = byLevel.get(heading);
+    if (kept === undefined) {
+      byLevel.set(heading, [option]);
+    } else {
+      kept.push(option);
+    }
+  }
+  return [...byLevel].map(([heading, kept]) => ({ heading, options: kept }));
+}
+
+function OptionCard({
+  option,
+  kind,
+  fieldName,
+  inputType,
+  isChecked,
+  onToggle,
+  factLabels,
+}: {
+  readonly option: ChoiceOption;
+  readonly kind: ChoiceKind;
+  readonly fieldName: string;
+  readonly inputType: 'radio' | 'checkbox';
+  readonly isChecked: boolean;
+  readonly onToggle: (optionId: string) => void;
+  readonly factLabels: FactLabels | undefined;
+}): ReactNode {
+  return (
+    <label className={styles.card}>
+      <input
+        className={styles.input}
+        type={inputType}
+        name={fieldName}
+        value={option.id}
+        checked={isChecked}
+        disabled={option.unavailable !== null}
+        onChange={() => {
+          onToggle(option.id);
+        }}
+      />
+      <span className={styles.body}>
+        <span className={styles.head}>
+          <span className={styles.name}>{option.label}</span>
+          {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
+        </span>
+        <Provenance id={option.id} />
+        <span className={styles.blurb}>{option.blurb}</span>
+        <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
+        {option.unavailable !== null && (
+          <span className={styles.unavailable}>
+            {formatUnavailable(option.unavailable, kind)}
+          </span>
+        )}
+      </span>
+    </label>
+  );
+}
+
 /**
  * `fieldset` + `legend` + `input` natifs, sans un seul rôle ARIA : le natif
  * fournit le regroupement, le nom du groupe, `aria-checked`, les flèches et
@@ -103,45 +188,27 @@ export function ChoiceGroup({
       <legend className={legendHidden ? styles.legendHidden : styles.legend}>
         {legend}
       </legend>
-      {pick > 1 && (
-        <p className={styles.counter} role="status">
-          {picked.length} sur {pick} choisis
-        </p>
-      )}
-      <div className={styles.list}>
-        {options.map((option) => {
-          const isChecked = picked.includes(option.id);
-          return (
-            <label className={styles.card} key={option.id}>
-              <input
-                className={styles.input}
-                type={inputType}
-                name={fieldName}
-                value={option.id}
-                checked={isChecked}
-                disabled={option.unavailable !== null}
-                onChange={() => {
-                  onToggle(option.id);
-                }}
+      {sectionsOf(kind, options).map((section) => (
+        <Fragment key={section.heading ?? legend}>
+          {section.heading !== null && (
+            <h2 className={styles.section}>{section.heading}</h2>
+          )}
+          <div className={styles.list}>
+            {section.options.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                kind={kind}
+                fieldName={fieldName}
+                inputType={inputType}
+                isChecked={picked.includes(option.id)}
+                onToggle={onToggle}
+                factLabels={factLabels}
               />
-              <span className={styles.body}>
-                <span className={styles.head}>
-                  <span className={styles.name}>{option.label}</span>
-                  {isChecked && <span className={styles.chosen}>✓ Choisi</span>}
-                </span>
-                <Provenance id={option.id} />
-                <span className={styles.blurb}>{option.blurb}</span>
-                <Facts kind={kind} facts={option.facts} factLabels={factLabels} />
-                {option.unavailable !== null && (
-                  <span className={styles.unavailable}>
-                    {formatUnavailable(option.unavailable, kind)}
-                  </span>
-                )}
-              </span>
-            </label>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        </Fragment>
+      ))}
     </fieldset>
   );
 }

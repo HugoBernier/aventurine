@@ -23,10 +23,18 @@
   white-space: nowrap;
 }
 
-.counter {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-  margin-block: 0 var(--space-3);
+/* L'intertitre d'un groupe de sorts. Il porte le niveau, que les cartes ne
+   répètent donc plus. */
+.section {
+  font-family: var(--font-title);
+  font-size: var(--font-size-300);
+  margin-block: var(--space-5) var(--space-2);
+}
+
+/* Le premier groupe suit le compteur : la marge de séparation n'a rien à
+   séparer. */
+.section:first-of-type {
+  margin-block-start: 0;
 }
 
 .list {

@@ -4,6 +4,8 @@ import { useChoiceSlot } from '../../state/hooks';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
+import { formatPicking } from '../format/picking';
+import styles from './ChoiceSlotScreen.module.css';
 
 export interface ChoiceSlotScreenProps {
   readonly slotId: ChoiceSlotId;
@@ -28,10 +30,11 @@ export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
   return (
     <>
       <Explainer label="Comment ça marche ?">{slot.help}</Explainer>
-      {remaining === 0 && slot.pick > 1 && (
-        <Notice tone="reminder" live>
-          Tu as fait tes {slot.pick} choix. Décoche-en un pour en changer.
-        </Notice>
+      {/* Un seul choix à faire n'a pas de reste à compter : le titre le dit. */}
+      {slot.pick > 1 && (
+        <p className={styles.counter} role="status">
+          {formatPicking(remaining, slot.pick, slot.kind)}
+        </p>
       )}
       <ChoiceGroup
         legend={slot.title}
