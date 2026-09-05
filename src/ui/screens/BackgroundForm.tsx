@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { slug } from '../../domain/packDraft';
 import type { BackgroundDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { StringListEditor } from '../components/StringListEditor';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import { ChoiceEditor, BACKGROUND_KINDS } from './ChoiceEditor';
 import { EquipmentEditor } from './EquipmentEditor';
@@ -15,15 +15,24 @@ const COLUMNS: readonly (readonly [
   string,
   string,
 ])[] = [
-  ['traits', 'Traits de personnalité', 'Comment on te reconnaît en trois mots.'],
-  ['ideals', 'Idéaux', 'Ce en quoi tu crois, et qui te fait agir.'],
-  ['bonds', 'Liens', 'Ce à quoi tu tiens, et qui te ramène quelque part.'],
-  ['flaws', 'Défauts', 'Ce qui te met dans le pétrin.'],
+  [
+    'traits',
+    'Traits de personnalité',
+    'Des amorces que le joueur pourra reprendre. Une par ligne.',
+  ],
+  ['ideals', 'Idéaux', 'Ce en quoi le personnage croit, et qui le fait agir.'],
+  ['bonds', 'Liens', 'Ce à quoi il tient, et qui le ramène quelque part.'],
+  ['flaws', 'Défauts', 'Ce qui le met dans le pétrin.'],
 ];
+
+/** Les intitulés des trois colonnes de la carte : ce que le joueur verra
+ *  en face de chaque ligne, au moment de choisir. */
+const FACT_LABELS = ['Compétences', 'Outils et langues', 'Équipement de départ'];
+
+const FACT_EXAMPLES = ['Perception, Survie', 'Outils de navigateur', 'Perche, 10 po'];
 
 export interface BackgroundFormProps {
   readonly background: BackgroundDraft;
-  readonly packId: string;
   readonly onSave: (background: BackgroundDraft) => void;
   readonly onCancel: () => void;
 }
@@ -35,7 +44,6 @@ export interface BackgroundFormProps {
  */
 export function BackgroundForm({
   background,
-  packId,
   onSave,
   onCancel,
 }: BackgroundFormProps): ReactNode {
@@ -53,16 +61,19 @@ export function BackgroundForm({
     return { onCommit: commit, onInput: commit };
   };
 
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
-
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire un historique"
+        lead="Un historique, c’est ce que le personnage faisait avant de partir à l’aventure. Il lui donne des compétences, du matériel, et de quoi le jouer."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom de l’historique"
         defaultValue={draft.name}
@@ -70,9 +81,6 @@ export function BackgroundForm({
         placeholder="Batelier des brumes"
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <TextField
         label="Ce que tu faisais avant, en une phrase"
@@ -83,14 +91,20 @@ export function BackgroundForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Trois repères, pour comparer</legend>
+        <legend className={styles.legend}>Le résumé qui s’affiche sur sa carte</legend>
+        <p className={styles.identifier}>
+          Trois lignes courtes, à la même place que sur les autres historiques : c’est ce
+          qui permet de les comparer d’un coup d’œil.
+        </p>
         {draft.facts.map((fact, index) => (
-          // Trois champs de même nature : leur rang EST leur identité.
+          // Trois champs de même nature : leur rang EST leur identité, et rien
+          // ne les réordonne.
           <TextField
             key={index}
-            label={`Repère ${String(index + 1)}`}
+            label={FACT_LABELS[index] ?? ''}
             defaultValue={fact}
             maxLength={120}
+            placeholder={FACT_EXAMPLES[index] ?? ''}
             onCommit={(value) => {
               const facts: [string, string, string] = [...draft.facts];
               facts[index] = value;
@@ -101,7 +115,7 @@ export function BackgroundForm({
       </fieldset>
 
       <OptionChecklist
-        legend="Les compétences qu’il donne"
+        legend="Les deux compétences qu’il donne"
         options={catalogue.skills}
         checked={draft.skills}
         onChange={(skills) => {
@@ -109,7 +123,7 @@ export function BackgroundForm({
         }}
       />
       <OptionChecklist
-        legend="Les outils qu’il apprend"
+        legend="Les outils qu’il apprend à manier"
         options={catalogue.tools}
         checked={draft.tools}
         onChange={(tools) => {
@@ -118,7 +132,7 @@ export function BackgroundForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ce qu’il laisse choisir</legend>
+        <legend className={styles.legend}>Ce qu’il laisse choisir au joueur</legend>
         <ChoiceEditor
           kinds={BACKGROUND_KINDS}
           choices={draft.choices}
@@ -129,7 +143,7 @@ export function BackgroundForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>L’équipement de départ</legend>
+        <legend className={styles.legend}>Ce qu’il emporte en partant</legend>
         <EquipmentEditor
           equipment={draft.equipment}
           onChange={(equipment) => {
@@ -139,7 +153,7 @@ export function BackgroundForm({
       </fieldset>
 
       <TextField
-        label="Les pièces d’or qu’il donne"
+        label="L’argent qu’il donne, en pièces d’or"
         defaultValue={String(draft.goldPieces)}
         maxLength={4}
         onCommit={(value) => {
@@ -149,9 +163,10 @@ export function BackgroundForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Son aptitude</legend>
+        <legend className={styles.legend}>Ce qu’il permet, hors combat</legend>
         <p className={styles.identifier}>
-          Facultative. Laisse le nom vide s’il n’en donne aucune.
+          Facultatif : une petite chose que ce passé ouvre — un gîte, un contact, une
+          entrée quelque part. Laisse le nom vide s’il n’y en a pas.
         </p>
         <TextField
           label="Son nom"

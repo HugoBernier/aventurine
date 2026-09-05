@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { slug } from '../../domain/packDraft';
 import type { ClassDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import { ChoiceEditor, CLASS_KINDS } from './ChoiceEditor';
 import { EquipmentEditor } from './EquipmentEditor';
@@ -38,9 +38,14 @@ const PREPARATIONS = [
   ['spellbook', 'Il les copie dans un grimoire'],
 ] as const;
 
+/** Les intitulés des trois colonnes de la carte : ce que le joueur verra
+ *  en face de chaque ligne, au moment de choisir. */
+const FACT_LABELS = ['Dé de vie', 'Jets de sauvegarde', 'Ce qu’elle apporte'];
+
+const FACT_EXAMPLES = ['d8', 'Dextérité + Sagesse', 'Lanceur de sorts'];
+
 export interface ClassFormProps {
   readonly entry: ClassDraft;
-  readonly packId: string;
   readonly onSave: (entry: ClassDraft) => void;
   readonly onCancel: () => void;
 }
@@ -50,12 +55,7 @@ export interface ClassFormProps {
  * les autres, et nomment cette classe — un seul écran pour toutes les voies,
  * qu'elles s'ajoutent au barde du SRD ou à celle qu'on vient d'inventer.
  */
-export function ClassForm({
-  entry,
-  packId,
-  onSave,
-  onCancel,
-}: ClassFormProps): ReactNode {
+export function ClassForm({ entry, onSave, onCancel }: ClassFormProps): ReactNode {
   const catalogue = useCatalogue();
   const [draft, setDraft] = useState(entry);
   const change = (parts: Partial<ClassDraft>): void => {
@@ -70,15 +70,19 @@ export function ClassForm({
     return { onCommit: commit, onInput: commit };
   };
 
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire une classe"
+        lead="Une classe, c’est le métier d’aventurier : guerrier, magicien. Elle décide de sa résistance, de ce qu’il sait faire au combat, et s’il lance des sorts."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom de la classe"
         defaultValue={draft.name}
@@ -86,9 +90,6 @@ export function ClassForm({
         placeholder="Brumeur"
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <TextField
         label="Ce qu’elle est, en une phrase"
@@ -99,14 +100,20 @@ export function ClassForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Trois repères, pour comparer</legend>
+        <legend className={styles.legend}>Le résumé qui s’affiche sur sa carte</legend>
+        <p className={styles.identifier}>
+          Trois lignes courtes, à la même place que sur les autres classes : c’est ce qui
+          permet de les comparer d’un coup d’œil.
+        </p>
         {draft.facts.map((fact, index) => (
-          // Trois champs de même nature : leur rang EST leur identité.
+          // Trois champs de même nature : leur rang EST leur identité, et rien
+          // ne les réordonne.
           <TextField
             key={index}
-            label={`Repère ${String(index + 1)}`}
+            label={FACT_LABELS[index] ?? ''}
             defaultValue={fact}
             maxLength={120}
+            placeholder={FACT_EXAMPLES[index] ?? ''}
             onCommit={(value) => {
               const facts: [string, string, string] = [...draft.facts];
               facts[index] = value;
@@ -138,7 +145,7 @@ export function ClassForm({
       </div>
 
       <OptionChecklist
-        legend="Ses deux jets de sauvegarde"
+        legend="Les deux caractéristiques où elle résiste le mieux"
         options={catalogue.abilities}
         checked={draft.saves}
         onChange={(saves) => {
@@ -156,7 +163,7 @@ export function ClassForm({
         }}
       />
       <OptionChecklist
-        legend="Les catégories d’armes"
+        legend="Les familles d’armes qu’elle sait manier"
         options={WEAPON_CATEGORIES}
         checked={draft.weaponCategories}
         onChange={(weaponCategories) => {
@@ -164,7 +171,7 @@ export function ClassForm({
         }}
       />
       <OptionChecklist
-        legend="Les armes précises qu’elle ajoute"
+        legend="Les armes précises qu’elle ajoute en plus"
         options={catalogue.weapons}
         checked={draft.weapons}
         onChange={(weapons) => {
@@ -172,7 +179,7 @@ export function ClassForm({
         }}
       />
       <OptionChecklist
-        legend="Les outils qu’elle apprend"
+        legend="Les outils qu’elle apprend à manier"
         options={catalogue.tools}
         checked={draft.tools}
         onChange={(tools) => {
@@ -181,7 +188,7 @@ export function ClassForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses aptitudes, niveau par niveau</legend>
+        <legend className={styles.legend}>Ce qu’elle apporte, niveau par niveau</legend>
         <FeatureEditor
           features={draft.features}
           withLevel
@@ -192,10 +199,10 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses lots d’équipement de départ</legend>
+        <legend className={styles.legend}>Le matériel entre lequel il choisira</legend>
         <p className={styles.identifier}>
-          Les paquets entre lesquels le joueur choisira. Ajoute ensuite un choix « lot
-          d’équipement » pour les lui proposer.
+          Écris d’abord les paquets, puis descends jusqu’à « ce qu’elle laisse choisir au
+          joueur » et ajoute un choix de matériel pour les lui proposer.
         </p>
         <EquipmentOptionEditor
           options={draft.equipmentOptions}
@@ -206,7 +213,9 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ce qu’elle donne d’office</legend>
+        <legend className={styles.legend}>
+          Le matériel qu’elle donne à tout le monde
+        </legend>
         <EquipmentEditor
           equipment={draft.fixedEquipment}
           onChange={(fixedEquipment) => {
@@ -216,7 +225,7 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ce qu’elle laisse choisir</legend>
+        <legend className={styles.legend}>Ce qu’elle laisse choisir au joueur</legend>
         <ChoiceEditor
           kinds={CLASS_KINDS}
           equipmentOptions={draft.equipmentOptions}
@@ -228,7 +237,7 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Sa magie</legend>
+        <legend className={styles.legend}>Est-ce qu’elle lance des sorts ?</legend>
         <label className={styles.check}>
           <input
             type="checkbox"
@@ -243,7 +252,7 @@ export function ClassForm({
           <>
             <div className={styles.select}>
               <label className={styles.label} htmlFor="class-casting-ability">
-                Avec quelle caractéristique
+                Avec quelle caractéristique elle lance
               </label>
               <select
                 id="class-casting-ability"
@@ -262,7 +271,7 @@ export function ClassForm({
             </div>
             <div className={styles.select}>
               <label className={styles.label} htmlFor="class-progression">
-                À quel rythme
+                À quelle vitesse sa magie monte
               </label>
               <select
                 id="class-progression"
@@ -313,14 +322,14 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Sa voie</legend>
+        <legend className={styles.legend}>Sa spécialité</legend>
         <p className={styles.identifier}>
-          Les voies elles-mêmes s’écrivent à côté, avec toutes les autres, et nomment
-          cette classe.
+          Chaque classe fait choisir une spécialité en cours de route : le collège d’un
+          barde, le domaine d’un clerc. Tu les écris à côté, dans « tes voies ».
         </p>
         <div className={styles.select}>
           <label className={styles.label} htmlFor="class-subclass-level">
-            À quel niveau on la choisit
+            À quel niveau le joueur la choisit
           </label>
           <select
             id="class-subclass-level"
@@ -341,11 +350,11 @@ export function ClassForm({
           label="Comment la classe l’appelle"
           defaultValue={draft.subclassTitle}
           maxLength={120}
-          hint="« Ton collège bardique », « Ton domaine divin »."
+          hint="Le titre de l’écran de choix. « Ton collège bardique », « Ton domaine divin »."
           {...field('subclassTitle')}
         />
         <TextField
-          label="L’explication en dessous"
+          label="La phrase qui aide à répondre"
           defaultValue={draft.subclassHelp}
           maxLength={600}
           multiline
@@ -354,10 +363,10 @@ export function ClassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses paliers d’amélioration</legend>
+        <legend className={styles.legend}>Quand le personnage se muscle</legend>
         <p className={styles.identifier}>
-          Les niveaux où le joueur monte ses caractéristiques ou prend un don. Le SRD
-          donne 4, 8, 12, 16 et 19 à tout le monde.
+          Aux niveaux cochés, le joueur monte ses caractéristiques ou prend un don. La
+          plupart des classes le font aux niveaux 4, 8, 12, 16 et 19.
         </p>
         <OptionChecklist
           legend="Les niveaux"

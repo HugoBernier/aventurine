@@ -1,9 +1,9 @@
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { SpellLevel } from '../../domain/content';
-import { slug } from '../../domain/packDraft';
 import type { SpellDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import { MAGIC_SCHOOLS } from '../format/spellSchool';
 import styles from './SpellForm.module.css';
@@ -12,7 +12,6 @@ const LEVELS: readonly SpellLevel[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export interface SpellFormProps {
   readonly spell: SpellDraft;
-  readonly packId: string;
   readonly onSave: (spell: SpellDraft) => void;
   readonly onCancel: () => void;
 }
@@ -22,12 +21,7 @@ export interface SpellFormProps {
  * soi, avec ses champs sous les yeux — pas à table, au pouce. Une colonne
  * quand même, et des zones de 44 px : le téléphone reste utilisable.
  */
-export function SpellForm({
-  spell,
-  packId,
-  onSave,
-  onCancel,
-}: SpellFormProps): ReactNode {
+export function SpellForm({ spell, onSave, onCancel }: SpellFormProps): ReactNode {
   const catalogue = useCatalogue();
   const levelId = useId();
   const schoolId = useId();
@@ -52,25 +46,25 @@ export function SpellForm({
 
   // L'identifiant se fixe à la création et ne bouge plus : les fiches qui ont
   // choisi ce sort le nomment, et le renommer les couperait de lui.
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
-
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire un sort"
+        lead="Un sort, c’est ce qu’un personnage lance en jeu. Donne-lui un nom, dis ce qu’il fait, et qui a le droit de s’en servir."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom du sort"
         defaultValue={draft.name}
         maxLength={60}
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <div className={styles.row}>
         <div className={styles.select}>
@@ -119,21 +113,21 @@ export function SpellForm({
         label="Le temps d’incantation"
         defaultValue={draft.castingTime}
         maxLength={120}
-        hint="« 1 action », « 1 action bonus », « 1 minute »."
+        hint="Le temps qu’il faut pour le lancer. « 1 action », « 1 action bonus », « 1 minute »."
         {...field('castingTime')}
       />
       <TextField
         label="La portée"
         defaultValue={draft.range}
         maxLength={120}
-        hint="« contact », « 18 mètres », « personnelle »."
+        hint="Jusqu’où il porte. « contact », « 18 mètres », « personnelle »."
         {...field('range')}
       />
       <TextField
         label="La durée"
         defaultValue={draft.duration}
         maxLength={120}
-        hint="« instantanée », « 1 heure », « 10 minutes »."
+        hint="Combien de temps l’effet dure. « instantanée », « 1 heure », « 10 minutes »."
         {...field('duration')}
       />
 
@@ -168,7 +162,7 @@ export function SpellForm({
                 change({ concentration: event.currentTarget.checked });
               }}
             />
-            De la concentration
+            De la concentration (il s’arrête si on en lance un autre)
           </label>
           <label className={styles.check}>
             <input
@@ -178,7 +172,7 @@ export function SpellForm({
                 change({ ritual: event.currentTarget.checked });
               }}
             />
-            Il peut être un rituel
+            Il peut se lancer en rituel (plus lentement, sans dépenser d’emplacement)
           </label>
         </div>
       </fieldset>
@@ -187,7 +181,7 @@ export function SpellForm({
         label="Le composant matériel"
         defaultValue={draft.material}
         maxLength={120}
-        hint="Laisse vide s’il n’en faut aucun."
+        hint="Un objet à tenir en le lançant. Laisse vide s’il n’en faut aucun."
         {...field('material')}
       />
 
@@ -196,12 +190,12 @@ export function SpellForm({
         defaultValue={draft.summary}
         maxLength={600}
         multiline
-        hint="Une à trois phrases, comme sur une carte de sort."
+        hint="Une à trois phrases, comme sur une carte de sort. C’est ce que le joueur lira à table."
         {...field('summary')}
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Qui peut le lancer</legend>
+        <legend className={styles.legend}>Quelles classes y ont droit</legend>
         <div className={styles.checks}>
           {catalogue.classes.map((entry) => (
             <label className={styles.check} key={entry.id}>

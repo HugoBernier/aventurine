@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
+  allIds,
   emptyBackgroundDraft,
   emptyClassDraft,
   emptyRaceDraft,
@@ -9,6 +10,7 @@ import {
   packDraftFile,
   parsePackDraft,
   slug,
+  uniqueId,
 } from '../../domain/packDraft';
 import type {
   BackgroundDraft,
@@ -22,6 +24,7 @@ import { findClass } from '../../domain/catalogue';
 import type { Catalogue } from '../../domain/catalogue';
 import { parsePack } from '../../domain/parsePack';
 import { useCatalogue } from '../../state/hooks';
+import { usePacks } from '../../state/PacksProvider';
 import { savePackDraft } from '../../state/persistence/creatorStorage';
 import { packDraftFileText } from '../../state/persistence/packFile';
 import { Explainer } from '../components/Explainer';
@@ -53,9 +56,13 @@ export interface CreatorScreenProps {
 
 /**
  * Écrire un pack. Le brouillon vit sur l'appareil, sous sa propre clé : un
- * onglet fermé au milieu d'un sort ne coûte rien. « Enregistrer le fichier »
- * est donc un geste délibéré — le fichier reste la vérité qu'on emporte, qu'on
- * donne, et qu'on rouvre pour reprendre.
+ * onglet fermé au milieu d'un sort ne coûte rien.
+ *
+ * Deux sorties, et les mots comptent : « ajouter à mes packs » range le pack
+ * DANS CE NAVIGATEUR, où il devient jouable sans rien écrire sur le disque ;
+ * « enregistrer un fichier » en produit un vrai, celui qu'on donne et qu'on
+ * garde. Confondre les deux, c'est croire son travail sauvegardé alors qu'un
+ * nettoyage du site l'emporterait.
  */
 export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNode {
   const catalogue = useCatalogue();
@@ -66,6 +73,11 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
     null,
   );
   const [editingClass, setEditingClass] = useState<ClassDraft | null>(null);
+  // Ne compte que les fois où l'identifiant est PROPOSÉ depuis le nom. Le
+  // champ ne se remonte qu'alors : le keyer sur l'identifiant lui-même le
+  // démontait à chaque lettre qu'on y tapait, et le clavier se refermait.
+  const [installed, setInstalled] = useState<string | null>(null);
+  const { install } = usePacks();
   const fileInput = useRef<HTMLInputElement>(null);
 
   const update = (parts: Partial<PackDraft>): void => {
@@ -76,17 +88,29 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
 
   const packId = draft.id === '' ? 'pack' : draft.id;
 
+  /**
+   * Une entrée neuve reçoit ici son identifiant, unique dans le pack : le
+   * formulaire ne connaît que lui-même, et deux peuples du même nom se
+   * seraient donné le même — un pack refusé pour une raison que personne
+   * n'aurait comprise.
+   */
+  const named = <T extends { readonly id: string; readonly name: string }>(
+    entry: T,
+  ): T => ({ ...entry, id: uniqueId(packId, entry.name, allIds(draft)) });
+
   if (editingClass !== null) {
     return (
       <ClassForm
         entry={editingClass}
-        packId={packId}
         onSave={(written) => {
-          const isKnown = draft.classes.some((item) => item.id === written.id);
+          // Une entrée neuve n'a pas encore d'identifiant : c'est ce qui la
+          // distingue d'une modification, et non son nom — deux entrées peuvent
+          // très bien porter le même.
+          const isKnown = written.id !== '';
           update({
             classes: isKnown
               ? draft.classes.map((item) => (item.id === written.id ? written : item))
-              : [...draft.classes, written],
+              : [...draft.classes, named(written)],
           });
           setEditingClass(null);
         }}
@@ -101,15 +125,14 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
     return (
       <BackgroundForm
         background={editingBackground}
-        packId={packId}
         onSave={(background) => {
-          const isKnown = draft.backgrounds.some((entry) => entry.id === background.id);
+          const isKnown = background.id !== '';
           update({
             backgrounds: isKnown
               ? draft.backgrounds.map((entry) =>
                   entry.id === background.id ? background : entry,
                 )
-              : [...draft.backgrounds, background],
+              : [...draft.backgrounds, named(background)],
           });
           setEditingBackground(null);
         }}
@@ -126,11 +149,11 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         race={editingRace}
         packId={packId}
         onSave={(race) => {
-          const isKnown = draft.races.some((entry) => entry.id === race.id);
+          const isKnown = race.id !== '';
           update({
             races: isKnown
               ? draft.races.map((entry) => (entry.id === race.id ? race : entry))
-              : [...draft.races, race],
+              : [...draft.races, named(race)],
           });
           setEditingRace(null);
         }}
@@ -145,16 +168,15 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
     return (
       <SubclassForm
         subclass={editingVoie}
-        packId={packId}
         ownClasses={draft.classes.filter((entry) => entry.name !== '')}
         onSave={(subclass) => {
-          const isKnown = draft.subclasses.some((entry) => entry.id === subclass.id);
+          const isKnown = subclass.id !== '';
           update({
             subclasses: isKnown
               ? draft.subclasses.map((entry) =>
                   entry.id === subclass.id ? subclass : entry,
                 )
-              : [...draft.subclasses, subclass],
+              : [...draft.subclasses, named(subclass)],
           });
           setEditingVoie(null);
         }}
@@ -169,13 +191,12 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
     return (
       <SpellForm
         spell={editing}
-        packId={packId}
         onSave={(spell) => {
-          const isKnown = draft.spells.some((entry) => entry.id === spell.id);
+          const isKnown = spell.id !== '';
           update({
             spells: isKnown
               ? draft.spells.map((entry) => (entry.id === spell.id ? spell : entry))
-              : [...draft.spells, spell],
+              : [...draft.spells, named(spell)],
           });
           setEditing(null);
         }}
@@ -190,6 +211,14 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   // refuser le fichier là-bas.
   const parsed = parsePack(packDraftFile(draft, new Date().toISOString()), catalogue);
   const missing = parsed.kind === 'invalid' ? parsed.issues : [];
+  // Un pack sans rien dedans s'installerait sans rien apporter : le bouton
+  // attend qu'il y ait quelque chose à jouer.
+  const isEmpty =
+    draft.spells.length === 0 &&
+    draft.subclasses.length === 0 &&
+    draft.races.length === 0 &&
+    draft.backgrounds.length === 0 &&
+    draft.classes.length === 0;
 
   const openFile = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = event.target.files?.[0];
@@ -224,19 +253,10 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
             // L'identifiant se propose depuis le nom, une seule fois : il
             // préfixe tout ce que le pack définit, et le changer ensuite
             // couperait les fiches de leur contenu.
-            update({ name, id: draft.id === '' ? slug(name).slice(0, 24) : draft.id });
-          }}
-        />
-        <TextField
-          // Le champ garde sa frappe en local : sans cette clé, l'identifiant
-          // proposé depuis le nom vivrait dans l'état sans jamais s'afficher.
-          key={draft.id}
-          label="Son identifiant"
-          defaultValue={draft.id}
-          maxLength={24}
-          hint="Il préfixe tout ce que tu écris. Choisis-le une fois : le changer couperait les personnages de ton contenu."
-          onCommit={(id) => {
-            update({ id: slug(id) });
+            // L'identifiant se fabrique une fois, depuis le nom, et ne bouge
+            // plus : c'est lui que portent les fiches des personnages, et le
+            // changer les couperait de ton contenu. Personne n'a à le taper.
+            update(draft.id === '' ? { name, id: slug(name).slice(0, 24) } : { name });
           }}
         />
         <TextField
@@ -538,6 +558,39 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         </Notice>
       )}
 
+      <h2 className={styles.heading}>Quand tu as fini</h2>
+
+      <button
+        type="button"
+        className={styles.add}
+        disabled={parsed.kind !== 'ok' || isEmpty}
+        onClick={() => {
+          if (parsed.kind !== 'ok') return;
+          install(parsed.pack);
+          setInstalled(parsed.pack.info.name);
+        }}
+      >
+        Ajouter à mes packs, dans ce navigateur
+      </button>
+      <p className={styles.hint}>
+        Le pack devient jouable tout de suite, sur ce téléphone ou cet ordinateur, et rien
+        n’est écrit sur ton disque. Il repart si tu effaces les données du site :
+        enregistre aussi le fichier si tu veux le garder ou le donner.
+      </p>
+
+      {installed !== null && (
+        <Notice
+          tone="reminder"
+          live
+          onDismiss={() => {
+            setInstalled(null);
+          }}
+        >
+          {installed} est dans tes packs. Tu le retrouves à l’écran précédent, et son
+          contenu apparaît maintenant dans l’assistant.
+        </Notice>
+      )}
+
       <button
         type="button"
         className={styles.add}
@@ -547,11 +600,11 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
           saveFile(`pack-${name}.json`, text, 'application/json');
         }}
       >
-        Enregistrer le fichier
+        Enregistrer un fichier sur l’appareil
       </button>
       <p className={styles.hint}>
-        Un pack inachevé s’enregistre aussi : tu le rouvriras ici pour le finir. Il ne
-        pourra s’installer que complet.
+        Un vrai fichier, dans tes téléchargements : c’est lui qu’on donne, qu’on garde, et
+        qu’on rouvre ici pour reprendre. Un pack inachevé s’enregistre aussi.
       </p>
 
       <label className={styles.open}>

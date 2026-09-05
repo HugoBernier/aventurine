@@ -76,7 +76,9 @@ export function formatPackIssue(issue: PackIssue): string {
       return `${entryOf(issue.at, issue.entry, issue.what)} : son identifiant doit commencer par celui du pack, c’est ce qui empêche deux packs de se marcher dessus.`;
     }
     case 'duplicate-id': {
-      return `${entryOf(issue.at, issue.entry, issue.what)} : cet identifiant est déjà pris dans ce pack.`;
+      // L'identifiant ne se montre plus nulle part : le dire ici enverrait le
+      // joueur chercher un champ qui n'existe pas. C'est le NOM qu'il voit.
+      return `${entryOf(issue.at, issue.entry, issue.what)} : deux entrées de ce pack portent ce nom. Renomme l’une des deux.`;
     }
     case 'unknown-class': {
       return `${entryOf(issue.at, issue.entry, issue.what)} : « ${issue.value} » n’est pas une classe que cette version connaît.`;

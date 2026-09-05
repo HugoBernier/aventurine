@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { slug } from '../../domain/packDraft';
 import type { SubraceDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import { ChoiceEditor, RACE_KINDS } from './ChoiceEditor';
 import { FeatureEditor } from './FeatureEditor';
 import styles from './SpellForm.module.css';
 
+/** Les intitulés des trois colonnes de la carte : ce que le joueur verra
+ *  en face de chaque ligne, au moment de choisir. */
+const FACT_LABELS = ['Caractéristiques', 'Vitesse', 'Ce qu’elle apporte'];
+
+const FACT_EXAMPLES = ['+1 au choix', '7,50 m', '+1 point de vie par niveau'];
+
 export interface SubraceFormProps {
   readonly subrace: SubraceDraft;
-  readonly packId: string;
   readonly onSave: (subrace: SubraceDraft) => void;
   readonly onCancel: () => void;
 }
@@ -21,12 +26,7 @@ export interface SubraceFormProps {
  * répète pas son peuple, elle le précise — d'où les champs vides qui veulent
  * dire « comme le peuple » plutôt que « zéro ».
  */
-export function SubraceForm({
-  subrace,
-  packId,
-  onSave,
-  onCancel,
-}: SubraceFormProps): ReactNode {
+export function SubraceForm({ subrace, onSave, onCancel }: SubraceFormProps): ReactNode {
   const catalogue = useCatalogue();
   const [draft, setDraft] = useState(subrace);
   const change = (parts: Partial<SubraceDraft>): void => {
@@ -47,16 +47,19 @@ export function SubraceForm({
       change({ [key]: Number.isFinite(asked) && asked >= 0 ? asked : 0 });
     };
 
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
-
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire une branche"
+        lead="Une branche est une variante d’un peuple — le nain des collines, l’elfe des bois. Elle ne répète pas son peuple : elle ajoute ce qui la distingue."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom de la branche"
         defaultValue={draft.name}
@@ -64,9 +67,6 @@ export function SubraceForm({
         placeholder="Brumeux des marais"
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <TextField
         label="Ce qu’elle est, en une phrase"
@@ -77,14 +77,20 @@ export function SubraceForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Trois repères, pour comparer</legend>
+        <legend className={styles.legend}>Le résumé qui s’affiche sur sa carte</legend>
+        <p className={styles.identifier}>
+          Trois lignes courtes, à la même place que sur les autres branches : c’est ce qui
+          permet de les comparer d’un coup d’œil.
+        </p>
         {draft.facts.map((fact, index) => (
-          // Trois champs de même nature : leur rang EST leur identité.
+          // Trois champs de même nature : leur rang EST leur identité, et rien
+          // ne les réordonne.
           <TextField
             key={index}
-            label={`Repère ${String(index + 1)}`}
+            label={FACT_LABELS[index] ?? ''}
             defaultValue={fact}
             maxLength={120}
+            placeholder={FACT_EXAMPLES[index] ?? ''}
             onCommit={(value) => {
               const facts: [string, string, string] = [...draft.facts];
               facts[index] = value;
@@ -98,7 +104,7 @@ export function SubraceForm({
         label="Points de vie en plus, par niveau"
         defaultValue={String(draft.bonusHitPointsPerLevel)}
         maxLength={1}
-        hint="0 pour aucun. Le nain des collines en donne 1."
+        hint="En plus de ceux de sa classe, à chaque niveau. 0 pour aucun ; le nain des collines en donne 1."
         onCommit={number('bonusHitPointsPerLevel')}
       />
       <TextField
@@ -117,7 +123,7 @@ export function SubraceForm({
       />
 
       <OptionChecklist
-        legend="Les compétences qu’elle donne d’office"
+        legend="Les compétences qu’elle donne à tout le monde"
         options={catalogue.skills}
         checked={draft.skills}
         onChange={(skills) => {
@@ -126,7 +132,7 @@ export function SubraceForm({
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses aptitudes</legend>
+        <legend className={styles.legend}>Ce qu’elle sait faire en plus</legend>
         <FeatureEditor
           features={draft.features}
           withLevel={false}
@@ -137,7 +143,7 @@ export function SubraceForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ce qu’elle laisse choisir</legend>
+        <legend className={styles.legend}>Ce qu’elle laisse choisir au joueur</legend>
         <ChoiceEditor
           kinds={RACE_KINDS}
           choices={draft.choices}

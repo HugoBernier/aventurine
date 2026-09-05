@@ -41,7 +41,9 @@ export function EquipmentOptionEditor({
   return (
     <>
       {options.map((option, index) => (
-        <div className={styles.form} key={`${String(index)}-${option.id}`}>
+        // Le rang, jamais l'identifiant : celui-ci se fabrique depuis le nom
+        // et changerait à chaque lettre, refermant le clavier.
+        <div className={styles.form} key={index}>
           <TextField
             label="Le nom du lot"
             defaultValue={option.name}

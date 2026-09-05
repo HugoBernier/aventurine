@@ -342,6 +342,41 @@ export function emptySpellDraft(): SpellDraft {
   };
 }
 
+/** Tout ce que le pack a déjà nommé : de quoi ne jamais nommer deux fois pareil. */
+export function allIds(draft: PackDraft): readonly string[] {
+  return [
+    ...draft.spells.map((entry) => entry.id),
+    ...draft.subclasses.map((entry) => entry.id),
+    ...draft.races.flatMap((race) => [
+      race.id,
+      ...race.subraces.map((subrace) => subrace.id),
+    ]),
+    ...draft.backgrounds.map((entry) => entry.id),
+    ...draft.classes.map((entry) => entry.id),
+  ];
+}
+
+/**
+ * L'identifiant d'une entrée, fabriqué depuis son nom et rendu unique dans son
+ * pack. Personne ne veut le taper : il n'a d'existence que technique, et une
+ * faute de frappe dedans coûte un pack refusé pour une raison illisible.
+ *
+ * Le suffixe n'arrive que sur une vraie collision — deux peuples appelés
+ * pareil — et vaut mieux qu'un refus : le joueur voit deux entrées du même
+ * nom, ce qui est SON problème, pas celui d'un identifiant.
+ */
+export function uniqueId(packId: string, name: string, taken: readonly string[]): string {
+  const base = `${packId}-${slug(name)}`;
+  if (!taken.includes(base)) {
+    return base;
+  }
+  let rank = 2;
+  while (taken.includes(`${base}-${String(rank)}`)) {
+    rank += 1;
+  }
+  return `${base}-${String(rank)}`;
+}
+
 /** `Appel des brumes` → `appel-des-brumes`. Sans accent : c'est un identifiant. */
 export function slug(value: string): string {
   return value

@@ -759,6 +759,54 @@ describe('parcours de création', () => {
     expect(screen.getByText('3 d8')).toBeInTheDocument();
   });
 
+  it('laisse ressortir d’un formulaire du créateur sans rien écrire', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.click(screen.getByRole('button', { name: /Écrire un pack/ }));
+    await user.click(screen.getByRole('button', { name: /Écrire un peuple/ }));
+
+    // La sortie est EN HAUT, avant les vingt champs : ouvrir par curiosité ne
+    // doit pas obliger à écrire un peuple pour revenir.
+    expect(screen.getByText('Écrire un peuple')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '‹ Annuler' }));
+
+    expect(screen.getByRole('heading', { name: 'Tes peuples' })).toBeInTheDocument();
+    expect(screen.getByText('Tu n’as pas encore écrit de peuple.')).toBeInTheDocument();
+  });
+
+  it('installe le pack qu’on vient d’écrire, sans passer par un fichier', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.click(screen.getByRole('button', { name: /Écrire un pack/ }));
+
+    // Vide, il n'y a rien à installer : le bouton attend qu'il y ait à jouer.
+    const add = screen.getByRole('button', { name: /Ajouter à mes packs/ });
+    expect(add).toBeDisabled();
+
+    await user.type(screen.getByLabelText('Le nom de ton pack'), 'Les Brumes de Karn');
+    await user.click(screen.getByLabelText('Ton nom'));
+    await user.click(screen.getByRole('button', { name: /Écrire un sort/ }));
+    await user.type(screen.getByLabelText('Le nom du sort'), 'Appel des brumes');
+    await user.type(screen.getByLabelText(/Ce qu’il fait/), 'Une brume épaisse se lève.');
+    await user.click(screen.getByRole('checkbox', { name: 'Magicien' }));
+    await user.click(screen.getByRole('button', { name: 'Garder ce sort' }));
+
+    await user.click(screen.getByRole('button', { name: /Ajouter à mes packs/ }));
+    expect(screen.getByRole('status')).toHaveTextContent(/est dans tes packs/);
+
+    // Il est vraiment installé : l'écran de gestion le liste, et l'assistant
+    // propose son sort — sans qu'un fichier soit passé par le disque.
+    await user.click(screen.getByRole('button', { name: 'Revenir à tes packs' }));
+    expect(screen.getByText('Les Brumes de Karn')).toBeInTheDocument();
+    expect(screen.getByText(/1 sort/)).toBeInTheDocument();
+  });
+
   it('permet de monter de niveau depuis la fiche', async () => {
     const user = userEvent.setup();
     render(<App />);

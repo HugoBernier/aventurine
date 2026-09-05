@@ -1,15 +1,26 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { emptySubraceDraft, slug } from '../../domain/packDraft';
+import { emptySubraceDraft, uniqueId } from '../../domain/packDraft';
 import type { RaceDraft, SubraceDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import { DAMAGE_TYPE_OPTIONS } from '../format/damageTypes';
 import { ChoiceEditor, RACE_KINDS } from './ChoiceEditor';
 import { FeatureEditor } from './FeatureEditor';
 import { SubraceForm } from './SubraceForm';
 import styles from './SpellForm.module.css';
+
+/** Les intitulés des trois colonnes de la carte : ce que le joueur verra
+ *  en face de chaque ligne, au moment de choisir. */
+const FACT_LABELS = ['Caractéristiques', 'Taille et vitesse', 'Ce qu’il apporte'];
+
+const FACT_EXAMPLES = [
+  '+2 au choix',
+  '7,50 m · taille moyenne',
+  'Vision 18 m, résiste au poison',
+];
 
 export interface RaceFormProps {
   readonly race: RaceDraft;
@@ -30,6 +41,41 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
   const change = (parts: Partial<RaceDraft>): void => {
     setDraft((current) => ({ ...current, ...parts }));
   };
+
+  if (editing !== null) {
+    return (
+      // Le préfixe d'une branche est celui du PACK, pas du peuple : sinon
+      // « Brumeux des marais » sous le peuple « Brumeux » donnerait
+      // `karn-brumeux-brumeux-des-marais`, là où le SRD écrit
+      // `nain-des-collines` sous `nain`.
+      <SubraceForm
+        subrace={editing}
+        onSave={(subrace) => {
+          const isKnown = subrace.id !== '';
+          change({
+            subraces: isKnown
+              ? draft.subraces.map((entry) => (entry.id === subrace.id ? subrace : entry))
+              : [
+                  ...draft.subraces,
+                  {
+                    ...subrace,
+                    id: uniqueId(
+                      packId,
+                      subrace.name,
+                      draft.subraces.map((entry) => entry.id),
+                    ),
+                  },
+                ],
+          });
+          setEditing(null);
+        }}
+        onCancel={() => {
+          setEditing(null);
+        }}
+      />
+    );
+  }
+
   const field = (
     key: 'name' | 'blurb',
   ): { onCommit: (value: string) => void; onInput: (value: string) => void } => {
@@ -45,41 +91,19 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
       change({ [key]: Number.isFinite(asked) && asked >= 0 ? asked : 0 });
     };
 
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
-
-  if (editing !== null) {
-    return (
-      // Le préfixe d'une branche est celui du PACK, pas du peuple : sinon
-      // « Brumeux des marais » sous le peuple « Brumeux » donnerait
-      // `karn-brumeux-brumeux-des-marais`, là où le SRD écrit
-      // `nain-des-collines` sous `nain`.
-      <SubraceForm
-        subrace={editing}
-        packId={packId}
-        onSave={(subrace) => {
-          const isKnown = draft.subraces.some((entry) => entry.id === subrace.id);
-          change({
-            subraces: isKnown
-              ? draft.subraces.map((entry) => (entry.id === subrace.id ? subrace : entry))
-              : [...draft.subraces, subrace],
-          });
-          setEditing(null);
-        }}
-        onCancel={() => {
-          setEditing(null);
-        }}
-      />
-    );
-  }
-
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire un peuple"
+        lead="Un peuple, c’est ce qu’on est de naissance : un nain, un elfe. Remplis ce que tu sais, laisse le reste — tu pourras y revenir."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom du peuple"
         defaultValue={draft.name}
@@ -87,28 +111,31 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
         placeholder="Brumeux"
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <TextField
         label="Ce qu’il est, en une phrase"
         defaultValue={draft.blurb}
         maxLength={600}
         multiline
-        hint="C’est ce qu’on lit sous son nom au moment de choisir."
+        hint="On la lit sous son nom au moment de choisir. Écris-la comme tu la raconterais."
         {...field('blurb')}
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Trois repères, pour comparer</legend>
+        <legend className={styles.legend}>Le résumé qui s’affiche sur sa carte</legend>
+        <p className={styles.identifier}>
+          Trois lignes courtes, à la même place que sur les autres peuples : c’est ce qui
+          permet de les comparer d’un coup d’œil. Écris ce qui se lit, pas les règles.
+        </p>
         {draft.facts.map((fact, index) => (
-          // Trois champs de même nature : leur rang EST leur identité.
+          // Trois champs de même nature : leur rang EST leur identité, et rien
+          // ne les réordonne.
           <TextField
             key={index}
-            label={`Repère ${String(index + 1)}`}
+            label={FACT_LABELS[index] ?? ''}
             defaultValue={fact}
             maxLength={120}
+            placeholder={FACT_EXAMPLES[index] ?? ''}
             onCommit={(value) => {
               const facts: [string, string, string] = [...draft.facts];
               facts[index] = value;
@@ -139,14 +166,14 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
         label="Sa vitesse, en mètres"
         defaultValue={String(draft.speed)}
         maxLength={5}
-        hint="9 pour la plupart, 7,50 pour les petites tailles."
+        hint="La distance qu’il parcourt en un tour. 9 pour la plupart, 7,50 pour les petites tailles."
         onCommit={number('speed')}
       />
       <TextField
         label="Sa vision dans le noir, en mètres"
         defaultValue={draft.darkvision === 0 ? '' : String(draft.darkvision)}
         maxLength={5}
-        hint="Laisse vide s’il voit comme un humain."
+        hint="Jusqu’où il voit sans lumière. Laisse vide s’il voit comme un humain."
         onCommit={number('darkvision')}
       />
 
@@ -158,11 +185,12 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
             change({ everyAbilityPlusOne: event.currentTarget.checked });
           }}
         />
-        +1 dans les six caractéristiques, comme l’humain
+        Il donne +1 dans les six caractéristiques (c’est le cas de l’humain, et de lui
+        seul)
       </label>
       <p className={styles.identifier}>
-        Sinon, ajoute un choix « bonus de caractéristique à placer » plus bas : c’est le
-        joueur qui décide où il va.
+        Sinon, descends jusqu’à « ce qu’il laisse choisir » et ajoute un bonus à placer :
+        c’est alors le joueur qui décide où il va.
       </p>
 
       <OptionChecklist
@@ -174,7 +202,7 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
         }}
       />
       <OptionChecklist
-        legend="Les compétences qu’il donne d’office"
+        legend="Les compétences qu’il donne à tout le monde"
         options={catalogue.skills}
         checked={draft.skills}
         onChange={(skills) => {
@@ -182,7 +210,7 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
         }}
       />
       <OptionChecklist
-        legend="Ce à quoi il résiste"
+        legend="Ce qui lui fait moitié moins de mal"
         options={DAMAGE_TYPE_OPTIONS}
         checked={draft.resistances}
         onChange={(resistances) => {
@@ -207,7 +235,7 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses aptitudes</legend>
+        <legend className={styles.legend}>Ce qu’il sait faire</legend>
         <FeatureEditor
           features={draft.features}
           withLevel={false}
@@ -218,7 +246,7 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ce qu’il laisse choisir</legend>
+        <legend className={styles.legend}>Ce qu’il laisse choisir au joueur</legend>
         <ChoiceEditor
           kinds={RACE_KINDS}
           choices={draft.choices}
@@ -229,10 +257,10 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses branches</legend>
+        <legend className={styles.legend}>Ses variantes</legend>
         <p className={styles.identifier}>
-          Facultatif. Le nain a ses collines et ses montagnes ; beaucoup de peuples n’en
-          ont aucune.
+          Facultatif. Le nain a celui des collines et celui des montagnes ; beaucoup de
+          peuples n’en ont aucune.
         </p>
         {draft.subraces.map((subrace) => (
           <div className={styles.actions} key={subrace.id}>

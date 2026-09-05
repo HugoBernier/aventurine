@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import {
+  allIds,
   emptyBackgroundDraft,
   emptyChoiceDraft,
   emptyClassDraft,
@@ -11,6 +12,7 @@ import {
   packDraftFile,
   parsePackDraft,
   slug,
+  uniqueId,
 } from './packDraft';
 import type {
   BackgroundDraft,
@@ -266,5 +268,38 @@ describe('une classe dans le brouillon', () => {
     };
     const parsed = parsePack(packDraftFile(withOwnVoie, ''), MINI_CATALOGUE);
     expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
+  });
+});
+
+describe('les identifiants que le créateur fabrique', () => {
+  it('se déduisent du nom, sans accent ni espace', () => {
+    expect(uniqueId('karn', 'Appel des Brumes', [])).toBe('karn-appel-des-brumes');
+  });
+
+  it('se numérotent plutôt que de refuser deux entrées du même nom', () => {
+    const taken = ['karn-brumeux'];
+    expect(uniqueId('karn', 'Brumeux', taken)).toBe('karn-brumeux-2');
+    expect(uniqueId('karn', 'Brumeux', [...taken, 'karn-brumeux-2'])).toBe(
+      'karn-brumeux-3',
+    );
+  });
+
+  it('voit tout ce que le pack a déjà nommé, branches comprises', () => {
+    const draft: PackDraft = {
+      ...emptyPackDraft(),
+      spells: [{ ...emptySpellDraft(), id: 'karn-brume' }],
+      races: [
+        {
+          ...emptyRaceDraft(),
+          id: 'karn-brumeux',
+          subraces: [{ ...emptySubraceDraft(), id: 'karn-brumeux-des-marais' }],
+        },
+      ],
+    };
+    expect(allIds(draft)).toEqual([
+      'karn-brume',
+      'karn-brumeux',
+      'karn-brumeux-des-marais',
+    ]);
   });
 });

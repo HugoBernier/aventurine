@@ -1,8 +1,8 @@
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
-import { slug } from '../../domain/packDraft';
 import type { FeatureDraft, SubclassDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
+import { FormHeader } from '../components/FormHeader';
 import { TextField } from '../components/TextField';
 import styles from './SpellForm.module.css';
 
@@ -10,7 +10,6 @@ const LEVELS = Array.from({ length: 20 }, (_, index) => index + 1);
 
 export interface SubclassFormProps {
   readonly subclass: SubclassDraft;
-  readonly packId: string;
   /** Les classes du pack en cours : une voie peut viser l'une des siennes. */
   readonly ownClasses: readonly { readonly id: string; readonly name: string }[];
   readonly onSave: (subclass: SubclassDraft) => void;
@@ -25,7 +24,6 @@ export interface SubclassFormProps {
  */
 export function SubclassForm({
   subclass,
-  packId,
   ownClasses,
   onSave,
   onCancel,
@@ -44,8 +42,6 @@ export function SubclassForm({
     };
     return { onCommit: set, onInput: set };
   };
-
-  const id = draft.id === '' ? `${packId}-${slug(draft.name)}` : draft.id;
 
   const setFeature = (index: number, parts: Partial<FeatureDraft>): void => {
     setDraft((current) => ({
@@ -90,9 +86,14 @@ export function SubclassForm({
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...draft, id });
+        onSave(draft);
       }}
     >
+      <FormHeader
+        title="Écrire une voie"
+        lead="Une voie est une spécialité qui s’ajoute à une classe : le collège d’un barde, le domaine d’un clerc. Le personnage la choisit en cours de route."
+        onCancel={onCancel}
+      />
       <TextField
         label="Le nom de la voie"
         defaultValue={draft.name}
@@ -100,9 +101,6 @@ export function SubclassForm({
         placeholder="Collège des brumes"
         {...field('name')}
       />
-      <p className={styles.identifier}>
-        Son identifiant : {id === `${packId}-` ? '—' : id}
-      </p>
 
       <div className={styles.select}>
         <label className={styles.label} htmlFor={classId}>
@@ -133,12 +131,12 @@ export function SubclassForm({
         defaultValue={draft.blurb}
         maxLength={600}
         multiline
-        hint="C’est ce qu’on lit sous son nom au moment de choisir."
+        hint="On la lit sous son nom au moment de choisir."
         {...field('blurb')}
       />
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Trois repères, pour comparer</legend>
+        <legend className={styles.legend}>Le résumé qui s’affiche sur sa carte</legend>
         {draft.facts.map((fact, index) => (
           <TextField
             // Trois champs de même nature, sans identifiant propre : leur rang
@@ -153,9 +151,9 @@ export function SubclassForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Ses aptitudes, niveau par niveau</legend>
+        <legend className={styles.legend}>Ce qu’elle apporte, niveau par niveau</legend>
         {draft.features.map((feature, index) => (
-          <div className={styles.form} key={`${String(index)}-${feature.name}`}>
+          <div className={styles.form} key={index}>
             <div className={styles.select}>
               <label
                 className={styles.label}

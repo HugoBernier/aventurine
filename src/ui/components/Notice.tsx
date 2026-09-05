@@ -17,10 +17,13 @@ export function Notice({ tone, children, live, onDismiss }: NoticeProps): ReactN
   const role = live === true ? liveRole : undefined;
   return (
     <div className={tone === 'error' ? styles.error : styles.notice} role={role}>
-      <p className={styles.body}>
+      {/* Un `div` et non un `p` : plusieurs avis portent la LISTE de ce qui
+          manque, et une liste dans un paragraphe est du HTML invalide que le
+          navigateur défait en silence. */}
+      <div className={styles.body}>
         {tone === 'error' ? <strong>Erreur : </strong> : null}
         {children}
-      </p>
+      </div>
       {onDismiss === undefined ? null : (
         <button type="button" className={styles.dismiss} onClick={onDismiss}>
           Fermer

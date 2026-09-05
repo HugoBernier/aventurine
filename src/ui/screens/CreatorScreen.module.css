@@ -112,3 +112,13 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-100);
 }
+
+/* Un bouton désactivé se voit, sinon on le presse trois fois sans comprendre.
+   La liste de ce qui manque est juste au-dessus : elle dit pourquoi. */
+.add:disabled {
+  border-style: solid;
+  border-color: var(--color-rule);
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  cursor: default;
+}

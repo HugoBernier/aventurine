@@ -10,16 +10,16 @@ import styles from './SpellForm.module.css';
 type Kind = ChoiceKindDraft;
 
 const LABELS: Readonly<Record<Kind, string>> = {
-  skill: 'Une compétence à choisir',
-  language: 'Une langue à choisir',
-  tool: 'Un outil à choisir',
-  ability: 'Un bonus de caractéristique à placer',
-  cantrip: 'Un tour de magie',
-  ancestry: 'Une ascendance draconique',
-  spell: 'Des sorts à connaître ou préparer',
-  'fighting-style': 'Un style de combat',
-  expertise: 'Une expertise',
-  equipment: 'Un lot d’équipement de départ',
+  skill: 'Le joueur choisit une compétence',
+  language: 'Le joueur choisit une langue',
+  tool: 'Le joueur choisit un outil',
+  ability: 'Le joueur place un bonus (+1 ou +2) où il veut',
+  cantrip: 'Le joueur choisit un tour de magie',
+  ancestry: 'Le joueur choisit un dragon d’origine',
+  spell: 'Le joueur choisit ses sorts',
+  'fighting-style': 'Le joueur choisit une façon de se battre',
+  expertise: 'Le joueur double son bonus sur deux compétences',
+  equipment: 'Le joueur choisit son matériel de départ',
 };
 
 /** Ce qu'un PEUPLE ou un HISTORIQUE peut ouvrir. */
@@ -116,7 +116,7 @@ export function ChoiceEditor({
         <div className={styles.form} key={choice.subject}>
           <div className={styles.select}>
             <label className={styles.label} htmlFor={`choice-kind-${String(index)}`}>
-              Ce que le joueur choisit
+              Ce que ça lui fait choisir
             </label>
             <select
               id={`choice-kind-${String(index)}`}
@@ -140,11 +140,11 @@ export function ChoiceEditor({
             label="La question posée"
             defaultValue={choice.title}
             maxLength={120}
-            hint="« Où mettre ton +2 ? », « L’outil de ton clan »."
+            hint="Elle s’affiche en gros, en haut de l’écran. Tutoie le joueur : « Où mettre ton +2 ? »"
             {...field(index, 'title')}
           />
           <TextField
-            label="L’explication en dessous"
+            label="La phrase qui aide à répondre"
             defaultValue={choice.help}
             maxLength={600}
             multiline
@@ -154,7 +154,7 @@ export function ChoiceEditor({
           {choice.kind === 'ability' && (
             <div className={styles.select}>
               <label className={styles.label} htmlFor={`choice-bonus-${String(index)}`}>
-                Combien de points
+                Combien de points il place
               </label>
               <select
                 id={`choice-bonus-${String(index)}`}
@@ -173,7 +173,7 @@ export function ChoiceEditor({
           {(choice.kind === 'cantrip' || choice.kind === 'spell') && (
             <div className={styles.select}>
               <label className={styles.label} htmlFor={`choice-list-${String(index)}`}>
-                Dans la liste de quelle classe
+                Dans les sorts de quelle classe
               </label>
               <select
                 id={`choice-list-${String(index)}`}
@@ -204,7 +204,7 @@ export function ChoiceEditor({
 
           {choice.kind === 'fighting-style' && (
             <TextField
-              label="À quel niveau on le choisit"
+              label="À quel niveau il le choisit"
               defaultValue={String(choice.level)}
               maxLength={2}
               onCommit={(value) => {
@@ -216,7 +216,7 @@ export function ChoiceEditor({
           {LISTED.has(choice.kind) && (
             <>
               <OptionChecklist
-                legend="Parmi lesquelles"
+                legend="Parmi quoi il choisit"
                 options={optionsFor(choice.kind)}
                 checked={choice.from}
                 onChange={(from) => {
@@ -224,7 +224,7 @@ export function ChoiceEditor({
                 }}
               />
               <TextField
-                label="Combien en choisir"
+                label="Combien il en choisit"
                 defaultValue={String(choice.pick)}
                 maxLength={1}
                 onCommit={(value) => {
@@ -257,7 +257,7 @@ export function ChoiceEditor({
           onChange([...choices, emptyChoiceDraft(kinds[0] ?? 'skill', subject)]);
         }}
       >
-        + Ajouter un choix
+        + Lui laisser un choix
       </button>
     </>
   );

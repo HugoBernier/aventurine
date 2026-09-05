@@ -41,7 +41,10 @@ export function FeatureEditor({
   return (
     <>
       {features.map((feature, index) => (
-        <div className={styles.form} key={`${String(index)}-${feature.name}`}>
+        // La clé ne suit JAMAIS ce qu'on tape : elle changerait à chaque
+        // lettre, React démonterait le champ, et le clavier du téléphone se
+        // refermerait. Le rang suffit — rien ne réordonne cette liste.
+        <div className={styles.form} key={index}>
           {withLevel && (
             <div className={styles.select}>
               <label className={styles.label} htmlFor={`feature-level-${String(index)}`}>
@@ -64,13 +67,13 @@ export function FeatureEditor({
             </div>
           )}
           <TextField
-            label="Son nom"
+            label="Le nom de l’aptitude"
             defaultValue={feature.name}
             maxLength={60}
             {...field(index, 'name')}
           />
           <TextField
-            label="Ce qu’elle fait"
+            label="Ce qu’elle fait, en clair"
             defaultValue={feature.text}
             maxLength={600}
             multiline
