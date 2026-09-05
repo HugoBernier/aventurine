@@ -613,6 +613,66 @@ contourner : soit on choisit entre les deux greffons, soit on attend. Et la
 vérification qui compte n'est pas `npm install` mais **`npm ci` sur un
 `node_modules` supprimé** — c'est la seule qui reproduise la CI.
 
+### A32. Le routage est rouvert — §A29 et la charte §2 sont amendés
+
+La charte excluait le routage, §A29 en tirait `base: './'`, et
+`06-createur-de-contenu.md` §5 posait la condition de réouverture : « si
+l'adresse partageable devient un besoin réel ». **Ce n'est pas cette condition
+qui est remplie, c'en est une meilleure, qui n'avait pas été prévue.**
+
+**Ce qui a changé.** L'application a maintenant cinq vues, et un écran de
+contenu en liste → détail arrive. La navigation était déjà là, écrite à la
+main : `WizardView` (une énumération de routes), `cameFrom` (une pile
+d'historique **à un cran**), `RETURN_LABELS`, la persistance de la vue, et la
+restauration de défilement par écran. Il n'y manquait que l'adresse et une
+vraie pile.
+
+Le symptôme décisif : pour protéger cette pile à un cran, il avait fallu écrire
+la règle d'interface « une fiche n'ouvre jamais une autre fiche ». **Une
+contrainte technique s'était mise à dicter le produit** — c'est le signal que
+le compte n'y était plus.
+
+**Ce que ça débloque**, par ordre d'importance réelle :
+
+1. **Le bouton retour du navigateur**, que `02-assistant-etat.md` assumait de ne
+   pas gérer. Sur Android, le geste retour EST le geste de navigation, et la
+   charte §4 pose le téléphone comme cible principale. L'ignorer était un
+   défaut, pas un arbitrage.
+2. **Les liens redeviennent des liens.** Aujourd'hui, ouvrir les packs depuis la
+   fiche demande une prop `onOpenPacks`, un `openView('packs', 'summary')` et
+   une comptabilité `cameFrom` — il faut penser à X pour passer par Y.
+3. Du code **supprimé** : `cameFrom`, `openView`, `leaveView`, `RETURN_LABELS`,
+   `SET_VIEW`, `view` dans `WizardState` et dans la persistance.
+
+**Tranché : l'adresse détient la vérité de la navigation**, elle n'en est pas le
+miroir. Un état de navigation à deux endroits qu'il faut synchroniser dans les
+deux sens est exactement la double source de vérité que le reste du dépôt
+refuse. `WizardState` perd donc `view`, et `parseSession` perd `asView`.
+
+**Tranché : History API, pas de hash, et donc départ de GitHub Pages.** Le hash
+était défendable tant que l'hébergement était subi. Il ne l'est plus : sur
+GitHub Pages, un chemin profond exige un `404.html` copié sur `index.html`, qui
+**répond avec un code HTTP 404** — soit un référencement pire que le hash, pour
+une URL plus jolie. Sur un hébergeur avec réécritures, servi à la racine, le
+chemin réel n'a aucun de ces défauts.
+
+**Tranché : aucune bibliothèque de routage.** De l'ordre de 10 kio gzip contre
+une marge mesurée de 3 952 octets sur le chunk d'entrée. Ce n'est pas une
+position de principe, c'est de l'arithmétique — et la charte §2 exige de toute
+façon une justification écrite pour toute dépendance. Un `useSyncExternalStore`
+sur `popstate` fait le travail en une trentaine de lignes.
+
+**Ce que §A29 gardait et que l'on perd**, assumé : `dist/index.html` ne s'ouvre
+plus depuis un dossier local, et le site doit être servi à la racine d'un
+domaine. `npm run preview` couvre le premier point ; le second est le prix de
+l'hébergement choisi, et il est réversible.
+
+**Condition de réouverture, écrite d'avance** : si le site devait un jour
+retourner sur un hébergement en sous-chemin sans contrôle des réécritures, le
+routage par chemin redeviendrait intenable et il faudrait repasser au hash. Le
+transport de l'adresse est isolé dans un seul module pour que ce soit un commit
+contenu, pas une reprise.
+
 ---
 
 ## B. Décisions de périmètre (réduction assumée)

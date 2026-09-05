@@ -70,23 +70,3 @@ jobs:
           [ "$js_total"  -le "$total_budget" ] || { echo "::error::JS total hors budget"; failed=1; }
           [ "$css_total" -le "$css_budget"   ] || { echo "::error::CSS hors budget"; failed=1; }
           exit $failed
-
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          path: dist
-
-  deploy:
-    name: deploy
-    needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

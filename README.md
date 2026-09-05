@@ -69,14 +69,20 @@ La CI échoue si un budget est dépassé.
 
 ## Publication
 
-Site statique sur GitHub Pages, publié par Actions depuis `main`, jamais sur un
-build rouge. **Réglage manuel à faire une fois** : Settings → Pages → source
-« GitHub Actions ».
+Site statique sur Vercel, servi **à la racine d'un domaine**. `vercel.json`
+réécrit toute adresse inconnue vers `index.html` : c'est ce qui permet de
+recharger une route profonde sans 404.
 
-Les actifs sont référencés en relatif (`base: './'` dans `vite.config.ts`), donc
-le site s'ouvre aussi bien à la racine d'un domaine, sous un sous-chemin GitHub
-Pages, ou depuis un dossier local. Renommer le dépôt ne demande aucune
-modification de code. C'est l'absence de routage qui rend cela possible.
+Les actifs sont référencés en absolu (`base: '/'` dans `vite.config.ts`), parce
+que le site a des routes : servi depuis `/contenu/barbare`, un chemin relatif
+résoudrait vers `/contenu/assets/…` et rendrait une page blanche.
+
+Conséquence : `dist/index.html` ne s'ouvre plus depuis un dossier local. Utiliser
+`npm run preview`, qui le sert à la racine.
+
+GitHub Pages a été abandonné : sur un sous-chemin il imposait de recoder le nom
+du dépôt dans la base, et son seul moyen de servir une route profonde — un
+`404.html` copié sur `index.html` — répond avec un code HTTP 404.
 
 ## Commits
 

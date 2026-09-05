@@ -27,7 +27,7 @@ et reviennent avec lui. Voir `docs/plans/06-createur-de-contenu.md`.
 **Hors périmètre (YAGNI, ne pas anticiper) :** comptes utilisateurs, backend,
 base de données, multijoueur, gestion de campagne, compendium complet,
 boutique, multiclassage, mobile natif, thème sombre,
-annulation/rétablissement, routage.
+annulation/rétablissement.
 
 **Reporté, pas abandonné** (à rouvrir quand la v1 tourne) : jets de dés 4d6
 garde-3, prose longue des sorts.
@@ -49,7 +49,7 @@ spéculative, pas de couche de plugins.
 | Cible       | mobile d'abord, 360 px de large | usage réel : au téléphone, à table |
 | État        | React Context + `useReducer`    | suffisant, pas de Redux/Zustand    |
 | Tests       | Vitest + Testing Library        | même moteur que Vite               |
-| Routage     | aucun (assistant à étapes)      | YAGNI                              |
+| Routage     | `history.pushState`, sans dépendance | retour arrière mobile (§A32)  |
 | Persistance | `localStorage`                  | pas de backend                     |
 
 **Aucune nouvelle dépendance sans justification écrite dans la PR.** Une

@@ -2,16 +2,18 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  // Chemins RELATIFS plutôt qu'une base codée en dur.
+  // Base ABSOLUE, parce que le site a maintenant des routes.
   //
-  // Le site n'a aucun routage — c'est une décision de la charte — donc il n'y
-  // a qu'une seule page, et des liens relatifs suffisent. Conséquence : le
-  // site fonctionne à n'importe quelle adresse (racine de domaine, sous-chemin
-  // GitHub Pages, dossier local), et renommer le dépôt ne casse plus rien.
+  // §A29 avait posé `base: './'` en s'appuyant sur « le site n'a aucun
+  // routage », et prévenait qu'un routeur imposerait d'y revenir. C'est le
+  // moment. Servi depuis `/contenu/barbare`, un chemin relatif `./assets/…`
+  // résout vers `/contenu/assets/…` et rend une page blanche.
   //
-  // C'est le périmètre réduit qui rend ce choix possible. Le jour où un
-  // routeur apparaîtrait, il faudrait revenir à une base explicite.
-  base: './',
+  // Ce que ça coûte : le site doit être servi à la RACINE d'un domaine, et
+  // `dist/index.html` ne s'ouvre plus depuis un dossier local (`npm run
+  // preview` le sert correctement). Ce que ça évite : le hack `404.html` de
+  // GitHub Pages, qui sert l'application avec un code HTTP 404.
+  base: '/',
   plugins: [react()],
   test: {
     environment: 'jsdom',
