@@ -23,18 +23,43 @@
   white-space: nowrap;
 }
 
-/* L'intertitre d'un groupe de sorts. Il porte le niveau, que les cartes ne
-   répètent donc plus. */
-.section {
-  font-family: var(--font-title);
-  font-size: var(--font-size-300);
-  margin-block: var(--space-5) var(--space-2);
+/* Le bandeau d'une section : le niveau à gauche, ce qu'il reste à choisir à
+   droite, et il ne défile pas.
+
+   Les deux tiennent sur une ligne, DANS LE MÊME bandeau : empilés, ils
+   mangeraient deux rangées d'une hauteur d'écran qui en compte six, et caler
+   le second sous le premier demanderait de connaître la hauteur du premier,
+   qui change avec la longueur de sa phrase.
+
+   Le retrait haut vaut l'espacement voulu PLUS celui de la zone défilante, et
+   le décalage négatif l'y reprend : collé à zéro tout court, le bandeau
+   s'arrêtait sous ce retrait et une bande de carte défilait au-dessus de lui.
+   Le fond est opaque pour la même raison. */
+.band {
+  position: sticky;
+  inset-block-start: calc(-1 * var(--space-4));
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  padding-block: calc(var(--space-2) + var(--space-4)) var(--space-2);
+  background: var(--color-page);
+  box-shadow: 0 1px 0 var(--color-rule);
+  margin-block-end: var(--space-3);
 }
 
-/* Le premier groupe suit le compteur : la marge de séparation n'a rien à
-   séparer. */
-.section:first-of-type {
-  margin-block-start: 0;
+.level {
+  font-family: var(--font-title);
+  font-size: var(--font-size-300);
+  margin: 0;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--font-size-100);
+  font-weight: 600;
 }
 
 .list {

@@ -20,12 +20,8 @@ describe('ce qu’il reste à choisir', () => {
     expect(formatPicking(2, 3, 'equipment')).toBe('Encore 2 à choisir');
   });
 
-  it('dit que c’est complet, et comment en changer', () => {
-    expect(formatPicking(0, 4, 'spell')).toBe(
-      'C’est complet : tu as tes 4 sorts. Décoche pour en changer.',
-    );
-    expect(formatPicking(0, 3, 'equipment')).toBe(
-      'C’est complet. Décoche pour en changer.',
-    );
+  it('dit que c’est complet en une poignée de mots : il partage sa ligne', () => {
+    expect(formatPicking(0, 4, 'spell')).toBe('Tu as tes 4 sorts');
+    expect(formatPicking(0, 3, 'equipment')).toBe('C’est complet');
   });
 });

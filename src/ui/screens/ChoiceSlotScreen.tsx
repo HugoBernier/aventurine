@@ -5,7 +5,6 @@ import { ChoiceGroup } from '../components/ChoiceGroup';
 import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
 import { formatPicking } from '../format/picking';
-import styles from './ChoiceSlotScreen.module.css';
 
 export interface ChoiceSlotScreenProps {
   readonly slotId: ChoiceSlotId;
@@ -30,12 +29,6 @@ export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
   return (
     <>
       <Explainer label="Comment ça marche ?">{slot.help}</Explainer>
-      {/* Un seul choix à faire n'a pas de reste à compter : le titre le dit. */}
-      {slot.pick > 1 && (
-        <p className={styles.counter} role="status">
-          {formatPicking(remaining, slot.pick, slot.kind)}
-        </p>
-      )}
       <ChoiceGroup
         legend={slot.title}
         legendHidden
@@ -46,6 +39,8 @@ export function ChoiceSlotScreen({ slotId }: ChoiceSlotScreenProps): ReactNode {
         picked={picked}
         onToggle={toggle}
         empty="Aucune option disponible ici pour l’instant."
+        // Un seul choix à faire n'a pas de reste à compter : le titre le dit.
+        note={slot.pick > 1 ? formatPicking(remaining, slot.pick, slot.kind) : undefined}
       />
     </>
   );

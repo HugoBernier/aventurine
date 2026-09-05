@@ -44,6 +44,12 @@ export interface ChoiceGroupProps {
   readonly empty?: ReactNode | undefined;
   /** Prioritaire sur la table par genre, quand un genre sert à plusieurs sens. */
   readonly factLabels?: FactLabels | undefined;
+  /**
+   * Ce qu'il reste à choisir, déjà rédigé. Il voyage jusqu'au bandeau collant
+   * parce que c'est là qu'il reste lisible : la phrase se compose dans l'écran,
+   * qui seul connaît le créneau.
+   */
+  readonly note?: string | undefined;
 }
 
 function Facts({
@@ -105,6 +111,46 @@ function sectionsOf(
     }
   }
   return [...byLevel].map(([heading, kept]) => ({ heading, options: kept }));
+}
+
+/**
+ * Le bandeau d'une section : le niveau à gauche, ce qu'il reste à choisir à
+ * droite. Il ne défile pas, et c'est tout son intérêt — le niveau ayant quitté
+ * les cartes, il n'existe plus qu'ici, et un compteur qu'on doit remonter
+ * chercher ne compte rien.
+ *
+ * Chaque section porte le sien : au moment où la section 2 chasse la section 1
+ * du haut de l'écran, c'est le bandeau 2 qui prend sa place, et les deux
+ * informations restent. Seul le premier est une région live : les autres
+ * répètent la même phrase à l'œil, et une annonce en triple n'apprend rien.
+ */
+function Band({
+  heading,
+  note,
+  isFirst,
+}: {
+  readonly heading: string | null;
+  readonly note: string | undefined;
+  readonly isFirst: boolean;
+}): ReactNode {
+  if (heading === null && note === undefined) {
+    return null;
+  }
+  return (
+    <div className={styles.band}>
+      {heading !== null && <h2 className={styles.level}>{heading}</h2>}
+      {note !== undefined &&
+        (isFirst ? (
+          <p className={styles.note} role="status">
+            {note}
+          </p>
+        ) : (
+          <p className={styles.note} aria-hidden="true">
+            {note}
+          </p>
+        ))}
+    </div>
+  );
 }
 
 function OptionCard({
@@ -172,6 +218,7 @@ export function ChoiceGroup({
   onToggle,
   empty,
   factLabels,
+  note,
 }: ChoiceGroupProps): ReactNode {
   if (options.length === 0) {
     return (
@@ -188,11 +235,9 @@ export function ChoiceGroup({
       <legend className={legendHidden ? styles.legendHidden : styles.legend}>
         {legend}
       </legend>
-      {sectionsOf(kind, options).map((section) => (
+      {sectionsOf(kind, options).map((section, index) => (
         <Fragment key={section.heading ?? legend}>
-          {section.heading !== null && (
-            <h2 className={styles.section}>{section.heading}</h2>
-          )}
+          <Band heading={section.heading} note={note} isFirst={index === 0} />
           <div className={styles.list}>
             {section.options.map((option) => (
               <OptionCard
