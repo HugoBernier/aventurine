@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
   emptyBackgroundDraft,
+  emptyClassDraft,
   emptyRaceDraft,
   emptySpellDraft,
   emptySubclassDraft,
@@ -11,6 +12,7 @@ import {
 } from '../../domain/packDraft';
 import type {
   BackgroundDraft,
+  ClassDraft,
   PackDraft,
   RaceDraft,
   SpellDraft,
@@ -30,6 +32,7 @@ import { counted } from '../format/plural';
 import { formatSchool } from '../format/spellSchool';
 import { saveFile } from '../saveFile';
 import { BackgroundForm } from './BackgroundForm';
+import { ClassForm } from './ClassForm';
 import { RaceForm } from './RaceForm';
 import { SpellForm } from './SpellForm';
 import { SubclassForm } from './SubclassForm';
@@ -62,6 +65,7 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   const [editingBackground, setEditingBackground] = useState<BackgroundDraft | null>(
     null,
   );
+  const [editingClass, setEditingClass] = useState<ClassDraft | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const update = (parts: Partial<PackDraft>): void => {
@@ -71,6 +75,27 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   };
 
   const packId = draft.id === '' ? 'pack' : draft.id;
+
+  if (editingClass !== null) {
+    return (
+      <ClassForm
+        entry={editingClass}
+        packId={packId}
+        onSave={(written) => {
+          const isKnown = draft.classes.some((item) => item.id === written.id);
+          update({
+            classes: isKnown
+              ? draft.classes.map((item) => (item.id === written.id ? written : item))
+              : [...draft.classes, written],
+          });
+          setEditingClass(null);
+        }}
+        onCancel={() => {
+          setEditingClass(null);
+        }}
+      />
+    );
+  }
 
   if (editingBackground !== null) {
     return (
@@ -121,6 +146,7 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
       <SubclassForm
         subclass={editingVoie}
         packId={packId}
+        ownClasses={draft.classes.filter((entry) => entry.name !== '')}
         onSave={(subclass) => {
           const isKnown = draft.subclasses.some((entry) => entry.id === subclass.id);
           update({
@@ -282,6 +308,57 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         }}
       >
         + Écrire un sort
+      </button>
+
+      <h2 className={styles.heading}>Tes classes</h2>
+      {draft.classes.length === 0 ? (
+        <p className={styles.empty}>Tu n’as pas encore écrit de classe.</p>
+      ) : (
+        <ul className={styles.list}>
+          {draft.classes.map((entry) => (
+            <li className={styles.item} key={entry.id}>
+              <span className={styles.name}>
+                {entry.name === '' ? 'Sans nom' : entry.name}
+              </span>
+              <p className={styles.facts}>
+                d{entry.hitDie} ·{' '}
+                {counted(entry.features.length, 'aptitude', 'aptitudes')}
+              </p>
+              <span className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    setEditingClass(entry);
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    update({
+                      classes: draft.classes.filter((item) => item.id !== entry.id),
+                    });
+                  }}
+                >
+                  Retirer
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          setEditingClass(emptyClassDraft());
+        }}
+      >
+        + Écrire une classe
       </button>
 
       <h2 className={styles.heading}>Tes voies</h2>

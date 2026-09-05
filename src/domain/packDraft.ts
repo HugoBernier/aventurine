@@ -51,17 +51,41 @@ export interface SubclassDraft {
  * qu'ils listent — d'où `from` pour les uns, `listFrom` et `bonus` pour les
  * autres, vides quand ils ne servent pas.
  */
+export type ChoiceKindDraft =
+  | 'skill'
+  | 'language'
+  | 'tool'
+  | 'ability'
+  | 'cantrip'
+  | 'ancestry'
+  | 'spell'
+  | 'fighting-style'
+  | 'expertise'
+  | 'equipment';
+
+/** « À partir du niveau 4, tu en connais trois. » */
+export interface SpellStepDraft {
+  readonly level: number;
+  readonly howMany: number;
+}
+
 export interface ChoiceDraft {
   /** Fixé à la création : le créneau du personnage porte ce sujet. */
   readonly subject: string;
-  readonly kind: 'skill' | 'language' | 'tool' | 'ability' | 'cantrip' | 'ancestry';
+  readonly kind: ChoiceKindDraft;
   readonly title: string;
   readonly help: string;
   readonly pick: number;
   readonly from: readonly string[];
-  /** `ability` : +1 ou +2 à placer. `cantrip` : la classe dont on prend la liste. */
+  /** `ability` : +1 ou +2 à placer. */
   readonly bonus: number;
+  /** `cantrip` et `spell` : la classe dont on emprunte la liste de sorts. */
   readonly listFrom: string;
+  /** `fighting-style` : le niveau où le style se choisit. */
+  readonly level: number;
+  /** `spell` : vrai quand le nombre se calcule au lieu de se lire dans une table. */
+  readonly prepared: boolean;
+  readonly steps: readonly SpellStepDraft[];
 }
 
 export interface SubraceDraft {
@@ -122,6 +146,44 @@ export interface BackgroundDraft {
   readonly flaws: readonly string[];
 }
 
+export interface EquipmentOptionDraft {
+  /** Local à la classe : ce n'est jamais un identifiant de créneau. */
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  readonly facts: readonly [string, string, string];
+  readonly items: readonly EquipmentDraft[];
+}
+
+export interface ClassDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  readonly facts: readonly [string, string, string];
+  readonly hitDie: 6 | 8 | 10 | 12;
+  /** Deux, jamais plus : le SRD n'en donne jamais un troisième. */
+  readonly saves: readonly string[];
+  readonly armor: readonly string[];
+  readonly weaponCategories: readonly string[];
+  readonly weapons: readonly string[];
+  readonly tools: readonly string[];
+  readonly features: readonly FeatureDraft[];
+  readonly choices: readonly ChoiceDraft[];
+  readonly equipmentOptions: readonly EquipmentOptionDraft[];
+  readonly fixedEquipment: readonly EquipmentDraft[];
+  readonly casts: boolean;
+  readonly castingAbility: string;
+  readonly progression: string;
+  readonly preparation: string;
+  readonly ritual: boolean;
+  /** Quand la voie se choisit, et sous quel nom la classe l'appelle. */
+  readonly subclassLevel: number;
+  readonly subclassTitle: string;
+  readonly subclassHelp: string;
+  /** Les seuls niveaux : la prose des paliers reste celle de l'application. */
+  readonly advancements: readonly number[];
+}
+
 export interface PackDraft {
   readonly id: string;
   readonly name: string;
@@ -131,6 +193,7 @@ export interface PackDraft {
   readonly subclasses: readonly SubclassDraft[];
   readonly races: readonly RaceDraft[];
   readonly backgrounds: readonly BackgroundDraft[];
+  readonly classes: readonly ClassDraft[];
 }
 
 export function emptyPackDraft(): PackDraft {
@@ -143,6 +206,36 @@ export function emptyPackDraft(): PackDraft {
     subclasses: [],
     races: [],
     backgrounds: [],
+    classes: [],
+  };
+}
+
+export function emptyClassDraft(): ClassDraft {
+  return {
+    id: '',
+    name: '',
+    blurb: '',
+    facts: ['', '', ''],
+    hitDie: 8,
+    saves: [],
+    armor: [],
+    weaponCategories: [],
+    weapons: [],
+    tools: [],
+    features: [],
+    choices: [],
+    equipmentOptions: [],
+    fixedEquipment: [],
+    casts: false,
+    castingAbility: 'intelligence',
+    progression: 'full',
+    preparation: 'known',
+    ritual: false,
+    subclassLevel: 3,
+    subclassTitle: '',
+    subclassHelp: '',
+    // Ceux du SRD, que toutes les classes partagent.
+    advancements: [4, 8, 12, 16, 19],
   };
 }
 
@@ -202,11 +295,8 @@ export function emptySubraceDraft(): SubraceDraft {
   };
 }
 
-/** Un bonus d'origine +2, dans la forme et la prose que le SRD emploie. */
-export function emptyChoiceDraft(
-  kind: ChoiceDraft['kind'],
-  subject: string,
-): ChoiceDraft {
+/** Un choix neuf du genre demandé, avec les valeurs que le SRD emploie le plus. */
+export function emptyChoiceDraft(kind: ChoiceKindDraft, subject: string): ChoiceDraft {
   return {
     subject,
     kind,
@@ -216,6 +306,9 @@ export function emptyChoiceDraft(
     from: [],
     bonus: 1,
     listFrom: '',
+    level: 1,
+    prepared: false,
+    steps: [{ level: 1, howMany: 2 }],
   };
 }
 
@@ -268,13 +361,43 @@ function choiceFile(choice: ChoiceDraft): Record<string, unknown> {
     help: choice.help,
     pick: choice.pick,
   };
-  if (choice.kind === 'ability') {
-    return { ...base, bonus: choice.bonus };
+  switch (choice.kind) {
+    case 'ability': {
+      return { ...base, bonus: choice.bonus };
+    }
+    case 'cantrip': {
+      return { ...base, listFrom: choice.listFrom };
+    }
+    case 'spell': {
+      return {
+        ...base,
+        listFrom: choice.listFrom,
+        count: choice.prepared
+          ? { kind: 'prepared' }
+          : {
+              kind: 'known',
+              steps: Object.fromEntries(
+                choice.steps.map((step) => [String(step.level), step.howMany]),
+              ),
+            },
+      };
+    }
+    case 'fighting-style': {
+      return { ...base, level: choice.level, from: choice.from };
+    }
+    case 'expertise': {
+      return { ...base, tools: choice.from };
+    }
+    case 'ancestry': {
+      return base;
+    }
+    case 'skill':
+    case 'language':
+    case 'tool':
+    case 'equipment': {
+      return { ...base, from: choice.from };
+    }
   }
-  if (choice.kind === 'cantrip') {
-    return { ...base, listFrom: choice.listFrom };
-  }
-  return choice.kind === 'ancestry' ? base : { ...base, from: choice.from };
 }
 
 /**
@@ -297,7 +420,6 @@ export function packDraftFile(
       description: draft.description,
       updatedAt,
     },
-    classes: [],
     spells: draft.spells.map((spell) => ({
       id: spell.id,
       name: spell.name,
@@ -351,6 +473,38 @@ export function packDraftFile(
         features: subrace.features.map((f) => ({ name: f.name, text: f.text })),
         choices: subrace.choices.map((choice) => choiceFile(choice)),
       })),
+    })),
+    classes: draft.classes.map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      blurb: entry.blurb,
+      facts: entry.facts,
+      hitDie: entry.hitDie,
+      saves: entry.saves,
+      proficiencies: {
+        armor: entry.armor,
+        weaponCategories: entry.weaponCategories,
+        weapons: entry.weapons,
+        tools: entry.tools,
+      },
+      features: entry.features,
+      choices: entry.choices.map((choice) => choiceFile(choice)),
+      equipmentOptions: entry.equipmentOptions,
+      fixedEquipment: entry.fixedEquipment,
+      spellcasting: entry.casts
+        ? {
+            ability: entry.castingAbility,
+            progression: entry.progression,
+            preparation: entry.preparation,
+            ritual: entry.ritual,
+          }
+        : null,
+      subclassChoice: {
+        level: entry.subclassLevel,
+        title: entry.subclassTitle,
+        help: entry.subclassHelp,
+      },
+      advancements: entry.advancements,
     })),
     backgrounds: draft.backgrounds.map((background) => ({
       id: background.id,
@@ -449,13 +603,17 @@ function asSubclassDraft(value: unknown): SubclassDraft {
   };
 }
 
-const CHOICE_KINDS: readonly ChoiceDraft['kind'][] = [
+const CHOICE_KINDS: readonly ChoiceKindDraft[] = [
   'skill',
   'language',
   'tool',
   'ability',
   'cantrip',
   'ancestry',
+  'spell',
+  'fighting-style',
+  'expertise',
+  'equipment',
 ];
 
 function asNumber(value: unknown, fallback: number): number {
@@ -474,18 +632,33 @@ function asFacts(value: unknown): readonly [string, string, string] {
   return [at(0), at(1), at(2)];
 }
 
+function asStepDrafts(value: unknown): readonly SpellStepDraft[] {
+  const source = isRecord(value) ? value : {};
+  const steps = isRecord(source.steps) ? source.steps : {};
+  return Object.entries(steps).map(([level, howMany]) => ({
+    level: asNumber(Number(level), 1),
+    howMany: asNumber(howMany, 1),
+  }));
+}
+
 function asChoiceDraft(value: unknown): ChoiceDraft {
   const source = isRecord(value) ? value : {};
   const kind = CHOICE_KINDS.find((entry) => entry === source.kind) ?? 'skill';
+  const steps = asStepDrafts(source.count);
   return {
     subject: asText(source.subject),
     kind,
     title: asText(source.title),
     help: asText(source.help),
     pick: asNumber(source.pick, 1),
-    from: asStrings(source.from),
+    // L'expertise range ses outils sous un autre nom : le brouillon n'a qu'une
+    // liste, et c'est ici qu'on la retrouve.
+    from: asStrings(kind === 'expertise' ? source.tools : source.from),
     bonus: asNumber(source.bonus, 1),
     listFrom: asText(source.listFrom),
+    level: asNumber(source.level, 1),
+    prepared: isRecord(source.count) && source.count.kind === 'prepared',
+    steps: steps.length === 0 ? [{ level: 1, howMany: 2 }] : steps,
   };
 }
 
@@ -551,7 +724,6 @@ function asBackgroundDraft(value: unknown): BackgroundDraft {
   const proficiencies = isRecord(source.proficiencies) ? source.proficiencies : {};
   const traits = isRecord(source.suggestedTraits) ? source.suggestedTraits : {};
   const feature = isRecord(source.feature) ? source.feature : {};
-  const equipment = Array.isArray(source.equipment) ? source.equipment.slice(0, 20) : [];
   return {
     id: asText(source.id),
     name: asText(source.name),
@@ -560,10 +732,7 @@ function asBackgroundDraft(value: unknown): BackgroundDraft {
     skills: asStrings(source.skills),
     tools: asStrings(proficiencies.tools),
     choices: asChoiceDrafts(source.choices),
-    equipment: equipment.map((line) => {
-      const entry = isRecord(line) ? line : {};
-      return { itemId: asText(entry.itemId), quantity: asNumber(entry.quantity, 1) };
-    }),
+    equipment: asEquipmentDrafts(source.equipment),
     goldPieces: asNumber(source.goldPieces, 0),
     featureName: asText(feature.name),
     featureText: asText(feature.text),
@@ -571,6 +740,63 @@ function asBackgroundDraft(value: unknown): BackgroundDraft {
     ideals: asStrings(traits.ideals),
     bonds: asStrings(traits.bonds),
     flaws: asStrings(traits.flaws),
+  };
+}
+
+function asEquipmentDrafts(value: unknown): readonly EquipmentDraft[] {
+  return Array.isArray(value)
+    ? value.slice(0, 20).map((line) => {
+        const entry = isRecord(line) ? line : {};
+        return { itemId: asText(entry.itemId), quantity: asNumber(entry.quantity, 1) };
+      })
+    : [];
+}
+
+function asClassDraft(value: unknown): ClassDraft {
+  const source = isRecord(value) ? value : {};
+  const proficiencies = isRecord(source.proficiencies) ? source.proficiencies : {};
+  const casting = isRecord(source.spellcasting) ? source.spellcasting : null;
+  const voie = isRecord(source.subclassChoice) ? source.subclassChoice : {};
+  const empty = emptyClassDraft();
+  const dice: readonly number[] = [6, 8, 10, 12];
+  const die = dice.find((entry) => entry === source.hitDie) ?? 8;
+  return {
+    id: asText(source.id),
+    name: asText(source.name),
+    blurb: asText(source.blurb),
+    facts: asFacts(source.facts),
+    hitDie: die as 6 | 8 | 10 | 12,
+    saves: asStrings(source.saves),
+    armor: asStrings(proficiencies.armor),
+    weaponCategories: asStrings(proficiencies.weaponCategories),
+    weapons: asStrings(proficiencies.weapons),
+    tools: asStrings(proficiencies.tools),
+    features: asFeatureDrafts(source.features),
+    choices: asChoiceDrafts(source.choices),
+    equipmentOptions: Array.isArray(source.equipmentOptions)
+      ? source.equipmentOptions.slice(0, 12).map((option) => {
+          const entry = isRecord(option) ? option : {};
+          return {
+            id: asText(entry.id),
+            name: asText(entry.name),
+            blurb: asText(entry.blurb),
+            facts: asFacts(entry.facts),
+            items: asEquipmentDrafts(entry.items),
+          };
+        })
+      : [],
+    fixedEquipment: asEquipmentDrafts(source.fixedEquipment),
+    casts: casting !== null,
+    castingAbility: asText(casting?.ability, empty.castingAbility),
+    progression: asText(casting?.progression, empty.progression),
+    preparation: asText(casting?.preparation, empty.preparation),
+    ritual: casting?.ritual === true,
+    subclassLevel: asNumber(voie.level, empty.subclassLevel),
+    subclassTitle: asText(voie.title),
+    subclassHelp: asText(voie.help),
+    advancements: Array.isArray(source.advancements)
+      ? source.advancements.filter((level): level is number => typeof level === 'number')
+      : [],
   };
 }
 
@@ -603,6 +829,9 @@ export function parsePackDraft(value: unknown): PackDraft {
       : [],
     backgrounds: Array.isArray(value.backgrounds)
       ? value.backgrounds.slice(0, 100).map((entry) => asBackgroundDraft(entry))
+      : [],
+    classes: Array.isArray(value.classes)
+      ? value.classes.slice(0, 50).map((entry) => asClassDraft(entry))
       : [],
   };
 }

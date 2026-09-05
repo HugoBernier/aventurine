@@ -1,32 +1,72 @@
 import type { ReactNode } from 'react';
-import type { ChoiceDraft } from '../../domain/packDraft';
+import { emptyChoiceDraft } from '../../domain/packDraft';
+import type { ChoiceDraft, ChoiceKindDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { TextField } from '../components/TextField';
+import { SpellCountEditor } from './SpellCountEditor';
 import styles from './SpellForm.module.css';
 
-type Kind = ChoiceDraft['kind'];
+type Kind = ChoiceKindDraft;
 
-const KINDS: readonly (readonly [Kind, string])[] = [
-  ['skill', 'Une compétence à choisir'],
-  ['language', 'Une langue à choisir'],
-  ['tool', 'Un outil à choisir'],
-  ['ability', 'Un bonus de caractéristique à placer'],
-  ['cantrip', 'Un tour de magie'],
-  ['ancestry', 'Une ascendance draconique'],
+const LABELS: Readonly<Record<Kind, string>> = {
+  skill: 'Une compétence à choisir',
+  language: 'Une langue à choisir',
+  tool: 'Un outil à choisir',
+  ability: 'Un bonus de caractéristique à placer',
+  cantrip: 'Un tour de magie',
+  ancestry: 'Une ascendance draconique',
+  spell: 'Des sorts à connaître ou préparer',
+  'fighting-style': 'Un style de combat',
+  expertise: 'Une expertise',
+  equipment: 'Un lot d’équipement de départ',
+};
+
+/** Ce qu'un PEUPLE ou un HISTORIQUE peut ouvrir. */
+export const RACE_KINDS: readonly Kind[] = [
+  'skill',
+  'language',
+  'tool',
+  'ability',
+  'cantrip',
+  'ancestry',
+];
+
+export const BACKGROUND_KINDS: readonly Kind[] = ['skill', 'language', 'tool'];
+
+export const CLASS_KINDS: readonly Kind[] = [
+  'skill',
+  'tool',
+  'language',
+  'cantrip',
+  'spell',
+  'fighting-style',
+  'expertise',
+  'equipment',
 ];
 
 /** Les genres qui listent des options ; les autres n'en ont pas à cocher. */
-const LISTED = new Set<Kind>(['skill', 'language', 'tool']);
+const LISTED = new Set<Kind>([
+  'skill',
+  'language',
+  'tool',
+  'expertise',
+  'fighting-style',
+  'equipment',
+]);
 
-/** Un nombre de choix qui reste jouable : un, et pas plus de six. */
-function bounded(value: string): number {
+/** Un nombre qui reste jouable : jamais zéro, jamais au-delà de la borne. */
+function bounded(value: string, max = 6): number {
   const asked = Number(value);
-  return Number.isFinite(asked) ? Math.min(Math.max(Math.trunc(asked), 1), 6) : 1;
+  return Number.isFinite(asked) ? Math.min(Math.max(Math.trunc(asked), 1), max) : 1;
 }
 
 export interface ChoiceEditorProps {
   readonly choices: readonly ChoiceDraft[];
+  /** Les genres que CETTE entrée peut ouvrir : un peuple et une classe diffèrent. */
+  readonly kinds: readonly Kind[];
+  /** Les lots de départ de la classe, quand c'est une classe qu'on écrit. */
+  readonly equipmentOptions?: readonly { readonly id: string; readonly name: string }[];
   readonly onChange: (choices: readonly ChoiceDraft[]) => void;
 }
 
@@ -39,13 +79,20 @@ export interface ChoiceEditorProps {
  * d'un personnage le porte — `race:karn-brumeux:skills` — et que le changer
  * couperait les fiches de leur réponse.
  */
-export function ChoiceEditor({ choices, onChange }: ChoiceEditorProps): ReactNode {
+export function ChoiceEditor({
+  choices,
+  kinds,
+  equipmentOptions = [],
+  onChange,
+}: ChoiceEditorProps): ReactNode {
   const catalogue = useCatalogue();
 
   const optionsFor = (kind: Kind): readonly { id: string; name: string }[] => {
-    if (kind === 'skill') return catalogue.skills;
+    if (kind === 'skill' || kind === 'expertise') return catalogue.skills;
     if (kind === 'language') return catalogue.languages;
-    return kind === 'tool' ? catalogue.tools : [];
+    if (kind === 'tool') return catalogue.tools;
+    if (kind === 'fighting-style') return catalogue.fightingStyles;
+    return kind === 'equipment' ? equipmentOptions : [];
   };
 
   const set = (index: number, parts: Partial<ChoiceDraft>): void => {
@@ -77,13 +124,13 @@ export function ChoiceEditor({ choices, onChange }: ChoiceEditorProps): ReactNod
               value={choice.kind}
               onChange={(event) => {
                 const chosen = event.currentTarget.value;
-                const kind = KINDS.find(([id]) => id === chosen)?.[0];
+                const kind = kinds.find((id) => id === chosen);
                 set(index, { kind: kind ?? 'skill', from: [] });
               }}
             >
-              {KINDS.map(([id, label]) => (
+              {kinds.map((id) => (
                 <option key={id} value={id}>
-                  {label}
+                  {LABELS[id]}
                 </option>
               ))}
             </select>
@@ -123,7 +170,7 @@ export function ChoiceEditor({ choices, onChange }: ChoiceEditorProps): ReactNod
             </div>
           )}
 
-          {choice.kind === 'cantrip' && (
+          {(choice.kind === 'cantrip' || choice.kind === 'spell') && (
             <div className={styles.select}>
               <label className={styles.label} htmlFor={`choice-list-${String(index)}`}>
                 Dans la liste de quelle classe
@@ -144,6 +191,26 @@ export function ChoiceEditor({ choices, onChange }: ChoiceEditorProps): ReactNod
                 ))}
               </select>
             </div>
+          )}
+
+          {choice.kind === 'spell' && (
+            <SpellCountEditor
+              choice={choice}
+              onChange={(parts) => {
+                set(index, parts);
+              }}
+            />
+          )}
+
+          {choice.kind === 'fighting-style' && (
+            <TextField
+              label="À quel niveau on le choisit"
+              defaultValue={String(choice.level)}
+              maxLength={2}
+              onCommit={(value) => {
+                set(index, { level: bounded(value, 20) });
+              }}
+            />
           )}
 
           {LISTED.has(choice.kind) && (
@@ -184,20 +251,10 @@ export function ChoiceEditor({ choices, onChange }: ChoiceEditorProps): ReactNod
         onClick={() => {
           // Le sujet est unique dans l'entrée et n'en bouge plus : c'est lui
           // qui nommera le créneau sur la fiche du personnage.
+          // Le sujet est unique dans l'entrée et n'en bouge plus : c'est lui
+          // qui nommera le créneau sur la fiche du personnage.
           const subject = `choix-${String(choices.length + 1)}`;
-          onChange([
-            ...choices,
-            {
-              subject,
-              kind: 'skill',
-              title: '',
-              help: '',
-              pick: 1,
-              from: [],
-              bonus: 1,
-              listFrom: '',
-            },
-          ]);
+          onChange([...choices, emptyChoiceDraft(kinds[0] ?? 'skill', subject)]);
         }}
       >
         + Ajouter un choix

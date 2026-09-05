@@ -3,6 +3,7 @@ import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import {
   emptyBackgroundDraft,
   emptyChoiceDraft,
+  emptyClassDraft,
   emptyPackDraft,
   emptyRaceDraft,
   emptySpellDraft,
@@ -13,6 +14,7 @@ import {
 } from './packDraft';
 import type {
   BackgroundDraft,
+  ClassDraft,
   PackDraft,
   RaceDraft,
   SpellDraft,
@@ -200,5 +202,69 @@ describe('un historique dans le brouillon', () => {
     };
     const written: unknown = packDraftFile(without, '');
     expect(written).toMatchObject({ backgrounds: [{ feature: null }] });
+  });
+});
+
+describe('une classe dans le brouillon', () => {
+  const brumeur: ClassDraft = {
+    ...emptyClassDraft(),
+    id: 'karn-brumeur',
+    name: 'Brumeur',
+    blurb: 'Tu appelles la brume, et elle te répond.',
+    facts: ['d8', 'Dextérité + Sagesse', 'Lanceur de sorts'],
+    saves: ['dexterite', 'sagesse'],
+    armor: ['legere'],
+    features: [{ level: 1, name: 'Appel', text: 'Tu appelles une brume légère.' }],
+    casts: true,
+    castingAbility: 'sagesse',
+    progression: 'full',
+    preparation: 'prepared',
+    ritual: true,
+    subclassTitle: 'Ta voie de brume',
+    subclassHelp: 'La façon dont la brume te répond.',
+  };
+  const withClass: PackDraft = { ...karn, spells: [], classes: [brumeur] };
+
+  it('passe la validation de l’import telle quelle', () => {
+    const parsed = parsePack(packDraftFile(withClass, ''), MINI_CATALOGUE);
+    expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
+  });
+
+  it('revient identique après l’aller-retour', () => {
+    expect(parsePackDraft(packDraftFile(withClass, ''))).toEqual(withClass);
+  });
+
+  it('écrit « pas de magie » plutôt qu’une magie vide', () => {
+    const without: PackDraft = {
+      ...withClass,
+      classes: [{ ...brumeur, casts: false }],
+    };
+    expect(packDraftFile(without, '')).toMatchObject({
+      classes: [{ spellcasting: null }],
+    });
+  });
+
+  it('n’écrit que les niveaux de ses paliers, pas leur prose', () => {
+    expect(packDraftFile(withClass, '')).toMatchObject({
+      classes: [{ advancements: [4, 8, 12, 16, 19] }],
+    });
+  });
+
+  it('garde une voie de son propre pack, déclarée comme une greffe', () => {
+    const withOwnVoie: PackDraft = {
+      ...withClass,
+      subclasses: [
+        {
+          id: 'karn-voie-des-marais',
+          name: 'Voie des marais',
+          blurb: 'La brume te suit dans l’eau.',
+          forClassId: 'karn-brumeur',
+          facts: ['Voile', '—', '—'],
+          features: [{ level: 3, name: 'Voile', text: 'Tu disparais dans la brume.' }],
+        },
+      ],
+    };
+    const parsed = parsePack(packDraftFile(withOwnVoie, ''), MINI_CATALOGUE);
+    expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
   });
 });

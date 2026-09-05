@@ -5,7 +5,7 @@ import type { SubraceDraft } from '../../domain/packDraft';
 import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { TextField } from '../components/TextField';
-import { ChoiceEditor } from './ChoiceEditor';
+import { ChoiceEditor, RACE_KINDS } from './ChoiceEditor';
 import { FeatureEditor } from './FeatureEditor';
 import styles from './SpellForm.module.css';
 
@@ -139,6 +139,7 @@ export function SubraceForm({
       <fieldset className={styles.group}>
         <legend className={styles.legend}>Ce qu’elle laisse choisir</legend>
         <ChoiceEditor
+          kinds={RACE_KINDS}
           choices={draft.choices}
           onChange={(choices) => {
             change({ choices });

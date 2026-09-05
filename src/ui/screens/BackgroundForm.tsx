@@ -6,7 +6,7 @@ import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { StringListEditor } from '../components/StringListEditor';
 import { TextField } from '../components/TextField';
-import { ChoiceEditor } from './ChoiceEditor';
+import { ChoiceEditor, BACKGROUND_KINDS } from './ChoiceEditor';
 import { EquipmentEditor } from './EquipmentEditor';
 import styles from './SpellForm.module.css';
 
@@ -120,6 +120,7 @@ export function BackgroundForm({
       <fieldset className={styles.group}>
         <legend className={styles.legend}>Ce qu’il laisse choisir</legend>
         <ChoiceEditor
+          kinds={BACKGROUND_KINDS}
           choices={draft.choices}
           onChange={(choices) => {
             change({ choices });

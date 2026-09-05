@@ -11,6 +11,8 @@ const LEVELS = Array.from({ length: 20 }, (_, index) => index + 1);
 export interface SubclassFormProps {
   readonly subclass: SubclassDraft;
   readonly packId: string;
+  /** Les classes du pack en cours : une voie peut viser l'une des siennes. */
+  readonly ownClasses: readonly { readonly id: string; readonly name: string }[];
   readonly onSave: (subclass: SubclassDraft) => void;
   readonly onCancel: () => void;
 }
@@ -24,6 +26,7 @@ export interface SubclassFormProps {
 export function SubclassForm({
   subclass,
   packId,
+  ownClasses,
   onSave,
   onCancel,
 }: SubclassFormProps): ReactNode {
@@ -114,7 +117,10 @@ export function SubclassForm({
           }}
         >
           <option value="">À choisir</option>
-          {catalogue.classes.map((entry) => (
+          {/* Le SRD, et les classes de CE pack — jamais celles d'un autre :
+              une liste qui les offrirait donnerait l'illusion d'une
+              dépendance gérée, que le §13.10 refuse. */}
+          {[...catalogue.classes, ...ownClasses].map((entry) => (
             <option key={entry.id} value={entry.id}>
               {entry.name}
             </option>

@@ -6,7 +6,7 @@ import { useCatalogue } from '../../state/hooks';
 import { OptionChecklist } from '../components/OptionChecklist';
 import { TextField } from '../components/TextField';
 import { DAMAGE_TYPE_OPTIONS } from '../format/damageTypes';
-import { ChoiceEditor } from './ChoiceEditor';
+import { ChoiceEditor, RACE_KINDS } from './ChoiceEditor';
 import { FeatureEditor } from './FeatureEditor';
 import { SubraceForm } from './SubraceForm';
 import styles from './SpellForm.module.css';
@@ -220,6 +220,7 @@ export function RaceForm({ race, packId, onSave, onCancel }: RaceFormProps): Rea
       <fieldset className={styles.group}>
         <legend className={styles.legend}>Ce qu’il laisse choisir</legend>
         <ChoiceEditor
+          kinds={RACE_KINDS}
           choices={draft.choices}
           onChange={(choices) => {
             change({ choices });

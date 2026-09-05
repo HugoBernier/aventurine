@@ -165,6 +165,53 @@ const BACKGROUND_FILE = new File(
   { type: 'application/json' },
 );
 
+/** Une classe entière, et une voie du même pack qui la vise. */
+const CLASS_FILE = new File(
+  [
+    JSON.stringify({
+      aventurine: 2,
+      pack: {
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        author: 'Hugo',
+        description: '',
+        updatedAt: '2026-09-04T10:12:00.000Z',
+      },
+      classes: [
+        {
+          id: 'karn-brumeur',
+          name: 'Brumeur',
+          blurb: 'Tu appelles la brume, et elle te répond.',
+          facts: ['d8', 'Dextérité + Sagesse', 'Lanceur de sorts'],
+          hitDie: 8,
+          saves: ['dexterite', 'sagesse'],
+          proficiencies: { armor: ['legere'] },
+          features: [
+            { level: 1, name: 'Appel des brumes', text: 'Une brume légère te suit.' },
+          ],
+          subclassChoice: {
+            level: 3,
+            title: 'Ta voie de brume',
+            help: 'La façon dont la brume te répond.',
+          },
+          advancements: [4, 8, 12, 16, 19],
+        },
+      ],
+      subclasses: [
+        {
+          id: 'karn-voie-des-marais',
+          name: 'Voie des marais',
+          blurb: 'La brume te suit dans l’eau.',
+          for: 'karn-brumeur',
+          features: [{ level: 3, name: 'Voile', text: 'Tu disparais dans la brume.' }],
+        },
+      ],
+    }),
+  ],
+  'pack-karn.json',
+  { type: 'application/json' },
+);
+
 const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
@@ -669,6 +716,47 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     expect(screen.getByText('Passeur')).toBeInTheDocument();
     expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
+  });
+
+  it('ajoute une classe entière, et la voie que son pack lui donne', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), CLASS_FILE);
+    expect(screen.getByText(/1 classe/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await user.click(screen.getByRole('radio', { name: /Humain/ }));
+    await next(user);
+    // Les douze du SRD sont là, la treizième s'ajoute au bout.
+    expect(screen.getByRole('radio', { name: /Barde/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /Brumeur/ }));
+
+    // Sa voie se choisit au niveau qu'ELLE fixe, sous le nom qu'elle lui donne.
+    for (let step = 0; step < 16; step++) {
+      if (screen.queryByRole('radio', { name: /Voie des marais/ }) !== null) {
+        break;
+      }
+      const raise = screen.queryByRole('button', { name: 'Monter d’un niveau' });
+      if (raise !== null) {
+        await user.click(raise);
+        await user.click(raise);
+      }
+      await next(user);
+    }
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Ta voie de brume',
+    );
+    await user.click(screen.getByRole('radio', { name: /Voie des marais/ }));
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    expect(screen.getByText(/Brumeur · niveau 3/)).toBeInTheDocument();
+    expect(screen.getByText('Appel des brumes')).toBeInTheDocument();
+    expect(screen.getByText('Voile')).toBeInTheDocument();
+    // Le dé de vie du pack décide des points de vie : d8 à trois niveaux.
+    expect(screen.getByText('3 d8')).toBeInTheDocument();
   });
 
   it('permet de monter de niveau depuis la fiche', async () => {

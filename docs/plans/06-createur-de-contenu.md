@@ -3,9 +3,9 @@
 > Note de conception, tenue à jour au fil des tranches. Les décisions sont
 > prises (§12 et §13) et la charte est à jour (§10).
 >
-> **Écrit :** la règle de purge du §7, l'export/import d'un personnage, et les
-> tranches 1 à 4 — sorts, sous-classes greffées, peuples, historiques — voir §9.
-> **Reste :** les classes entières.
+> **Écrit : tout.** La règle de purge du §7, l'export/import d'un personnage,
+> et les cinq tranches du §9 — sorts, sous-classes greffées, peuples,
+> historiques, classes entières.
 > **Ouvert :** rien.
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
@@ -442,7 +442,7 @@ Chaque tranche est utilisable seule et laisse l'application verte.
 | 2 | **Sous-classes greffées** ✅ | Le homebrew le plus demandé, et **treize fois plus léger qu'une classe** : 0,9 kio et 10 champs contre 12 kio et 16. Amène les aptitudes par niveau et la troisième ligne de purge du §7. |
 | 3 | **Races** ✅ | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
 | 4 | **Historiques** ✅ | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
-| 5 | **Classes entières** | Dé de vie, sauvegardes, magie, équipement, paliers. Le gros morceau, en dernier, avec tout le reste éprouvé. |
+| 5 | **Classes entières** ✅ | Dé de vie, sauvegardes, magie, équipement, paliers. Le gros morceau, en dernier, avec tout le reste éprouvé. |
 
 La sous-classe est passée **avant** les races et les classes après mesure : un
 collège de barde est le cas que les tables réclament en premier, et il ne coûte
@@ -530,6 +530,33 @@ Deux points tranchés en l'écrivant :
 
 Un historique ne donne ni armure ni arme — aucun de ceux du SRD ne le fait —
 et un fichier qui en porte est refusé plutôt que vidé en silence.
+
+**Tranche 5 faite, et le lot est complet.** Une classe entière s'écrit : dé de
+vie, sauvegardes, maîtrises, défense sans armure, aptitudes par niveau,
+équipement fixe et lots au choix, magie, niveau et nom de sa voie, paliers
+d'amélioration. Elle rejoint les douze du SRD sans en toucher une.
+
+Trois choses tranchées en l'écrivant :
+
+- **Les voies d'une classe de pack ne s'écrivent pas dedans.** Elles vont dans
+  le même tableau plat que les greffes, avec un `for` qui les nomme, et
+  l'assemblage les réunit — le mécanisme du §13.1 révisé, un seul écran pour
+  toutes les voies. `for` accepte donc le SRD ou le même pack, jamais un autre
+  (§13.10).
+- **Les paliers d'amélioration ne portent aucune donnée propre** : quatre choix
+  identiques d'une classe à l'autre, dont le seul paramètre est le niveau. Le
+  fichier ne dit que les niveaux, et la prose reste celle de l'application —
+  sinon un pack figerait dans son fichier un texte qu'on a le droit
+  d'améliorer. Le générateur s'injecte depuis `data/`, comme le catalogue du
+  SRD l'était déjà.
+- **Le nombre de sorts s'écrit en paliers**, « à partir du niveau 4, tu en
+  connais trois », et non en vingt nombres : c'est ainsi que le SRD le
+  présente, et vingt fois moins d'occasions de se tromper.
+
+L'identifiant d'un lot d'équipement, lui, reste **local à la classe**, sans
+préfixe de pack : le préfixe existe parce qu'un identifiant de créneau porte
+celui de son parent, or un lot n'en devient jamais un — il n'est lu que dans le
+choix de sa propre classe.
 
 ---
 
