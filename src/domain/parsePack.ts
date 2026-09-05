@@ -10,7 +10,6 @@ import type {
 } from './pack';
 import type {
   Background,
-  Facts,
   LeveledFeature,
   MagicSchool,
   Race,
@@ -20,12 +19,22 @@ import type {
 } from './content';
 import { MAX_LEVEL, MIN_LEVEL } from './progression';
 import { parseBackground } from './parseBackground';
+import { parseClass } from './parseClass';
+import type { PackClass } from './parseClass';
 import { parseRace } from './parseRace';
+import {
+  ID_SHAPE,
+  MAX_ID,
+  MAX_LINE,
+  MAX_NAME,
+  MAX_TEXT,
+  facts,
+  isRecord,
+  labelOf,
+  optionalText,
+  text,
+} from './parseValues';
 
-const MAX_ID = 64;
-const MAX_NAME = 60;
-const MAX_LINE = 120;
-const MAX_TEXT = 600;
 const MAX_ENTRIES = 500;
 const MAX_FEATURES = 40;
 /** Assez pour trois fois le SRD : la borne arrête l'absurde, pas les auteurs. */
@@ -55,26 +64,6 @@ const SUBCLASS_FIELDS_TO_COME = [
   'choices',
 ];
 
-/** Minuscules, chiffres et tirets : le même jeu que les identifiants du SRD. */
-const ID_SHAPE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function text(value: unknown, max: number): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed === '' || trimmed.length > max ? null : trimmed;
-}
-
-/** Facultatif : absent et vide sont la même chose, et ne sont pas une faute. */
-function optionalText(value: unknown, max: number): string {
-  return text(value, max) ?? '';
-}
-
 function isSchool(value: unknown): value is MagicSchool {
   return typeof value === 'string' && SCHOOLS.has(value);
 }
@@ -83,22 +72,6 @@ function isSpellLevel(value: unknown): value is SpellLevel {
   return (
     typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value <= 9
   );
-}
-
-/** `'—'` quand un repère n'a rien à dire : c'est ce que la carte affiche. */
-function asFacts(value: unknown): Facts {
-  const from = Array.isArray(value) ? value : [];
-  const at = (index: number): string => optionalText(from[index], MAX_LINE) || '—';
-  return [at(0), at(1), at(2)];
-}
-
-/** De quoi nommer l'entrée fautive sans écrire de phrase : son identifiant, à
- *  défaut son nom, à défaut rien — l'appelant a le rang. */
-function labelOf(value: unknown): string {
-  if (!isRecord(value)) {
-    return '';
-  }
-  return text(value.id, MAX_ID) ?? text(value.name, MAX_NAME) ?? '';
 }
 
 /** Le rapporteur d'une entrée : il sait la nommer, donc l'appelant ne le fait pas. */
@@ -115,11 +88,46 @@ function reporter(
   };
 }
 
+/**
+ * Les classes qui ont droit à ce sort. Une référence sort du pack, une
+ * définition non : un sort maison peut rejoindre la liste du magicien, il ne
+ * peut pas inventer une classe.
+ */
+function castersOf(
+  value: unknown,
+  where: {
+    readonly at: number;
+    readonly entry: string;
+    readonly catalogue: Catalogue;
+    readonly own: ReadonlySet<string>;
+  },
+  issues: PackIssue[],
+): readonly string[] {
+  const raw = Array.isArray(value) ? value.slice(0, MAX_CLASSES_PER_SPELL) : [];
+  const known: string[] = [];
+  for (const classId of raw) {
+    if (typeof classId !== 'string') continue;
+    if (findClass(where.catalogue, classId) === null && !where.own.has(classId)) {
+      issues.push({
+        kind: 'unknown-class',
+        at: where.at,
+        entry: where.entry,
+        what: 'spell',
+        value: classId,
+      });
+      continue;
+    }
+    known.push(classId);
+  }
+  return known;
+}
+
 function parseSpell(
   value: unknown,
   at: number,
   prefix: string,
   catalogue: Catalogue,
+  own: ReadonlySet<string>,
   issues: PackIssue[],
 ): Spell | null {
   const entry = labelOf(value);
@@ -142,18 +150,7 @@ function parseSpell(
   if (summary === null) return miss('summary');
 
   const components = isRecord(value.components) ? value.components : {};
-  const classes = Array.isArray(value.classes) ? value.classes : [];
-  const known: string[] = [];
-  for (const classId of classes.slice(0, MAX_CLASSES_PER_SPELL)) {
-    if (typeof classId !== 'string') continue;
-    // Une référence sort du pack, une définition non : un sort maison peut
-    // rejoindre la liste du magicien, il ne peut pas inventer une classe.
-    if (findClass(catalogue, classId) === null) {
-      issues.push({ kind: 'unknown-class', at, entry, what: 'spell', value: classId });
-      continue;
-    }
-    known.push(classId);
-  }
+  const known = castersOf(value.classes, { at, entry, catalogue, own }, issues);
   if (known.length === 0) return miss('classes');
 
   return {
@@ -228,6 +225,7 @@ function parseSubclass(
   at: number,
   prefix: string,
   catalogue: Catalogue,
+  own: ReadonlySet<string>,
   issues: PackIssue[],
 ): GraftedSubclass | null {
   const entry = labelOf(value);
@@ -252,7 +250,10 @@ function parseSubclass(
   // classe voit simplement une voie de plus.
   const forClassId = text(value.for, MAX_ID);
   if (forClassId === null) return miss('for');
-  if (findClass(catalogue, forClassId) === null) {
+  // Le SRD, ou une classe du même pack — jamais celle d'un autre pack : ce
+  // serait la dépendance croisée refusée au §13.10, et un identifiant inconnu
+  // resterait indistinguable d'une faute de frappe.
+  if (findClass(catalogue, forClassId) === null && !own.has(forClassId)) {
     issues.push({
       kind: 'unknown-class',
       at,
@@ -282,7 +283,7 @@ function parseSubclass(
     id,
     name,
     blurb,
-    facts: asFacts(value.facts),
+    facts: facts(value.facts),
     features,
     proficiencies: null,
     alwaysPreparedSpells: [],
@@ -343,12 +344,13 @@ function collectSpells(
   value: unknown,
   prefix: string,
   catalogue: Catalogue,
+  own: ReadonlySet<string>,
   taken: Set<string>,
   issues: PackIssue[],
 ): readonly Spell[] {
   const kept: Spell[] = [];
   for (const [index, entry] of entriesOf(value).entries()) {
-    const spell = parseSpell(entry, index + 1, prefix, catalogue, issues);
+    const spell = parseSpell(entry, index + 1, prefix, catalogue, own, issues);
     if (spell !== null && isFreeId(spell.id, index + 1, 'spell', taken, issues)) {
       kept.push(spell);
     }
@@ -360,12 +362,13 @@ function collectSubclasses(
   value: unknown,
   prefix: string,
   catalogue: Catalogue,
+  own: ReadonlySet<string>,
   taken: Set<string>,
   issues: PackIssue[],
 ): readonly GraftedSubclass[] {
   const kept: GraftedSubclass[] = [];
   for (const [index, entry] of entriesOf(value).entries()) {
-    const grafted = parseSubclass(entry, index + 1, prefix, catalogue, issues);
+    const grafted = parseSubclass(entry, index + 1, prefix, catalogue, own, issues);
     if (
       grafted !== null &&
       isFreeId(grafted.subclass.id, index + 1, 'subclass', taken, issues)
@@ -424,6 +427,25 @@ function collectBackgrounds(
   return kept;
 }
 
+function collectClasses(
+  value: unknown,
+  prefix: string,
+  catalogue: Catalogue,
+  taken: Set<string>,
+  issues: PackIssue[],
+): readonly PackClass[] {
+  const kept: PackClass[] = [];
+  for (const [index, raw] of entriesOf(value).entries()) {
+    const parsed = parseClass(raw, index + 1, prefix, catalogue);
+    issues.push(...parsed.issues);
+    const { entry } = parsed;
+    if (entry !== null && isFreeId(entry.base.id, index + 1, 'class', taken, issues)) {
+      kept.push(entry);
+    }
+  }
+  return kept;
+}
+
 /**
  * La seule porte par laquelle un contenu venu d'un fichier entre dans
  * l'application. Elle sert deux fois : à l'import, où elle refuse, et dans le
@@ -443,24 +465,20 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
     return { kind: 'invalid', issues };
   }
 
-  // Les genres que cette version ne lit pas encore : les taire les perdrait
-  // en silence à la réexportation, ce qui est pire que de refuser le fichier.
-  for (const section of ['classes']) {
-    const entries = value[section];
-    if (Array.isArray(entries) && entries.length > 0) {
-      issues.push({ kind: 'not-yet-supported', section });
-    }
-  }
-
   const prefix = prefixOf(info.id);
   // Un seul jeu d'identifiants pour tout le pack : un sort et une sous-classe
   // ne peuvent pas porter le même nom, sinon la provenance devient ambiguë.
   const taken = new Set<string>();
-  const spells = collectSpells(value.spells, prefix, catalogue, taken, issues);
+  // Les classes d'abord : un sort et une voie du même pack ont le droit de les
+  // nommer, et il faut donc savoir lesquelles existent avant de les relire.
+  const classes = collectClasses(value.classes, prefix, catalogue, taken, issues);
+  const own = new Set(classes.map((entry) => entry.base.id));
+  const spells = collectSpells(value.spells, prefix, catalogue, own, taken, issues);
   const subclasses = collectSubclasses(
     value.subclasses,
     prefix,
     catalogue,
+    own,
     taken,
     issues,
   );
@@ -475,5 +493,5 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
 
   return issues.length > 0
     ? { kind: 'invalid', issues }
-    : { kind: 'ok', pack: { info, spells, subclasses, races, backgrounds } };
+    : { kind: 'ok', pack: { info, spells, subclasses, races, backgrounds, classes } };
 }

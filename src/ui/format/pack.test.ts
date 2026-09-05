@@ -51,6 +51,7 @@ const karn: ContentPack = {
   subclasses: [],
   races: [],
   backgrounds: [],
+  classes: [],
 };
 
 describe('ce qu’on dit d’un pack', () => {
@@ -102,9 +103,15 @@ describe('ce qu’on dit d’un pack refusé', () => {
     ).toBe('Sort n° 3 : il lui manque un nom.');
   });
 
-  it('dit ce que cette version ne sait pas encore lire', () => {
-    expect(formatPackIssue({ kind: 'not-yet-supported', section: 'classes' })).toContain(
-      'des classes',
-    );
+  it('dit ce qu’une entrée porte et que cette version ne sait pas écrire', () => {
+    expect(
+      formatPackIssue({
+        kind: 'field-not-yet-supported',
+        at: 1,
+        entry: 'karn-college',
+        what: 'subclass',
+        field: 'alwaysPreparedSpells',
+      }),
+    ).toContain('sorts toujours préparés');
   });
 });

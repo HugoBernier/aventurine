@@ -4,6 +4,18 @@ import { findLanguage, findTool, findWeapon } from './catalogue';
 import type { Catalogue } from './catalogue';
 import type { ChoiceSpec } from './choiceSpec';
 import { RACE_CHOICE_KINDS, parseChoiceSpec } from './parseChoice';
+import {
+  ID_SHAPE,
+  MAX_ID,
+  MAX_NAME,
+  MAX_TEXT,
+  count,
+  facts,
+  isRecord,
+  keptAmong,
+  strings,
+  text,
+} from './parseValues';
 import { ALL_SKILLS } from './skills';
 import type { SkillId } from './skills';
 import type { PackEntryKind, PackIssue } from './pack';
@@ -17,11 +29,6 @@ import type {
   WeaponCategory,
 } from './content';
 
-const MAX_ID = 64;
-const MAX_NAME = 60;
-const MAX_LINE = 120;
-const MAX_TEXT = 600;
-const MAX_LIST = 40;
 /** Un peuple du SRD en a trois ou quatre ; la borne arrête l'absurde. */
 const MAX_FEATURES = 20;
 const MAX_CHOICES = 8;
@@ -55,50 +62,12 @@ function isSkillId(id: string): id is SkillId {
   return SKILL_IDS.includes(id);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function text(value: unknown, max: number): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed === '' || trimmed.length > max ? null : trimmed;
-}
-
-function optionalText(value: unknown, max: number): string {
-  return text(value, max) ?? '';
-}
-
 /** Une mesure en mètres : jamais négative, jamais absurde, arrondie au quart. */
 function meters(value: unknown, max: number): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > max) {
     return null;
   }
   return Math.round(value * 4) / 4;
-}
-
-function count(value: unknown, max: number): number | null {
-  return typeof value === 'number' &&
-    Number.isSafeInteger(value) &&
-    value >= 0 &&
-    value <= max
-    ? value
-    : null;
-}
-
-function strings(value: unknown): readonly string[] {
-  return Array.isArray(value)
-    ? value
-        .slice(0, MAX_LIST)
-        .filter((entry): entry is string => typeof entry === 'string')
-    : [];
-}
-
-/** Ne garde que ce qui existe : une référence morte n'est pas une définition. */
-function kept(from: readonly string[], allowed: readonly string[]): readonly string[] {
-  return from.filter((id) => allowed.includes(id));
 }
 
 /**
@@ -110,8 +79,8 @@ function kept(from: readonly string[], allowed: readonly string[]): readonly str
 function proficienciesOf(value: unknown, catalogue: Catalogue): Proficiencies {
   const source = isRecord(value) ? value : {};
   return {
-    armor: kept(strings(source.armor), ARMOR) as readonly ArmorCategory[],
-    weaponCategories: kept(
+    armor: keptAmong(strings(source.armor), ARMOR) as readonly ArmorCategory[],
+    weaponCategories: keptAmong(
       strings(source.weaponCategories),
       WEAPON_CATEGORIES,
     ) as readonly WeaponCategory[],
@@ -144,12 +113,6 @@ interface CommonParts {
   readonly choices: readonly ChoiceSpec[];
 }
 
-function factsOf(value: unknown): readonly [string, string, string] {
-  const from = Array.isArray(value) ? value : [];
-  const at = (index: number): string => optionalText(from[index], MAX_LINE) || '—';
-  return [at(0), at(1), at(2)];
-}
-
 function commonOf(
   value: Record<string, unknown>,
   catalogue: Catalogue,
@@ -175,7 +138,7 @@ function commonOf(
   return {
     name,
     blurb,
-    facts: factsOf(value.facts),
+    facts: facts(value.facts),
     skills: strings(value.skills).filter(isSkillId),
     proficiencies: proficienciesOf(value.proficiencies, catalogue),
     features,
@@ -191,7 +154,7 @@ function subraceOf(
 ): Subrace | null {
   if (!isRecord(value)) return miss('sous-race');
   const id = text(value.id, MAX_ID);
-  if (id === null || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(id)) return miss('id');
+  if (id === null || !ID_SHAPE.test(id)) return miss('id');
   if (!id.startsWith(prefix)) return miss('prefix');
   const common = commonOf(value, catalogue, miss);
   if (common === null) return null;
@@ -243,7 +206,7 @@ export function parseRace(
     return { race: null, issues };
   }
   const id = text(value.id, MAX_ID);
-  if (id === null || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(id)) {
+  if (id === null || !ID_SHAPE.test(id)) {
     report('id');
     return { race: null, issues };
   }
@@ -286,7 +249,10 @@ export function parseRace(
     languages: strings(value.languages).filter(
       (id2) => findLanguage(catalogue, id2) !== null,
     ),
-    resistances: kept(strings(value.resistances), DAMAGE_TYPES) as readonly DamageType[],
+    resistances: keptAmong(
+      strings(value.resistances),
+      DAMAGE_TYPES,
+    ) as readonly DamageType[],
     subraces,
   };
   return { race, issues };

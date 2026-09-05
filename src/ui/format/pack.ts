@@ -2,10 +2,6 @@ import type { ContentPack, PackEntryKind, PackIssue } from '../../domain/pack';
 import type { PackFileResult } from '../../state/persistence/packFile';
 import { counted } from './plural';
 
-const SECTIONS: Readonly<Record<string, string>> = {
-  classes: 'des classes',
-};
-
 const FIELDS: Readonly<Record<string, string>> = {
   id: 'il lui manque un identifiant',
   name: 'il lui manque un nom',
@@ -25,6 +21,14 @@ const FIELDS: Readonly<Record<string, string>> = {
   prefix: 'son identifiant doit commencer par celui du pack',
   historique: 'ce n’est pas un historique',
   feature: 'son aptitude n’a pas de nom ou pas de texte',
+  classe: 'ce n’est pas une classe',
+  hitDie: 'son dé de vie n’est pas un d6, un d8, un d10 ou un d12',
+  saves: 'il lui faut deux jets de sauvegarde, et deux différents',
+  equipmentOptions: 'un de ses lots d’équipement est mal écrit',
+  spellcasting:
+    'sa magie est mal écrite : caractéristique, rythme ou mode de préparation',
+  unarmoredDefense: 'sa défense sans armure est mal écrite',
+  subclassChoice: 'elle ne dit pas quand ni comment on choisit sa voie',
 };
 
 /** Ce que cette version ne sait pas encore porter, dit dans les mots du jeu. */
@@ -45,6 +49,7 @@ const WHAT: Readonly<Record<PackEntryKind, string>> = {
   race: 'Peuple',
   subrace: 'Branche',
   background: 'Historique',
+  class: 'Classe',
 };
 
 /** « Sort n° 3 » quand rien ne le nomme, « Sort « karn-brume » » sinon. */
@@ -78,9 +83,6 @@ export function formatPackIssue(issue: PackIssue): string {
     }
     case 'field-not-yet-supported': {
       return `${entryOf(issue.at, issue.entry, issue.what)} : cette version ne sait pas encore ${FIELDS_TO_COME[issue.field] ?? 'porter ce champ'}. Retire-le du fichier, ou attends la version qui le lira.`;
-    }
-    case 'not-yet-supported': {
-      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait pas encore les lire.`;
     }
   }
 }
@@ -138,6 +140,7 @@ export function formatPackContents(pack: ContentPack): string {
     pack.backgrounds.length === 0
       ? null
       : counted(pack.backgrounds.length, 'historique', 'historiques'),
+    pack.classes.length === 0 ? null : counted(pack.classes.length, 'classe', 'classes'),
   ].filter((part): part is string => part !== null);
   return parts.length === 0 ? 'rien pour l’instant' : parts.join(' · ');
 }

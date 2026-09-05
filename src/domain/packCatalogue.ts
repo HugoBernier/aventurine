@@ -1,6 +1,14 @@
 import type { Catalogue } from './catalogue';
-import type { CharacterClass } from './content';
+import type { Advancement, CharacterClass } from './content';
 import type { ContentPack } from './pack';
+
+/**
+ * Comment l'application fabrique un palier d'amélioration à partir de son seul
+ * niveau. Injecté depuis `data/`, où vit la prose française : ces quatre choix
+ * sont identiques d'une classe à l'autre, et un pack qui les recopierait
+ * figerait dans son fichier un texte que l'application a le droit d'améliorer.
+ */
+export type AdvancementFor = (level: number) => Advancement;
 
 /**
  * Verse les sous-classes greffées dans la classe qu'elles visent.
@@ -28,6 +36,19 @@ function withGrafts(
   });
 }
 
+/** Les classes d'un pack, leurs paliers remontés à partir de leurs niveaux. */
+function packClasses(
+  packs: readonly ContentPack[],
+  advancementFor: AdvancementFor,
+): readonly CharacterClass[] {
+  return packs.flatMap((pack) =>
+    pack.classes.map((entry) => ({
+      ...entry.base,
+      advancements: entry.advancementLevels.map((level) => advancementFor(level)),
+    })),
+  );
+}
+
 /**
  * Le catalogue que voit l'application : le SRD, plus ce que les packs
  * installés ajoutent. Les packs n'écrasent rien — le préfixe obligatoire rend
@@ -41,6 +62,7 @@ function withGrafts(
 export function catalogueWithPacks(
   base: Catalogue,
   packs: readonly ContentPack[],
+  advancementFor: AdvancementFor,
 ): Catalogue {
   if (packs.length === 0) {
     return base;
@@ -51,7 +73,7 @@ export function catalogueWithPacks(
     // retrouve les neuf du SRD là où il les a laissés (§13.8).
     races: [...base.races, ...packs.flatMap((pack) => pack.races)],
     backgrounds: [...base.backgrounds, ...packs.flatMap((pack) => pack.backgrounds)],
-    classes: withGrafts(base.classes, packs),
+    classes: withGrafts([...base.classes, ...packClasses(packs, advancementFor)], packs),
     spells: [...base.spells, ...packs.flatMap((pack) => pack.spells)],
   };
 }

@@ -1,4 +1,5 @@
 import type { Background, Race, Spell, Subclass } from './content';
+import type { PackClass } from './parseClass';
 
 /**
  * Un pack de contenu maison : un fichier, un supplément. Ce n'est pas une
@@ -44,6 +45,12 @@ export interface ContentPack {
   readonly races: readonly Race[];
   /** L'entrée la plus autonome du format : elle ne référence ni classe ni peuple. */
   readonly backgrounds: readonly Background[];
+  /**
+   * Des classes entières. Leurs voies ne sont PAS ici : elles vivent dans
+   * `subclasses`, avec un `for` qui les nomme, exactement comme celles greffées
+   * sur une classe du SRD. Un seul tableau, un seul écran, un seul mécanisme.
+   */
+  readonly classes: readonly PackClass[];
 }
 
 /**
@@ -56,7 +63,8 @@ export interface ContentPack {
  * d'entrée, pour que la phrase sache dire « Sort » ou « Sous-classe ». Le
  * domaine ne rédige pas : il donne de quoi nommer.
  */
-export type PackEntryKind = 'spell' | 'subclass' | 'race' | 'subrace' | 'background';
+export type PackEntryKind =
+  'spell' | 'subclass' | 'race' | 'subrace' | 'background' | 'class';
 
 interface AtEntry {
   readonly at: number;
@@ -73,9 +81,7 @@ export type PackIssue =
   | ({ readonly kind: 'duplicate-id' } & AtEntry)
   | ({ readonly kind: 'unknown-class'; readonly value: string } & AtEntry)
   /** Un champ que cette version ne sait pas encore porter, et ne taira pas. */
-  | ({ readonly kind: 'field-not-yet-supported'; readonly field: string } & AtEntry)
-  /** Un genre de contenu que cette version ne sait pas encore lire. */
-  | { readonly kind: 'not-yet-supported'; readonly section: string };
+  | ({ readonly kind: 'field-not-yet-supported'; readonly field: string } & AtEntry);
 
 export type PackParse =
   | { readonly kind: 'ok'; readonly pack: ContentPack }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { CATALOGUE } from './data/catalogue';
+import { advancement } from './data/classes/helpers';
 import { PacksProvider, usePacks } from './state/PacksProvider';
 import { WizardProvider } from './state/WizardProvider';
 import { Wizard } from './ui/Wizard';
@@ -19,7 +20,7 @@ function WithPacks(): ReactNode {
 
 export default function App(): ReactNode {
   return (
-    <PacksProvider base={CATALOGUE}>
+    <PacksProvider base={CATALOGUE} advancementFor={advancement}>
       <WithPacks />
     </PacksProvider>
   );

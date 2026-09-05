@@ -3,15 +3,21 @@ import type { Catalogue } from './catalogue';
 import type { ChoiceSpec } from './choiceSpec';
 import { BACKGROUND_CHOICE_KINDS, parseChoiceSpec } from './parseChoice';
 import { ALL_SKILLS } from './skills';
+import {
+  ID_SHAPE,
+  MAX_ID,
+  MAX_LINE,
+  MAX_NAME,
+  MAX_TEXT,
+  isRecord,
+  text,
+} from './parseValues';
+import { strings } from './parseValues';
 import type { SkillId } from './skills';
 import type { PackIssue } from './pack';
 import type { Background, Feature, ItemLine, SuggestedTraits } from './content';
 import { NO_PROFICIENCIES } from './content';
 
-const MAX_ID = 64;
-const MAX_NAME = 60;
-const MAX_LINE = 120;
-const MAX_TEXT = 600;
 const MAX_LIST = 20;
 const MAX_CHOICES = 4;
 /** Le SRD n'en donne jamais plus d'une poignée ; la borne arrête l'absurde. */
@@ -28,24 +34,6 @@ const MAX_GOLD = 1000;
 const NOT_FOR_BACKGROUNDS = ['armor', 'weaponCategories', 'weapons'];
 
 const SKILL_IDS: readonly string[] = ALL_SKILLS;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function text(value: unknown, max: number): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed === '' || trimmed.length > max ? null : trimmed;
-}
-
-function strings(value: unknown, max: number): readonly string[] {
-  return Array.isArray(value)
-    ? value.slice(0, max).filter((entry): entry is string => typeof entry === 'string')
-    : [];
-}
 
 /** Trois amorces par colonne dans le SRD ; on garde ce qui tient debout. */
 function traitsOf(value: unknown): SuggestedTraits {
@@ -169,7 +157,7 @@ export function parseBackground(
 
   if (!isRecord(value)) return miss('historique');
   const id = text(value.id, MAX_ID);
-  if (id === null || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(id)) return miss('id');
+  if (id === null || !ID_SHAPE.test(id)) return miss('id');
   if (!id.startsWith(prefix)) {
     issues.push({ kind: 'bad-prefix', at, entry, what: 'background' });
     return { background: null, issues };

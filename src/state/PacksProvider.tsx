@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { catalogueWithPacks } from '../domain/packCatalogue';
+import type { AdvancementFor } from '../domain/packCatalogue';
 import type { Catalogue } from '../domain/catalogue';
 import type { ContentPack } from '../domain/pack';
 import { loadPacks, savePacks } from './persistence/packStorage';
@@ -20,10 +21,16 @@ const PacksContext = createContext<PacksValue | null>(null);
 export interface PacksProviderProps {
   /** Le contenu du SRD, seul socle : les packs se posent dessus. */
   readonly base: Catalogue;
+  /** Injecté depuis `data/`, comme le socle : la prose française y vit. */
+  readonly advancementFor: AdvancementFor;
   readonly children: ReactNode;
 }
 
-export function PacksProvider({ base, children }: PacksProviderProps): ReactNode {
+export function PacksProvider({
+  base,
+  advancementFor,
+  children,
+}: PacksProviderProps): ReactNode {
   // Initialiseur paresseux : la relecture est synchrone, comme celle des
   // personnages, donc pas d'écran de chargement.
   const [packs, setPacks] = useState<readonly ContentPack[]>(() => loadPacks(base));
@@ -37,7 +44,7 @@ export function PacksProvider({ base, children }: PacksProviderProps): ReactNode
   const value = useMemo<PacksValue>(
     () => ({
       packs,
-      catalogue: catalogueWithPacks(base, packs),
+      catalogue: catalogueWithPacks(base, packs, advancementFor),
       install: (pack) => {
         write([...packs.filter((kept) => kept.info.id !== pack.info.id), pack]);
       },
@@ -46,7 +53,7 @@ export function PacksProvider({ base, children }: PacksProviderProps): ReactNode
       },
       isStorageFull,
     }),
-    [base, packs, isStorageFull, write],
+    [base, packs, isStorageFull, write, advancementFor],
   );
 
   return <PacksContext value={value}>{children}</PacksContext>;

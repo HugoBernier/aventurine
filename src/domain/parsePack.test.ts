@@ -146,9 +146,15 @@ describe('la lecture d’un pack de contenu', () => {
     ]);
   });
 
-  it('refuse plutôt que de perdre en silence un genre qu’il ne lit pas encore', () => {
+  it('nomme la classe fautive quand elle est à peine ébauchée', () => {
     expect(issuesOf(file({ classes: [{ id: 'karn-brumeur' }] }))).toEqual([
-      { kind: 'not-yet-supported', section: 'classes' },
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-brumeur',
+        what: 'class',
+        field: 'name',
+      },
     ]);
   });
 
