@@ -6,7 +6,7 @@
 > **Écrit :** la règle de purge du §7, l'export/import d'un personnage, et les
 > tranches 1 à 4 — sorts, sous-classes greffées, peuples, historiques — voir §9.
 > **Reste :** les classes entières.
-> **Ouvert :** le point 10 du §13, à trancher avec la tranche « classes ».
+> **Ouvert :** rien.
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
 fichier JSON qu'on garde sur son ordinateur, qu'on rouvre pour modifier, et
@@ -600,8 +600,8 @@ contraire.
 | 9 | **Rien ne protège de la réutilisation d'un nom de pack dans le temps** | Un suffixe opaque (`karn-a7f3`) empoisonnerait tous les identifiants pour un cas rare ; la date affichée à l'écran de gestion rend la surprise visible |
 
 Les neuf points du §13 sont tranchés à leur tour. Un dixième s'est ouvert
-depuis, en écrivant la tranche 2 : les packs d'addons (§13.10), qui attendent
-la tranche « classes » pour avoir un sens.
+depuis, en écrivant la tranche 2 — les packs d'addons — et il est tranché aussi
+(§13.10) : **rien ne reste ouvert.**
 
 ---
 
@@ -840,8 +840,9 @@ maintenant.
 
 ### 10. Un pack d'« addons » : des voies qui visent la classe d'un autre pack
 
-**Ouvert. À trancher à la tranche 5, quand une classe pourra exister hors du
-SRD — pas avant : aujourd'hui un addon n'aurait aucune classe à viser.**
+**Tranché : non, et définitivement — pas « pas encore ».** Une greffe vise une
+classe du SRD ou du même pack. Ce qui suit dit pourquoi le refus tient encore
+alors que ses raisons d'origine, elles, sont tombées.
 
 De quoi il s'agit : « Le Brumeur », une classe, publié par quelqu'un ; « Trois
 voies pour le Brumeur », un second fichier, publié par quelqu'un d'autre. Le
@@ -860,24 +861,35 @@ et ce refus attrape une faute de frappe — `"for": "bard"` pour `"barde"`. Si u
 identifiant inconnu devient « en attente », la faute n'est plus attrapée : le
 pack s'installe, la voie n'apparaît jamais, et le joueur cherche pourquoi.
 
-**Contraintes à respecter le jour où on le fera :**
+**Ce qui décide, et qui n'est pas ce qu'on croyait.** Le prix d'un `for` non
+résolu n'est pas payé par les addons : il est payé par **tous les packs**. Pour
+qu'un identifiant inconnu vaille « en attente », il faut cesser de le refuser —
+y compris quand c'est une faute de frappe dans un pack qui définit lui-même sa
+classe. Écrire `for: "karn-brumeurr"` à côté d'un `karn-brumeur` deviendrait un
+pack valide, installable, dont la voie n'apparaît jamais. On dégraderait le cas
+courant pour servir le cas rare.
 
-1. **L'attente se voit, et elle nomme ce qu'elle attend.** « 3 voies attendent
-   la classe « karn-brumeur », qui n'est pas installée » — sur l'écran de
-   gestion, à côté du pack, pas seulement au moment de l'import. C'est ce qui
-   rend une faute de frappe visible au lieu de silencieuse.
-2. **Le fichier reste lisible sans sa cible.** Un addon s'installe, se
-   réexporte et se retire comme un autre ; il n'est jamais « à moitié
-   installé ».
-3. **Rien ne se purge.** Une voie en attente choisie par un personnage suit la
-   règle du §7 : elle dort, elle ne meurt pas.
-4. **Aucun ordre imposé, ni à l'installation ni au retrait.** L'assemblage
-   reste une fonction pure de l'ensemble des packs installés.
-5. **Le créateur ne propose pas les classes des autres packs** (§13.1) : viser
-   une classe qu'on ne possède pas se fait en écrivant son identifiant, jamais
-   par une liste qui donnerait l'illusion d'une dépendance gérée.
-6. **La distinction reste dicible au joueur** : « cette voie vient d'un autre
-   pack que la classe » doit pouvoir s'afficher, sinon la provenance ment.
+Et le cas rare a déjà une réponse, écrite au §2 : **un pack est un supplément,
+pas une entrée.** Qui veut publier trois voies pour une classe les met dans le
+même fichier qu'elle. C'est un geste de plus au moment de l'écriture, contre
+une garantie perdue à jamais sur la validation.
+
+**Le milieu tentant, et pourquoi il est pire que les deux bouts.** On pourrait
+résoudre `for` contre le SRD, le même pack **et les packs installés** : les
+fautes de frappe resteraient attrapées, et l'addon marcherait à condition
+d'installer la classe d'abord. C'est la pire des trois options. Elle
+réintroduit l'ordre d'installation, la seule chose qui n'existe vraiment pas
+aujourd'hui, et surtout elle rend la validité **non portable** : le même
+fichier serait valide sur mon téléphone et refusé sur le tien. « Ce pack est
+valide » doit être une propriété du fichier, pas de la machine.
+
+**Ce qui reste vrai du réexamen.** Les deux arguments tombés le sont pour de
+bon : si un jour on rouvre la question, ce ne sera pas pour un graphe de
+dépendances — il n'y en a pas — mais parce qu'on aura trouvé comment garder la
+faute de frappe attrapée. Une piste, si le besoin se présente : un champ
+explicite (`"forPack": "autre"`) qui distingue « je vise une classe que je ne
+possède pas » d'un identifiant simplement mal tapé. On l'écrira ce jour-là,
+avec son cas d'usage, pas avant.
 
 Ce qui marche **déjà**, et qu'il ne faut pas confondre avec ça : un pack qui ne
 contient **que** des voies greffées sur des classes du SRD est un pack
