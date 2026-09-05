@@ -3,7 +3,6 @@ import type { PackFileResult } from '../../state/persistence/packFile';
 import { counted } from './plural';
 
 const SECTIONS: Readonly<Record<string, string>> = {
-  races: 'des races',
   classes: 'des classes',
   backgrounds: 'des historiques',
 };
@@ -20,6 +19,11 @@ const FIELDS: Readonly<Record<string, string>> = {
   for: 'elle ne dit pas à quelle classe elle s’ajoute',
   features: 'il lui faut au moins une aptitude, avec son niveau, son nom et son texte',
   'sous-classe': 'ce n’est pas une sous-classe',
+  race: 'ce n’est pas un peuple',
+  'sous-race': 'ce n’est pas une branche',
+  speed: 'il lui manque une vitesse de déplacement',
+  choices: 'un de ses choix est mal écrit : son genre, son sujet, son titre ou sa liste',
+  prefix: 'son identifiant doit commencer par celui du pack',
 };
 
 /** Ce que cette version ne sait pas encore porter, dit dans les mots du jeu. */
@@ -34,6 +38,8 @@ const FIELDS_TO_COME: Readonly<Record<string, string>> = {
 const WHAT: Readonly<Record<PackEntryKind, string>> = {
   spell: 'Sort',
   subclass: 'Sous-classe',
+  race: 'Peuple',
+  subrace: 'Branche',
 };
 
 /** « Sort n° 3 » quand rien ne le nomme, « Sort « karn-brume » » sinon. */
@@ -69,7 +75,7 @@ export function formatPackIssue(issue: PackIssue): string {
       return `${entryOf(issue.at, issue.entry, issue.what)} : cette version ne sait pas encore ${FIELDS_TO_COME[issue.field] ?? 'porter ce champ'}. Retire-le du fichier, ou attends la version qui le lira.`;
     }
     case 'not-yet-supported': {
-      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait lire que les sorts et les sous-classes.`;
+      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait lire que les sorts, les sous-classes et les peuples.`;
     }
   }
 }
@@ -123,6 +129,7 @@ export function formatPackContents(pack: ContentPack): string {
     pack.subclasses.length === 0
       ? null
       : counted(pack.subclasses.length, 'sous-classe', 'sous-classes'),
+    pack.races.length === 0 ? null : counted(pack.races.length, 'peuple', 'peuples'),
   ].filter((part): part is string => part !== null);
   return parts.length === 0 ? 'rien pour l’instant' : parts.join(' · ');
 }

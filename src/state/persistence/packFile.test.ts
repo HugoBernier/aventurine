@@ -36,6 +36,7 @@ const karn: ContentPack = {
     },
   ],
   subclasses: [],
+  races: [],
 };
 
 describe('le fichier d’un pack', () => {

@@ -12,11 +12,13 @@ import type {
   Facts,
   LeveledFeature,
   MagicSchool,
+  Race,
   Spell,
   SpellLevel,
   Subclass,
 } from './content';
 import { MAX_LEVEL, MIN_LEVEL } from './progression';
+import { parseRace } from './parseRace';
 
 const MAX_ID = 64;
 const MAX_NAME = 60;
@@ -372,6 +374,32 @@ function collectSubclasses(
   return kept;
 }
 
+function collectRaces(
+  value: unknown,
+  prefix: string,
+  catalogue: Catalogue,
+  taken: Set<string>,
+  issues: PackIssue[],
+): readonly Race[] {
+  const kept: Race[] = [];
+  for (const [index, entry] of entriesOf(value).entries()) {
+    const parsed = parseRace(entry, index + 1, prefix, catalogue);
+    issues.push(...parsed.issues);
+    const { race } = parsed;
+    if (race === null) continue;
+    if (!isFreeId(race.id, index + 1, 'race', taken, issues)) continue;
+    // Une branche partage le jeu d'identifiants du reste : son créneau porte
+    // son propre identifiant, `race:karn-brumeux-des-marais:origin-1`.
+    const clash = race.subraces.find(
+      (subrace) => !isFreeId(subrace.id, index + 1, 'subrace', taken, issues),
+    );
+    if (clash === undefined) {
+      kept.push(race);
+    }
+  }
+  return kept;
+}
+
 /**
  * La seule porte par laquelle un contenu venu d'un fichier entre dans
  * l'application. Elle sert deux fois : à l'import, où elle refuse, et dans le
@@ -393,7 +421,7 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
 
   // Les genres que cette version ne lit pas encore : les taire les perdrait
   // en silence à la réexportation, ce qui est pire que de refuser le fichier.
-  for (const section of ['races', 'classes', 'backgrounds']) {
+  for (const section of ['classes', 'backgrounds']) {
     const entries = value[section];
     if (Array.isArray(entries) && entries.length > 0) {
       issues.push({ kind: 'not-yet-supported', section });
@@ -412,8 +440,9 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
     taken,
     issues,
   );
+  const races = collectRaces(value.races, prefix, catalogue, taken, issues);
 
   return issues.length > 0
     ? { kind: 'invalid', issues }
-    : { kind: 'ok', pack: { info, spells, subclasses } };
+    : { kind: 'ok', pack: { info, spells, subclasses, races } };
 }

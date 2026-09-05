@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import { catalogueWithPacks } from './packCatalogue';
-import { findClass, spellsForClass } from './catalogue';
+import { findClass, findRace, spellsForClass } from './catalogue';
 import type { ContentPack, GraftedSubclass } from './pack';
+import type { Race } from './content';
+import { NO_PROFICIENCIES } from './content';
 
 const pack: ContentPack = {
   info: {
@@ -29,6 +31,7 @@ const pack: ContentPack = {
     },
   ],
   subclasses: [],
+  races: [],
 };
 
 describe('le catalogue augmenté des packs', () => {
@@ -97,5 +100,40 @@ describe('une sous-classe greffée sur une classe du SRD', () => {
     expect(findClass(MINI_CATALOGUE, 'clerc')?.subclasses.map((e) => e.id)).not.toContain(
       'karn-domaine-des-brumes',
     );
+  });
+});
+
+const brumeux: Race = {
+  id: 'karn-brumeux',
+  name: 'Brumeux',
+  blurb: 'Un peuple né d’une malédiction.',
+  facts: ['+2 au choix', '7,50 m', 'Vision 18 m'],
+  abilityBonuses: {},
+  size: 'M',
+  speed: 7.5,
+  darkvision: 18,
+  languages: ['commun'],
+  skills: [],
+  proficiencies: NO_PROFICIENCIES,
+  resistances: [],
+  features: [{ name: 'Voile natal', text: 'La brume ne te ralentit jamais.' }],
+  choices: [],
+  subraces: [],
+};
+
+describe('un peuple venu d’un pack', () => {
+  const peopled: ContentPack = { ...pack, spells: [], races: [brumeux] };
+
+  it('s’ajoute aux peuples du SRD, à la fin', () => {
+    const augmented = catalogueWithPacks(MINI_CATALOGUE, [peopled]);
+    expect(augmented.races.map((entry) => entry.id)).toEqual([
+      ...MINI_CATALOGUE.races.map((entry) => entry.id),
+      'karn-brumeux',
+    ]);
+  });
+
+  it('n’enlève ni ne remplace aucun peuple du SRD', () => {
+    const augmented = catalogueWithPacks(MINI_CATALOGUE, [peopled]);
+    expect(findRace(augmented, 'nain')).toBe(findRace(MINI_CATALOGUE, 'nain'));
   });
 });

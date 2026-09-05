@@ -45,6 +45,59 @@ export interface SubclassDraft {
   readonly features: readonly FeatureDraft[];
 }
 
+/**
+ * Un choix qu'un peuple ouvre. Un seul type pour les cinq genres : ils
+ * partagent leur titre, leur aide et leur nombre, et ne diffèrent que par ce
+ * qu'ils listent — d'où `from` pour les uns, `listFrom` et `bonus` pour les
+ * autres, vides quand ils ne servent pas.
+ */
+export interface ChoiceDraft {
+  /** Fixé à la création : le créneau du personnage porte ce sujet. */
+  readonly subject: string;
+  readonly kind: 'skill' | 'language' | 'tool' | 'ability' | 'cantrip' | 'ancestry';
+  readonly title: string;
+  readonly help: string;
+  readonly pick: number;
+  readonly from: readonly string[];
+  /** `ability` : +1 ou +2 à placer. `cantrip` : la classe dont on prend la liste. */
+  readonly bonus: number;
+  readonly listFrom: string;
+}
+
+export interface SubraceDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  readonly facts: readonly [string, string, string];
+  readonly features: readonly FeatureDraft[];
+  readonly choices: readonly ChoiceDraft[];
+  readonly skills: readonly string[];
+  readonly bonusHitPointsPerLevel: number;
+  /** 0 : la branche garde la vitesse et la vision de son peuple. */
+  readonly speed: number;
+  readonly darkvision: number;
+}
+
+export interface RaceDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  readonly facts: readonly [string, string, string];
+  readonly size: 'P' | 'M';
+  readonly speed: number;
+  readonly darkvision: number;
+  readonly languages: readonly string[];
+  readonly skills: readonly string[];
+  readonly resistances: readonly string[];
+  readonly weapons: readonly string[];
+  readonly tools: readonly string[];
+  /** L'humain, et lui seul : six +1 imposés au lieu d'un bonus à placer. */
+  readonly everyAbilityPlusOne: boolean;
+  readonly features: readonly FeatureDraft[];
+  readonly choices: readonly ChoiceDraft[];
+  readonly subraces: readonly SubraceDraft[];
+}
+
 export interface PackDraft {
   readonly id: string;
   readonly name: string;
@@ -52,6 +105,7 @@ export interface PackDraft {
   readonly description: string;
   readonly spells: readonly SpellDraft[];
   readonly subclasses: readonly SubclassDraft[];
+  readonly races: readonly RaceDraft[];
 }
 
 export function emptyPackDraft(): PackDraft {
@@ -62,6 +116,60 @@ export function emptyPackDraft(): PackDraft {
     description: '',
     spells: [],
     subclasses: [],
+    races: [],
+  };
+}
+
+export function emptyRaceDraft(): RaceDraft {
+  return {
+    id: '',
+    name: '',
+    blurb: '',
+    facts: ['', '', ''],
+    size: 'M',
+    speed: 9,
+    darkvision: 0,
+    languages: [],
+    skills: [],
+    resistances: [],
+    weapons: [],
+    tools: [],
+    everyAbilityPlusOne: false,
+    features: [],
+    choices: [],
+    subraces: [],
+  };
+}
+
+export function emptySubraceDraft(): SubraceDraft {
+  return {
+    id: '',
+    name: '',
+    blurb: '',
+    facts: ['', '', ''],
+    features: [],
+    choices: [],
+    skills: [],
+    bonusHitPointsPerLevel: 0,
+    speed: 0,
+    darkvision: 0,
+  };
+}
+
+/** Un bonus d'origine +2, dans la forme et la prose que le SRD emploie. */
+export function emptyChoiceDraft(
+  kind: ChoiceDraft['kind'],
+  subject: string,
+): ChoiceDraft {
+  return {
+    subject,
+    kind,
+    title: '',
+    help: '',
+    pick: 1,
+    from: [],
+    bonus: 1,
+    listFrom: '',
   };
 }
 
@@ -105,6 +213,24 @@ export function slug(value: string): string {
     .replaceAll(/^-|-$/gu, '');
 }
 
+/** Un choix n'écrit que ce que son genre emploie : le reste serait du bruit. */
+function choiceFile(choice: ChoiceDraft): Record<string, unknown> {
+  const base = {
+    kind: choice.kind,
+    subject: choice.subject,
+    title: choice.title,
+    help: choice.help,
+    pick: choice.pick,
+  };
+  if (choice.kind === 'ability') {
+    return { ...base, bonus: choice.bonus };
+  }
+  if (choice.kind === 'cantrip') {
+    return { ...base, listFrom: choice.listFrom };
+  }
+  return choice.kind === 'ancestry' ? base : { ...base, from: choice.from };
+}
+
 /**
  * Le brouillon rendu au format du fichier. C'est ce qu'on écrit sur l'appareil
  * ET ce qu'on soumet à `parsePack` : le créateur et l'import jugent donc
@@ -125,7 +251,6 @@ export function packDraftFile(
       description: draft.description,
       updatedAt,
     },
-    races: [],
     classes: [],
     backgrounds: [],
     spells: draft.spells.map((spell) => ({
@@ -145,6 +270,42 @@ export function packDraftFile(
       ritual: spell.ritual,
       summary: spell.summary,
       classes: spell.classes,
+    })),
+    races: draft.races.map((race) => ({
+      id: race.id,
+      name: race.name,
+      blurb: race.blurb,
+      facts: race.facts,
+      size: race.size,
+      speed: race.speed,
+      darkvision: race.darkvision,
+      languages: race.languages,
+      skills: race.skills,
+      resistances: race.resistances,
+      proficiencies: {
+        armor: [],
+        weaponCategories: [],
+        weapons: race.weapons,
+        tools: race.tools,
+      },
+      everyAbilityPlusOne: race.everyAbilityPlusOne,
+      features: race.features.map((feature) => ({
+        name: feature.name,
+        text: feature.text,
+      })),
+      choices: race.choices.map((choice) => choiceFile(choice)),
+      subraces: race.subraces.map((subrace) => ({
+        id: subrace.id,
+        name: subrace.name,
+        blurb: subrace.blurb,
+        facts: subrace.facts,
+        skills: subrace.skills,
+        bonusHitPointsPerLevel: subrace.bonusHitPointsPerLevel,
+        speed: subrace.speed,
+        darkvision: subrace.darkvision,
+        features: subrace.features.map((f) => ({ name: f.name, text: f.text })),
+        choices: subrace.choices.map((choice) => choiceFile(choice)),
+      })),
     })),
     subclasses: draft.subclasses.map((subclass) => ({
       id: subclass.id,
@@ -222,6 +383,103 @@ function asSubclassDraft(value: unknown): SubclassDraft {
   };
 }
 
+const CHOICE_KINDS: readonly ChoiceDraft['kind'][] = [
+  'skill',
+  'language',
+  'tool',
+  'ability',
+  'cantrip',
+  'ancestry',
+];
+
+function asNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function asStrings(value: unknown): readonly string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string')
+    : [];
+}
+
+function asFacts(value: unknown): readonly [string, string, string] {
+  const from = Array.isArray(value) ? value : [];
+  const at = (index: number): string => asText(from[index]);
+  return [at(0), at(1), at(2)];
+}
+
+function asChoiceDraft(value: unknown): ChoiceDraft {
+  const source = isRecord(value) ? value : {};
+  const kind = CHOICE_KINDS.find((entry) => entry === source.kind) ?? 'skill';
+  return {
+    subject: asText(source.subject),
+    kind,
+    title: asText(source.title),
+    help: asText(source.help),
+    pick: asNumber(source.pick, 1),
+    from: asStrings(source.from),
+    bonus: asNumber(source.bonus, 1),
+    listFrom: asText(source.listFrom),
+  };
+}
+
+function asChoiceDrafts(value: unknown): readonly ChoiceDraft[] {
+  return Array.isArray(value)
+    ? value.slice(0, 8).map((entry) => asChoiceDraft(entry))
+    : [];
+}
+
+function asFeatureDrafts(value: unknown): readonly FeatureDraft[] {
+  return Array.isArray(value)
+    ? value.slice(0, 40).map((entry) => {
+        const source = isRecord(entry) ? entry : {};
+        return { level: 1, name: asText(source.name), text: asText(source.text) };
+      })
+    : [];
+}
+
+function asSubraceDraft(value: unknown): SubraceDraft {
+  const source = isRecord(value) ? value : {};
+  return {
+    id: asText(source.id),
+    name: asText(source.name),
+    blurb: asText(source.blurb),
+    facts: asFacts(source.facts),
+    features: asFeatureDrafts(source.features),
+    choices: asChoiceDrafts(source.choices),
+    skills: asStrings(source.skills),
+    bonusHitPointsPerLevel: asNumber(source.bonusHitPointsPerLevel, 0),
+    speed: asNumber(source.speed, 0),
+    darkvision: asNumber(source.darkvision, 0),
+  };
+}
+
+function asRaceDraft(value: unknown): RaceDraft {
+  const source = isRecord(value) ? value : {};
+  const proficiencies = isRecord(source.proficiencies) ? source.proficiencies : {};
+  const empty = emptyRaceDraft();
+  return {
+    id: asText(source.id),
+    name: asText(source.name),
+    blurb: asText(source.blurb),
+    facts: asFacts(source.facts),
+    size: source.size === 'P' ? 'P' : 'M',
+    speed: asNumber(source.speed, empty.speed),
+    darkvision: asNumber(source.darkvision, 0),
+    languages: asStrings(source.languages),
+    skills: asStrings(source.skills),
+    resistances: asStrings(source.resistances),
+    weapons: asStrings(proficiencies.weapons),
+    tools: asStrings(proficiencies.tools),
+    everyAbilityPlusOne: source.everyAbilityPlusOne === true,
+    features: asFeatureDrafts(source.features),
+    choices: asChoiceDrafts(source.choices),
+    subraces: Array.isArray(source.subraces)
+      ? source.subraces.slice(0, 12).map((entry) => asSubraceDraft(entry))
+      : [],
+  };
+}
+
 /**
  * Relit un fichier POUR L'ÉCRIRE, pas pour l'installer : ici l'incomplet est
  * normal, donc rien n'est refusé et tout ce qui manque devient un champ vide.
@@ -245,6 +503,9 @@ export function parsePackDraft(value: unknown): PackDraft {
       : [],
     subclasses: Array.isArray(value.subclasses)
       ? value.subclasses.slice(0, 500).map((entry) => asSubclassDraft(entry))
+      : [],
+    races: Array.isArray(value.races)
+      ? value.races.slice(0, 100).map((entry) => asRaceDraft(entry))
       : [],
   };
 }

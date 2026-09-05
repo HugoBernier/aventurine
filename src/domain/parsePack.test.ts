@@ -152,6 +152,27 @@ describe('la lecture d’un pack de contenu', () => {
     ]);
   });
 
+  it('partage le jeu d’identifiants entre les peuples et leurs branches', () => {
+    const twins = {
+      id: 'karn-brumeux',
+      name: 'Brumeux',
+      blurb: 'Un peuple de la brume.',
+      speed: 7.5,
+      features: [{ name: 'Voile', text: 'La brume te porte.' }],
+      subraces: [
+        {
+          id: 'karn-brumeux',
+          name: 'Doublon',
+          blurb: 'Le même identifiant que son peuple.',
+          features: [{ name: 'Rien', text: 'Rien.' }],
+        },
+      ],
+    };
+    expect(issuesOf(file({ spells: [], races: [twins] }))).toEqual([
+      { kind: 'duplicate-id', at: 1, entry: 'karn-brumeux', what: 'subrace' },
+    ]);
+  });
+
   it('ne bronche pas sur les tableaux vides des genres à venir', () => {
     expect(parsePack(file({ races: [], classes: [] }), MINI_CATALOGUE).kind).toBe('ok');
   });

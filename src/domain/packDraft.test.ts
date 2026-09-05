@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import {
+  emptyChoiceDraft,
   emptyPackDraft,
+  emptyRaceDraft,
   emptySpellDraft,
+  emptySubraceDraft,
   packDraftFile,
   parsePackDraft,
   slug,
 } from './packDraft';
-import type { PackDraft, SpellDraft, SubclassDraft } from './packDraft';
+import type { PackDraft, RaceDraft, SpellDraft, SubclassDraft } from './packDraft';
 import { parsePack } from './parsePack';
 
 const brume: SpellDraft = {
@@ -99,5 +102,60 @@ describe('une sous-classe dans le brouillon', () => {
     expect(written).toEqual([
       expect.objectContaining({ for: 'clerc', id: 'karn-domaine-des-brumes' }),
     ]);
+  });
+});
+
+describe('un peuple dans le brouillon', () => {
+  const brumeux: RaceDraft = {
+    ...emptyRaceDraft(),
+    id: 'karn-brumeux',
+    name: 'Brumeux',
+    blurb: 'Un peuple né d’une malédiction.',
+    facts: ['+2 au choix', '7,50 m', 'Vision 18 m'],
+    speed: 7.5,
+    darkvision: 18,
+    languages: ['commun'],
+    features: [{ level: 1, name: 'Voile natal', text: 'La brume ne te ralentit pas.' }],
+    choices: [
+      {
+        ...emptyChoiceDraft('ability', 'origin-2'),
+        title: 'Où mettre ton +2 ?',
+        help: 'Dans ce que ton personnage fera le plus souvent.',
+        bonus: 2,
+      },
+    ],
+    subraces: [
+      {
+        ...emptySubraceDraft(),
+        id: 'karn-brumeux-des-marais',
+        name: 'Brumeux des marais',
+        blurb: 'Plus vif, plus silencieux.',
+        features: [{ level: 1, name: 'Pas feutré', text: 'Tu ne fais pas de bruit.' }],
+        bonusHitPointsPerLevel: 1,
+      },
+    ],
+  };
+  const withRace: PackDraft = { ...karn, spells: [], races: [brumeux] };
+
+  it('passe la validation de l’import telle quelle', () => {
+    const parsed = parsePack(packDraftFile(withRace, ''), MINI_CATALOGUE);
+    expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
+  });
+
+  it('revient identique après l’aller-retour, branches comprises', () => {
+    expect(parsePackDraft(packDraftFile(withRace, ''))).toEqual(withRace);
+  });
+
+  it('n’écrit d’un choix que ce que son genre emploie', () => {
+    const written: unknown = packDraftFile(withRace, '');
+    expect(written).toMatchObject({
+      races: [
+        {
+          choices: [{ kind: 'ability', bonus: 2, subject: 'origin-2' }],
+        },
+      ],
+    });
+    const [race] = (written as { races: { choices: Record<string, unknown>[] }[] }).races;
+    expect(Object.keys(race?.choices[0] ?? {})).not.toContain('listFrom');
   });
 });

@@ -49,6 +49,7 @@ const karn: ContentPack = {
   },
   spells: [],
   subclasses: [],
+  races: [],
 };
 
 describe('ce qu’on dit d’un pack', () => {
