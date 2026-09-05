@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   useCharacterSheet,
@@ -21,7 +21,6 @@ import { AbilityAssignScreen } from './screens/AbilityAssignScreen';
 import { AbilityMethodScreen } from './screens/AbilityMethodScreen';
 import { AlignmentScreen } from './screens/AlignmentScreen';
 import { ChoiceSlotScreen } from './screens/ChoiceSlotScreen';
-import { CreatorScreen } from './screens/CreatorScreen';
 import { LevelScreen } from './screens/LevelScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { NameScreen } from './screens/NameScreen';
@@ -29,6 +28,20 @@ import { PacksScreen } from './screens/PacksScreen';
 import { PersonalityScreen } from './screens/PersonalityScreen';
 import { SelectionScreen } from './screens/SelectionScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
+
+/**
+ * Le créateur se charge à la demande, et lui seul.
+ *
+ * C'est l'écran qu'on ouvre chez soi, au clavier, une fois — pas celui qu'on
+ * consulte à table, au pouce, cent fois. Le faire télécharger à qui joue
+ * revenait à lui faire payer un outil qu'il n'ouvrira pas ce soir-là : dix kio
+ * gzip, soit près d'un dixième de l'application. Le budget de poids de la CI
+ * est posé exactement pour rendre cet arbitrage visible.
+ */
+const CreatorScreen = lazy(async () => {
+  const module = await import('./screens/CreatorScreen');
+  return { default: module.CreatorScreen };
+});
 
 const STEP_LABELS: Record<StepId, string> = {
   race: 'Ta race',
@@ -209,7 +222,9 @@ export function Wizard(): ReactNode {
           />
         }
       >
-        <CreatorScreen draft={packDraft} onChange={setPackDraft} />
+        <Suspense fallback={<p>On ouvre le créateur…</p>}>
+          <CreatorScreen draft={packDraft} onChange={setPackDraft} />
+        </Suspense>
       </AppShell>
     );
   }

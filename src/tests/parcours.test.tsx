@@ -766,7 +766,8 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     await user.click(screen.getByRole('button', { name: /Tes packs/ }));
     await user.click(screen.getByRole('button', { name: /Écrire un pack/ }));
-    await user.click(screen.getByRole('button', { name: /Écrire un peuple/ }));
+    // Le créateur se charge à la demande : on attend qu'il soit là.
+    await user.click(await screen.findByRole('button', { name: /Écrire un peuple/ }));
 
     // La sortie est EN HAUT, avant les vingt champs : ouvrir par curiosité ne
     // doit pas obliger à écrire un peuple pour revenir.
@@ -786,7 +787,7 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: /Écrire un pack/ }));
 
     // Vide, il n'y a rien à installer : le bouton attend qu'il y ait à jouer.
-    const add = screen.getByRole('button', { name: /Ajouter à mes packs/ });
+    const add = await screen.findByRole('button', { name: /Ajouter à mes packs/ });
     expect(add).toBeDisabled();
 
     await user.type(screen.getByLabelText('Le nom de ton pack'), 'Les Brumes de Karn');
