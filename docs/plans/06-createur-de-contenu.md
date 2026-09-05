@@ -595,10 +595,35 @@ ce qui existe ; modifier un champ, si.
 
 **Trois précisions qui décident du coût de la greffe :**
 
-- Une greffe vise **une classe du SRD**, jamais celle d'un autre pack : ce
-  serait la dépendance croisée refusée au §13.3. Greffer sur une classe du
-  **même** pack ne se pose pas — on l'écrit dans la classe, comme le SRD le
-  fait.
+- Une greffe vise **une classe du SRD ou une classe du même pack**, jamais
+  celle d'un autre pack : ce serait la dépendance croisée refusée au §13.3.
+
+  > **Révisé.** La première rédaction disait « une classe du SRD », et réglait
+  > le cas du même pack en écrivant la sous-classe *dans* la classe, comme le
+  > SRD le fait. C'est vrai du format, et faux du joueur : écrire une voie est
+  > un seul geste — « je fais une voie, pour telle classe » —, et le formulaire
+  > n'a aucune raison de changer selon que la classe vient du livre ou de sa
+  > propre main. Un tableau plat, un champ `for`, un seul écran. Le format s'y
+  > plie : `catalogueWithPacks` verse la greffe dans la classe visée, qu'elle
+  > soit du SRD ou du pack, et la classe du pack part avec ses voies puisque
+  > les identifiants tombent ensemble.
+
+- **Le créateur ne pose donc pas la question au catalogue installé.** La liste
+  des classes visables, c'est le SRD **plus le pack qu'on est en train
+  d'écrire** — jamais les classes d'un autre pack installé. Aujourd'hui les
+  deux se confondent, aucun pack ne définissant de classe ; à la tranche 5 ils
+  divergent, et `useCatalogue()` offrirait exactement les deux mauvaises
+  réponses : les classes des autres packs, et pas les siennes. `parsePack`
+  suivra la même règle, en jugeant les références sur le SRD **plus le pack
+  qu'il analyse**, ce qui rend la dépendance croisée inexprimable plutôt que
+  refusée après coup.
+
+- **Une liste déroulante ordinaire suffit, sans recherche.** Douze classes du
+  SRD et une poignée de siennes : le `<select>` natif donne déjà la saisie au
+  clavier (taper « b » va à Barde) et, sur téléphone, le sélecteur du système.
+  Une liste avec recherche se justifie contre les 320 sorts, pas contre quinze
+  classes — elle coûterait un composant maison, son clavier et son
+  accessibilité, pour rien.
 - Elle se résout **au moment où l'on assemble le catalogue**, en versant la
   sous-classe dans le tableau `subclasses` de sa classe cible. `openChoices`,
   `buildSheet`, le parcours, l'impression : rien en aval ne change, ils voient
