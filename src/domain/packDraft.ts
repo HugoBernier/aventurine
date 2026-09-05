@@ -28,16 +28,52 @@ export interface SpellDraft {
   readonly classes: readonly string[];
 }
 
+/** Une aptitude de sous-classe : le niveau où elle arrive, son nom, son texte. */
+export interface FeatureDraft {
+  readonly level: number;
+  readonly name: string;
+  readonly text: string;
+}
+
+export interface SubclassDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  /** La classe du SRD à laquelle elle s'ajoute : elle n'en remplace rien. */
+  readonly forClassId: string;
+  readonly facts: readonly [string, string, string];
+  readonly features: readonly FeatureDraft[];
+}
+
 export interface PackDraft {
   readonly id: string;
   readonly name: string;
   readonly author: string;
   readonly description: string;
   readonly spells: readonly SpellDraft[];
+  readonly subclasses: readonly SubclassDraft[];
 }
 
 export function emptyPackDraft(): PackDraft {
-  return { id: '', name: '', author: '', description: '', spells: [] };
+  return {
+    id: '',
+    name: '',
+    author: '',
+    description: '',
+    spells: [],
+    subclasses: [],
+  };
+}
+
+export function emptySubclassDraft(): SubclassDraft {
+  return {
+    id: '',
+    name: '',
+    blurb: '',
+    forClassId: '',
+    facts: ['', '', ''],
+    features: [],
+  };
 }
 
 export function emptySpellDraft(): SpellDraft {
@@ -110,6 +146,14 @@ export function packDraftFile(
       summary: spell.summary,
       classes: spell.classes,
     })),
+    subclasses: draft.subclasses.map((subclass) => ({
+      id: subclass.id,
+      name: subclass.name,
+      blurb: subclass.blurb,
+      for: subclass.forClassId,
+      facts: subclass.facts,
+      features: subclass.features,
+    })),
   };
 }
 
@@ -150,6 +194,34 @@ function asSpellDraft(value: unknown): SpellDraft {
   };
 }
 
+function asFeatureDraft(value: unknown): FeatureDraft {
+  const source = isRecord(value) ? value : {};
+  return {
+    level:
+      typeof source.level === 'number' && Number.isSafeInteger(source.level)
+        ? source.level
+        : 1,
+    name: asText(source.name),
+    text: asText(source.text),
+  };
+}
+
+function asSubclassDraft(value: unknown): SubclassDraft {
+  const source = isRecord(value) ? value : {};
+  const facts = Array.isArray(source.facts) ? source.facts : [];
+  const fact = (index: number): string => asText(facts[index]);
+  return {
+    id: asText(source.id),
+    name: asText(source.name),
+    blurb: asText(source.blurb),
+    forClassId: asText(source.for),
+    facts: [fact(0), fact(1), fact(2)],
+    features: Array.isArray(source.features)
+      ? source.features.slice(0, 40).map((entry) => asFeatureDraft(entry))
+      : [],
+  };
+}
+
 /**
  * Relit un fichier POUR L'ÉCRIRE, pas pour l'installer : ici l'incomplet est
  * normal, donc rien n'est refusé et tout ce qui manque devient un champ vide.
@@ -170,6 +242,9 @@ export function parsePackDraft(value: unknown): PackDraft {
     description: asText(info.description),
     spells: Array.isArray(value.spells)
       ? value.spells.slice(0, 500).map((entry) => asSpellDraft(entry))
+      : [],
+    subclasses: Array.isArray(value.subclasses)
+      ? value.subclasses.slice(0, 500).map((entry) => asSubclassDraft(entry))
       : [],
   };
 }

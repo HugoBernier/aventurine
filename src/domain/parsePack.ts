@@ -1,14 +1,29 @@
 import { findClass } from './catalogue';
 import type { Catalogue } from './catalogue';
 import { prefixOf } from './pack';
-import type { PackInfo, PackIssue, PackParse } from './pack';
-import type { MagicSchool, Spell, SpellLevel } from './content';
+import type {
+  GraftedSubclass,
+  PackEntryKind,
+  PackInfo,
+  PackIssue,
+  PackParse,
+} from './pack';
+import type {
+  Facts,
+  LeveledFeature,
+  MagicSchool,
+  Spell,
+  SpellLevel,
+  Subclass,
+} from './content';
+import { MAX_LEVEL, MIN_LEVEL } from './progression';
 
 const MAX_ID = 64;
 const MAX_NAME = 60;
 const MAX_LINE = 120;
 const MAX_TEXT = 600;
 const MAX_ENTRIES = 500;
+const MAX_FEATURES = 40;
 /** Assez pour trois fois le SRD : la borne arrête l'absurde, pas les auteurs. */
 const MAX_CLASSES_PER_SPELL = 20;
 
@@ -22,6 +37,19 @@ const SCHOOLS = new Set<string>([
   'necromancie',
   'transmutation',
 ]);
+
+/**
+ * Ce qu'une sous-classe du SRD porte et qu'on ne sait pas encore écrire ici.
+ * Refusé plutôt que tu : les taire, c'est les perdre à la réexportation, et
+ * personne ne s'en apercevrait avant d'avoir rendu le fichier à son auteur.
+ */
+const SUBCLASS_FIELDS_TO_COME = [
+  'proficiencies',
+  'alwaysPreparedSpells',
+  'unarmoredDefense',
+  'bonusHitPointsPerLevel',
+  'choices',
+];
 
 /** Minuscules, chiffres et tirets : le même jeu que les identifiants du SRD. */
 const ID_SHAPE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
@@ -53,6 +81,13 @@ function isSpellLevel(value: unknown): value is SpellLevel {
   );
 }
 
+/** `'—'` quand un repère n'a rien à dire : c'est ce que la carte affiche. */
+function asFacts(value: unknown): Facts {
+  const from = Array.isArray(value) ? value : [];
+  const at = (index: number): string => optionalText(from[index], MAX_LINE) || '—';
+  return [at(0), at(1), at(2)];
+}
+
 /** De quoi nommer l'entrée fautive sans écrire de phrase : son identifiant, à
  *  défaut son nom, à défaut rien — l'appelant a le rang. */
 function labelOf(value: unknown): string {
@@ -60,6 +95,20 @@ function labelOf(value: unknown): string {
     return '';
   }
   return text(value.id, MAX_ID) ?? text(value.name, MAX_NAME) ?? '';
+}
+
+/** Le rapporteur d'une entrée : il sait la nommer, donc l'appelant ne le fait pas. */
+function reporter(
+  value: unknown,
+  at: number,
+  what: PackEntryKind,
+  issues: PackIssue[],
+): (field: string) => null {
+  const entry = labelOf(value);
+  return (field) => {
+    issues.push({ kind: 'missing-field', at, entry, what, field });
+    return null;
+  };
 }
 
 function parseSpell(
@@ -70,10 +119,7 @@ function parseSpell(
   issues: PackIssue[],
 ): Spell | null {
   const entry = labelOf(value);
-  const miss = (field: string): null => {
-    issues.push({ kind: 'missing-field', at, entry, field });
-    return null;
-  };
+  const miss = reporter(value, at, 'spell', issues);
   if (!isRecord(value)) {
     return miss('sort');
   }
@@ -81,7 +127,7 @@ function parseSpell(
   const id = text(value.id, MAX_ID);
   if (id === null || !ID_SHAPE.test(id)) return miss('id');
   if (!id.startsWith(prefix)) {
-    issues.push({ kind: 'bad-prefix', at, entry });
+    issues.push({ kind: 'bad-prefix', at, entry, what: 'spell' });
     return null;
   }
   const name = text(value.name, MAX_NAME);
@@ -99,7 +145,7 @@ function parseSpell(
     // Une référence sort du pack, une définition non : un sort maison peut
     // rejoindre la liste du magicien, il ne peut pas inventer une classe.
     if (findClass(catalogue, classId) === null) {
-      issues.push({ kind: 'unknown-class', at, entry, value: classId });
+      issues.push({ kind: 'unknown-class', at, entry, what: 'spell', value: classId });
       continue;
     }
     known.push(classId);
@@ -126,6 +172,123 @@ function parseSpell(
   };
 }
 
+function parseFeature(value: unknown): LeveledFeature | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  const name = text(value.name, MAX_NAME);
+  const body = text(value.text, MAX_TEXT);
+  const { level } = value;
+  if (name === null || body === null) {
+    return null;
+  }
+  if (
+    typeof level !== 'number' ||
+    !Number.isSafeInteger(level) ||
+    level < MIN_LEVEL ||
+    level > MAX_LEVEL
+  ) {
+    return null;
+  }
+  return { level, name, text: body };
+}
+
+/** Ce qu'une sous-classe porte et qu'on ne sait pas encore écrire ici. */
+function reportFieldsToCome(
+  value: Record<string, unknown>,
+  at: number,
+  entry: string,
+  issues: PackIssue[],
+): void {
+  for (const field of SUBCLASS_FIELDS_TO_COME) {
+    const carried = value[field];
+    const isEmpty =
+      carried === undefined ||
+      carried === null ||
+      carried === 0 ||
+      (Array.isArray(carried) && carried.length === 0);
+    if (!isEmpty) {
+      issues.push({
+        kind: 'field-not-yet-supported',
+        at,
+        entry,
+        what: 'subclass',
+        field,
+      });
+    }
+  }
+}
+
+function parseSubclass(
+  value: unknown,
+  at: number,
+  prefix: string,
+  catalogue: Catalogue,
+  issues: PackIssue[],
+): GraftedSubclass | null {
+  const entry = labelOf(value);
+  const miss = reporter(value, at, 'subclass', issues);
+  if (!isRecord(value)) {
+    return miss('sous-classe');
+  }
+
+  const id = text(value.id, MAX_ID);
+  if (id === null || !ID_SHAPE.test(id)) return miss('id');
+  if (!id.startsWith(prefix)) {
+    issues.push({ kind: 'bad-prefix', at, entry, what: 'subclass' });
+    return null;
+  }
+  const name = text(value.name, MAX_NAME);
+  if (name === null) return miss('name');
+  const blurb = text(value.blurb, MAX_TEXT);
+  if (blurb === null) return miss('blurb');
+
+  // La greffe vise une classe qui existe : c'est ce qui la distingue d'une
+  // classe maison, et ce qui la rend gratuite en aval — tout ce qui lit une
+  // classe voit simplement une voie de plus.
+  const forClassId = text(value.for, MAX_ID);
+  if (forClassId === null) return miss('for');
+  if (findClass(catalogue, forClassId) === null) {
+    issues.push({
+      kind: 'unknown-class',
+      at,
+      entry,
+      what: 'subclass',
+      value: forClassId,
+    });
+    return null;
+  }
+
+  reportFieldsToCome(value, at, entry, issues);
+
+  const rawFeatures = Array.isArray(value.features)
+    ? value.features.slice(0, MAX_FEATURES)
+    : [];
+  const features: LeveledFeature[] = [];
+  for (const raw of rawFeatures) {
+    const feature = parseFeature(raw);
+    if (feature === null) {
+      return miss('features');
+    }
+    features.push(feature);
+  }
+  if (features.length === 0) return miss('features');
+
+  const subclass: Subclass = {
+    id,
+    name,
+    blurb,
+    facts: asFacts(value.facts),
+    features,
+    proficiencies: null,
+    alwaysPreparedSpells: [],
+    unarmoredDefense: null,
+    bonusHitPointsPerLevel: 0,
+    choices: [],
+  };
+  return { forClassId, subclass };
+}
+
 function parseInfo(value: unknown, issues: PackIssue[]): PackInfo | null {
   const source = isRecord(value) ? value : {};
   const id = text(source.id, MAX_ID);
@@ -150,6 +313,63 @@ function parseInfo(value: unknown, issues: PackIssue[]): PackInfo | null {
     // est lequel. On garde la chaîne telle quelle, l'affichage se débrouille.
     updatedAt: optionalText(source.updatedAt, MAX_LINE),
   };
+}
+
+/** `false` quand l'identifiant est déjà pris : l'entrée n'entre pas deux fois. */
+function isFreeId(
+  id: string,
+  at: number,
+  what: PackEntryKind,
+  taken: Set<string>,
+  issues: PackIssue[],
+): boolean {
+  if (taken.has(id)) {
+    issues.push({ kind: 'duplicate-id', at, entry: id, what });
+    return false;
+  }
+  taken.add(id);
+  return true;
+}
+
+function entriesOf(value: unknown): readonly unknown[] {
+  return Array.isArray(value) ? value.slice(0, MAX_ENTRIES) : [];
+}
+
+function collectSpells(
+  value: unknown,
+  prefix: string,
+  catalogue: Catalogue,
+  taken: Set<string>,
+  issues: PackIssue[],
+): readonly Spell[] {
+  const kept: Spell[] = [];
+  for (const [index, entry] of entriesOf(value).entries()) {
+    const spell = parseSpell(entry, index + 1, prefix, catalogue, issues);
+    if (spell !== null && isFreeId(spell.id, index + 1, 'spell', taken, issues)) {
+      kept.push(spell);
+    }
+  }
+  return kept;
+}
+
+function collectSubclasses(
+  value: unknown,
+  prefix: string,
+  catalogue: Catalogue,
+  taken: Set<string>,
+  issues: PackIssue[],
+): readonly GraftedSubclass[] {
+  const kept: GraftedSubclass[] = [];
+  for (const [index, entry] of entriesOf(value).entries()) {
+    const grafted = parseSubclass(entry, index + 1, prefix, catalogue, issues);
+    if (
+      grafted !== null &&
+      isFreeId(grafted.subclass.id, index + 1, 'subclass', taken, issues)
+    ) {
+      kept.push(grafted);
+    }
+  }
+  return kept;
 }
 
 /**
@@ -181,21 +401,19 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
   }
 
   const prefix = prefixOf(info.id);
-  const raw = Array.isArray(value.spells) ? value.spells.slice(0, MAX_ENTRIES) : [];
-  const spells: Spell[] = [];
-  for (const [index, entry] of raw.entries()) {
-    const spell = parseSpell(entry, index + 1, prefix, catalogue, issues);
-    if (spell === null) {
-      continue;
-    }
-    if (spells.some((kept) => kept.id === spell.id)) {
-      issues.push({ kind: 'duplicate-id', at: index + 1, entry: spell.id });
-      continue;
-    }
-    spells.push(spell);
-  }
+  // Un seul jeu d'identifiants pour tout le pack : un sort et une sous-classe
+  // ne peuvent pas porter le même nom, sinon la provenance devient ambiguë.
+  const taken = new Set<string>();
+  const spells = collectSpells(value.spells, prefix, catalogue, taken, issues);
+  const subclasses = collectSubclasses(
+    value.subclasses,
+    prefix,
+    catalogue,
+    taken,
+    issues,
+  );
 
   return issues.length > 0
     ? { kind: 'invalid', issues }
-    : { kind: 'ok', pack: { info, spells } };
+    : { kind: 'ok', pack: { info, spells, subclasses } };
 }

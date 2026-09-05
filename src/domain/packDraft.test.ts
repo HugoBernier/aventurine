@@ -7,7 +7,7 @@ import {
   parsePackDraft,
   slug,
 } from './packDraft';
-import type { PackDraft, SpellDraft } from './packDraft';
+import type { PackDraft, SpellDraft, SubclassDraft } from './packDraft';
 import { parsePack } from './parsePack';
 
 const brume: SpellDraft = {
@@ -45,7 +45,13 @@ describe('le brouillon du créateur', () => {
     const incomplete: PackDraft = { ...karn, spells: [{ ...brume, summary: '' }] };
     const parsed = parsePack(packDraftFile(incomplete, ''), MINI_CATALOGUE);
     expect(parsed.kind === 'invalid' && parsed.issues).toEqual([
-      { kind: 'missing-field', at: 1, entry: 'karn-appel-des-brumes', field: 'summary' },
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-appel-des-brumes',
+        what: 'spell',
+        field: 'summary',
+      },
     ]);
   });
 
@@ -65,5 +71,33 @@ describe('le brouillon du créateur', () => {
 
   it('ne prend rien d’un fichier qui n’en est pas un', () => {
     expect(parsePackDraft('un pack')).toEqual(emptyPackDraft());
+  });
+});
+
+describe('une sous-classe dans le brouillon', () => {
+  const college: SubclassDraft = {
+    id: 'karn-domaine-des-brumes',
+    name: 'Domaine des Brumes',
+    blurb: 'Ton dieu parle dans le brouillard.',
+    forClassId: 'clerc',
+    facts: ['Voile', 'Chant sourd', ''],
+    features: [{ level: 1, name: 'Voile', text: 'Tu appelles la brume.' }],
+  };
+  const withCollege: PackDraft = { ...karn, spells: [], subclasses: [college] };
+
+  it('passe la validation de l’import telle quelle', () => {
+    const parsed = parsePack(packDraftFile(withCollege, ''), MINI_CATALOGUE);
+    expect(parsed.kind).toBe('ok');
+  });
+
+  it('revient identique après l’aller-retour', () => {
+    expect(parsePackDraft(packDraftFile(withCollege, ''))).toEqual(withCollege);
+  });
+
+  it('nomme sa classe cible sous le champ `for` du fichier', () => {
+    const written: unknown = packDraftFile(withCollege, '').subclasses;
+    expect(written).toEqual([
+      expect.objectContaining({ for: 'clerc', id: 'karn-domaine-des-brumes' }),
+    ]);
   });
 });

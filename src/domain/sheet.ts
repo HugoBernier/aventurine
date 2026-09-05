@@ -14,11 +14,12 @@ import type { ChoiceSource } from './choice';
 import type {
   Armor,
   CreatureSize,
+  DamageType,
   Feature,
   FeatureStep,
   FightingStyle,
-  DamageType,
   ItemLine,
+  LeveledFeature,
   PreparationMode,
   Proficiencies,
   UnarmoredDefense,
@@ -104,6 +105,13 @@ export interface SheetFeature {
   readonly text: string;
   /** La ligne du tableau que le niveau atteint, quand l'aptitude en a un. */
   readonly value: string | null;
+  /**
+   * L'entrée qui donne cette aptitude — race, classe, voie, don. L'interface
+   * s'en sert pour dire d'où elle vient quand ce n'est pas du SRD : la charte
+   * impose de distinguer TOUJOURS le contenu importé, et une fiche qu'on tend
+   * au meneur est justement l'endroit où ça compte.
+   */
+  readonly fromId: string;
 }
 
 export interface CharacterSheet {
@@ -493,8 +501,8 @@ function attacks(
 }
 
 /** Une aptitude sans tableau : sa valeur est simplement absente. */
-function plain(source: ChoiceSource, feature: Feature): SheetFeature {
-  return { source, name: feature.name, text: feature.text, value: null };
+function plain(source: ChoiceSource, fromId: string, feature: Feature): SheetFeature {
+  return { source, name: feature.name, text: feature.text, value: null, fromId };
 }
 
 /**
@@ -594,27 +602,38 @@ export function buildSheet(draft: CharacterDraft, catalogue: Catalogue): Charact
 
   const level = clampLevel(draft.level);
   const fightingStyle = chosenFightingStyle(draft, catalogue);
+  // Chaque aptitude garde l'identifiant de ce qui la donne : la voie greffée
+  // d'un pack se reconnaît alors sur la fiche comme sur la carte de choix.
+  const leveled =
+    (fromId: string) =>
+    (f: LeveledFeature): SheetFeature => {
+      const filled = f.filledBy === 'fighting-style' ? fightingStyle : null;
+      return {
+        source: 'class',
+        name: f.name,
+        text: filled?.text ?? f.text,
+        value: filled?.name ?? stepAt(f.steps, level),
+        fromId,
+      };
+    };
   const features: readonly SheetFeature[] = [
-    ...(race?.features ?? []).map((f) => plain('race', f)),
-    ...(subrace?.features ?? []).map((f) => plain('race', f)),
+    ...(race?.features ?? []).map((f) => plain('race', race?.id ?? '', f)),
+    ...(subrace?.features ?? []).map((f) => plain('race', subrace?.id ?? '', f)),
     // Une aptitude de niveau 5 n'apparaît pas sur la fiche d'un niveau 3.
-    ...[...(characterClass?.features ?? []), ...(subclass?.features ?? [])]
+    ...(characterClass?.features ?? [])
       .filter((f) => f.level <= level)
-      .map((f) => {
-        const filled = f.filledBy === 'fighting-style' ? fightingStyle : null;
-        return {
-          source: 'class' as const,
-          name: f.name,
-          text: filled?.text ?? f.text,
-          value: filled?.name ?? stepAt(f.steps, level),
-        };
-      }),
-    ...(background?.feature == null ? [] : [plain('background', background.feature)]),
+      .map(leveled(characterClass?.id ?? '')),
+    ...(subclass?.features ?? [])
+      .filter((f) => f.level <= level)
+      .map(leveled(subclass?.id ?? '')),
+    ...(background?.feature == null
+      ? []
+      : [plain('background', background.id, background.feature)]),
     // Un don se lit sur la fiche comme n'importe quelle autre aptitude : le
     // joueur ne se demande pas d'où elle vient au moment de s'en servir.
     ...pickedByKind(draft, catalogue, ['feat']).flatMap((id) => {
       const feat = catalogue.feats.find((entry) => entry.id === id);
-      return feat === undefined ? [] : [plain('class', feat)];
+      return feat === undefined ? [] : [plain('class', feat.id, feat)];
     }),
   ];
 

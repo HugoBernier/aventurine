@@ -47,6 +47,40 @@ const PACK_FILE = new File(
   { type: 'application/json' },
 );
 
+/** Le même pack, avec une voie greffée sur le barde du SRD. */
+const GRAFT_FILE = new File(
+  [
+    JSON.stringify({
+      aventurine: 2,
+      pack: {
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        author: 'Hugo',
+        description: '',
+        updatedAt: '2026-09-04T10:12:00.000Z',
+      },
+      subclasses: [
+        {
+          id: 'karn-college-des-brumes',
+          name: 'Collège des brumes',
+          blurb: 'Tu chantes ce que la brume cache, et elle t’obéit.',
+          for: 'barde',
+          facts: ['Voile de brume', 'Chant sourd', 'Pas silencieux'],
+          features: [
+            {
+              level: 3,
+              name: 'Voile',
+              text: 'Tu te caches dans une brume que tu appelles.',
+            },
+          ],
+        },
+      ],
+    }),
+  ],
+  'pack-karn.json',
+  { type: 'application/json' },
+);
+
 const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
@@ -444,6 +478,48 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     expect(screen.getByText('Appel des brumes')).toBeInTheDocument();
+  });
+
+  it('greffe une voie de pack sur une classe du SRD, sans rien y remplacer', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), GRAFT_FILE);
+    expect(screen.getByText(/1 sous-classe/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await user.click(screen.getByRole('radio', { name: /Nain/ }));
+    await next(user);
+    await next(user);
+    await user.click(screen.getByRole('radio', { name: /Barde/ }));
+
+    // Le collège se choisit au niveau 3 : c'est le créneau du barde du SRD,
+    // et la voie du pack n'y est qu'une option de plus.
+    for (let step = 0; step < 14; step++) {
+      if (screen.queryByRole('radio', { name: /Collège des brumes/ }) !== null) {
+        break;
+      }
+      const raise = screen.queryByRole('button', { name: 'Monter d’un niveau' });
+      if (raise !== null) {
+        await user.click(raise);
+        await user.click(raise);
+      }
+      await next(user);
+    }
+
+    const options = screen.getAllByRole('radio');
+    expect(options.length).toBeGreaterThan(1);
+    const grafted = screen.getByRole('radio', { name: /Collège des brumes/ });
+    // La voie du SRD est toujours là : on ajoute à une liste, on ne remplace rien.
+    expect(screen.getByRole('radio', { name: /Collège du savoir/ })).toBeInTheDocument();
+    await user.click(grafted);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    // L'aptitude de la voie est sur la fiche, et elle dit d'où elle vient.
+    expect(screen.getByText('Voile')).toBeInTheDocument();
+    expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
   });
 
   it('permet de monter de niveau depuis la fiche', async () => {

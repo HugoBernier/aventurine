@@ -473,6 +473,20 @@ réponse. Elle est écrite (`isOptionKnown`), et une réponse endormie garde sa
 place dans le créneau — sinon le joueur en choisissait une de plus, que le
 retour du pack lui reprenait.
 
+**Tranche 2 faite.** Une voie s'écrit dans le créateur — son nom, sa phrase,
+ses trois repères, ses aptitudes niveau par niveau — et nomme la classe du SRD
+à laquelle elle s'ajoute. `catalogueWithPacks` la verse dans les `subclasses`
+de cette classe, et rien en aval ne change : le créneau qui la propose est
+celui que la classe ouvrait déjà, et la voie du SRD reste à côté. Ce qu'une
+sous-classe porte et que cette version ne sait pas encore écrire — maîtrises,
+sorts toujours préparés, défense sans armure, points de vie, choix ouverts —
+est **refusé** à l'import plutôt que tu, comme les races et les classes.
+
+La marque de provenance descend maintenant jusqu'à la **ligne d'aptitude de la
+fiche**, comme le §13.6 le demandait : chaque aptitude porte l'identifiant de
+ce qui la donne (`SheetFeature.fromId`), donc « Voile » affiche « Les Brumes de
+Karn » sous son nom là où « Expertise » n'affiche rien.
+
 ---
 
 ## 10. Ce que la charte devra dire

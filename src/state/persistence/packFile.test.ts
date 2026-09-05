@@ -35,6 +35,7 @@ const karn: ContentPack = {
       classes: ['clerc'],
     },
   ],
+  subclasses: [],
 };
 
 describe('le fichier d’un pack', () => {
@@ -88,7 +89,7 @@ describe('le fichier d’un pack', () => {
     });
     expect(readPackFile(broken, MINI_CATALOGUE)).toEqual({
       kind: 'invalid',
-      issues: [{ kind: 'bad-prefix', at: 1, entry: 'appel-des-brumes' }],
+      issues: [{ kind: 'bad-prefix', at: 1, entry: 'appel-des-brumes', what: 'spell' }],
     });
   });
 

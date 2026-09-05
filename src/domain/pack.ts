@@ -1,4 +1,4 @@
-import type { Spell } from './content';
+import type { Spell, Subclass } from './content';
 
 /**
  * Un pack de contenu maison : un fichier, un supplément. Ce n'est pas une
@@ -20,9 +20,26 @@ export interface PackInfo {
   readonly updatedAt: string;
 }
 
+/**
+ * Une sous-classe greffée : elle vit dans un pack, mais se propose sous une
+ * classe qui existe déjà. C'est le homebrew le plus courant — un collège de
+ * barde, un domaine de clerc — et il n'invente pas de classe.
+ *
+ * On n'écrase aucun champ, on ajoute à une liste : la classe garde son dé de
+ * vie, ses sauvegardes et ses aptitudes, et gagne une voie de plus. Modifier un
+ * champ rendrait un personnage ambigu ; ajouter une option ne change rien à ce
+ * qui existe.
+ */
+export interface GraftedSubclass {
+  /** La classe visée, du SRD : `barde`. Le champ `for` du fichier. */
+  readonly forClassId: string;
+  readonly subclass: Subclass;
+}
+
 export interface ContentPack {
   readonly info: PackInfo;
   readonly spells: readonly Spell[];
+  readonly subclasses: readonly GraftedSubclass[];
 }
 
 /**
@@ -31,27 +48,28 @@ export interface ContentPack {
  * pointer le champ fautif — c'est la même fonction qui juge des deux côtés.
  *
  * `at` est le rang de l'entrée dans son tableau, 1 en tête ; `entry` son
- * identifiant s'il est lisible, sinon le nom, sinon vide. Le domaine ne
- * rédige pas : il donne de quoi nommer.
+ * identifiant s'il est lisible, sinon le nom, sinon vide ; `what` le genre
+ * d'entrée, pour que la phrase sache dire « Sort » ou « Sous-classe ». Le
+ * domaine ne rédige pas : il donne de quoi nommer.
  */
+export type PackEntryKind = 'spell' | 'subclass';
+
+interface AtEntry {
+  readonly at: number;
+  readonly entry: string;
+  readonly what: PackEntryKind;
+}
+
 export type PackIssue =
   | { readonly kind: 'not-a-pack' }
   | { readonly kind: 'bad-pack-id'; readonly value: string }
   | { readonly kind: 'missing-name' }
-  | {
-      readonly kind: 'missing-field';
-      readonly at: number;
-      readonly entry: string;
-      readonly field: string;
-    }
-  | { readonly kind: 'bad-prefix'; readonly at: number; readonly entry: string }
-  | { readonly kind: 'duplicate-id'; readonly at: number; readonly entry: string }
-  | {
-      readonly kind: 'unknown-class';
-      readonly at: number;
-      readonly entry: string;
-      readonly value: string;
-    }
+  | ({ readonly kind: 'missing-field'; readonly field: string } & AtEntry)
+  | ({ readonly kind: 'bad-prefix' } & AtEntry)
+  | ({ readonly kind: 'duplicate-id' } & AtEntry)
+  | ({ readonly kind: 'unknown-class'; readonly value: string } & AtEntry)
+  /** Un champ que cette version ne sait pas encore porter, et ne taira pas. */
+  | ({ readonly kind: 'field-not-yet-supported'; readonly field: string } & AtEntry)
   /** Un genre de contenu que cette version ne sait pas encore lire. */
   | { readonly kind: 'not-yet-supported'; readonly section: string };
 

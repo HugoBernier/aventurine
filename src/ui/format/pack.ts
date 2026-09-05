@@ -1,4 +1,4 @@
-import type { ContentPack, PackIssue } from '../../domain/pack';
+import type { ContentPack, PackEntryKind, PackIssue } from '../../domain/pack';
 import type { PackFileResult } from '../../state/persistence/packFile';
 import { counted } from './plural';
 
@@ -16,11 +16,29 @@ const FIELDS: Readonly<Record<string, string>> = {
   summary: 'il lui manque un résumé',
   classes: 'aucune classe ne peut le lancer',
   sort: 'ce n’est pas un sort',
+  blurb: 'il lui manque sa phrase de présentation',
+  for: 'elle ne dit pas à quelle classe elle s’ajoute',
+  features: 'il lui faut au moins une aptitude, avec son niveau, son nom et son texte',
+  'sous-classe': 'ce n’est pas une sous-classe',
+};
+
+/** Ce que cette version ne sait pas encore porter, dit dans les mots du jeu. */
+const FIELDS_TO_COME: Readonly<Record<string, string>> = {
+  proficiencies: 'donner des maîtrises',
+  alwaysPreparedSpells: 'donner des sorts toujours préparés',
+  unarmoredDefense: 'donner une défense sans armure',
+  bonusHitPointsPerLevel: 'donner des points de vie en plus',
+  choices: 'ouvrir un choix au joueur',
+};
+
+const WHAT: Readonly<Record<PackEntryKind, string>> = {
+  spell: 'Sort',
+  subclass: 'Sous-classe',
 };
 
 /** « Sort n° 3 » quand rien ne le nomme, « Sort « karn-brume » » sinon. */
-function entryOf(at: number, entry: string): string {
-  return entry === '' ? `Sort n° ${String(at)}` : `Sort « ${entry} »`;
+function entryOf(at: number, entry: string, what: PackEntryKind): string {
+  return entry === '' ? `${WHAT[what]} n° ${String(at)}` : `${WHAT[what]} « ${entry} »`;
 }
 
 /** Une raison, une phrase. Le domaine constate ; ici on le dit. */
@@ -36,19 +54,22 @@ export function formatPackIssue(issue: PackIssue): string {
       return 'Le pack n’a pas de nom : sans lui, rien ne le désigne dans la liste.';
     }
     case 'missing-field': {
-      return `${entryOf(issue.at, issue.entry)} : ${FIELDS[issue.field] ?? 'un champ manque'}.`;
+      return `${entryOf(issue.at, issue.entry, issue.what)} : ${FIELDS[issue.field] ?? 'un champ manque'}.`;
     }
     case 'bad-prefix': {
-      return `${entryOf(issue.at, issue.entry)} : son identifiant doit commencer par celui du pack, c’est ce qui empêche deux packs de se marcher dessus.`;
+      return `${entryOf(issue.at, issue.entry, issue.what)} : son identifiant doit commencer par celui du pack, c’est ce qui empêche deux packs de se marcher dessus.`;
     }
     case 'duplicate-id': {
-      return `${entryOf(issue.at, issue.entry)} : cet identifiant est déjà pris dans ce pack.`;
+      return `${entryOf(issue.at, issue.entry, issue.what)} : cet identifiant est déjà pris dans ce pack.`;
     }
     case 'unknown-class': {
-      return `${entryOf(issue.at, issue.entry)} : « ${issue.value} » n’est pas une classe que cette version connaît.`;
+      return `${entryOf(issue.at, issue.entry, issue.what)} : « ${issue.value} » n’est pas une classe que cette version connaît.`;
+    }
+    case 'field-not-yet-supported': {
+      return `${entryOf(issue.at, issue.entry, issue.what)} : cette version ne sait pas encore ${FIELDS_TO_COME[issue.field] ?? 'porter ce champ'}. Retire-le du fichier, ou attends la version qui le lira.`;
     }
     case 'not-yet-supported': {
-      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait encore lire que les sorts.`;
+      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait lire que les sorts et les sous-classes.`;
     }
   }
 }
@@ -97,7 +118,13 @@ export function formatPackDate(updatedAt: string): string {
 
 /** Ce que le pack apporte, compté : c'est ce qu'on veut savoir avant d'installer. */
 export function formatPackContents(pack: ContentPack): string {
-  return counted(pack.spells.length, 'sort', 'sorts');
+  const parts = [
+    pack.spells.length === 0 ? null : counted(pack.spells.length, 'sort', 'sorts'),
+    pack.subclasses.length === 0
+      ? null
+      : counted(pack.subclasses.length, 'sous-classe', 'sous-classes'),
+  ].filter((part): part is string => part !== null);
+  return parts.length === 0 ? 'rien pour l’instant' : parts.join(' · ');
 }
 
 /**

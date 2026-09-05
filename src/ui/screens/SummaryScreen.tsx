@@ -21,6 +21,7 @@ import {
 import { AFFILIATION_NOTICE, SRD_ATTRIBUTION_FR } from '../../data/attribution';
 import { usePacks } from '../../state/PacksProvider';
 import { Notice } from '../components/Notice';
+import { Provenance } from '../components/Provenance';
 import { saveFile } from '../saveFile';
 import { PlaySection } from './PlaySection';
 import { PrintBoxes } from './PrintBoxes';
@@ -367,7 +368,10 @@ export function SummaryScreen({
                           <span className={styles.featureValue}>{feature.value}</span>
                         )}
                       </dt>
-                      <dd className={styles.featureText}>{feature.text}</dd>
+                      <dd className={styles.featureText}>
+                        <Provenance id={feature.fromId} />
+                        {feature.text}
+                      </dd>
                     </div>
                   ))}
                 </dl>

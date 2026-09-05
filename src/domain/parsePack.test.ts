@@ -78,25 +78,37 @@ describe('la lecture d’un pack de contenu', () => {
 
   it('exige le préfixe du pack sur tout ce qu’il définit', () => {
     expect(issuesOfSpells(spell({ id: 'appel-des-brumes' }))).toEqual([
-      { kind: 'bad-prefix', at: 1, entry: 'appel-des-brumes' },
+      { kind: 'bad-prefix', at: 1, entry: 'appel-des-brumes', what: 'spell' },
     ]);
   });
 
   it('nomme le champ manquant, et le rang de l’entrée', () => {
     expect(issuesOfSpells(spell(), spell({ id: 'karn-x', summary: '' }))).toEqual([
-      { kind: 'missing-field', at: 2, entry: 'karn-x', field: 'summary' },
+      { kind: 'missing-field', at: 2, entry: 'karn-x', what: 'spell', field: 'summary' },
     ]);
   });
 
   it('refuse un niveau de sort hors des dix du SRD', () => {
     expect(issuesOfSpells(spell({ level: 10 }))).toEqual([
-      { kind: 'missing-field', at: 1, entry: 'karn-appel-des-brumes', field: 'level' },
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-appel-des-brumes',
+        what: 'spell',
+        field: 'level',
+      },
     ]);
   });
 
   it('refuse une école de magie inventée', () => {
     expect(issuesOfSpells(spell({ school: 'brumes' }))).toEqual([
-      { kind: 'missing-field', at: 1, entry: 'karn-appel-des-brumes', field: 'school' },
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-appel-des-brumes',
+        what: 'spell',
+        field: 'school',
+      },
     ]);
   });
 
@@ -115,12 +127,14 @@ describe('la lecture d’un pack de contenu', () => {
         kind: 'unknown-class',
         at: 1,
         entry: 'karn-appel-des-brumes',
+        what: 'spell',
         value: 'karn-brumeur',
       },
       {
         kind: 'missing-field',
         at: 1,
         entry: 'karn-appel-des-brumes',
+        what: 'spell',
         field: 'classes',
       },
     ]);
@@ -128,7 +142,7 @@ describe('la lecture d’un pack de contenu', () => {
 
   it('refuse deux fois le même identifiant : les réponses basculeraient', () => {
     expect(issuesOfSpells(spell(), spell())).toEqual([
-      { kind: 'duplicate-id', at: 2, entry: 'karn-appel-des-brumes' },
+      { kind: 'duplicate-id', at: 2, entry: 'karn-appel-des-brumes', what: 'spell' },
     ]);
   });
 
@@ -150,5 +164,123 @@ describe('la lecture d’un pack de contenu', () => {
     if (parsed.kind !== 'ok') throw new Error('pack refusé');
     expect(Object.keys(parsed.pack.spells[0] ?? {})).not.toContain('pollue');
     expect(({} as Record<string, unknown>).pollue).toBeUndefined();
+  });
+});
+
+const subclass = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
+  id: 'karn-college-des-brumes',
+  name: 'Collège des brumes',
+  blurb: 'Tu chantes ce que la brume cache, et elle t’obéit.',
+  for: 'clerc',
+  facts: ['Voile de brume', 'Chant sourd', 'Pas silencieux'],
+  features: [
+    { level: 3, name: 'Voile', text: 'Tu te caches dans une brume que tu appelles.' },
+  ],
+  ...over,
+});
+
+const issuesOfSubclasses = (...subclasses: readonly unknown[]): readonly PackIssue[] =>
+  issuesOf(file({ subclasses }));
+
+describe('une sous-classe greffée', () => {
+  it('s’ajoute à une classe qui existe, sans rien y remplacer', () => {
+    const parsed = parsePack(file({ subclasses: [subclass()] }), MINI_CATALOGUE);
+    expect(parsed.kind).toBe('ok');
+    if (parsed.kind !== 'ok') return;
+    const [grafted] = parsed.pack.subclasses;
+    expect(grafted?.forClassId).toBe('clerc');
+    expect(grafted?.subclass.name).toBe('Collège des brumes');
+    expect(grafted?.subclass.features).toEqual([
+      { level: 3, name: 'Voile', text: 'Tu te caches dans une brume que tu appelles.' },
+    ]);
+  });
+
+  it('exige de savoir à quelle classe elle s’ajoute', () => {
+    expect(issuesOfSubclasses(subclass({ for: '' }))).toEqual([
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-college-des-brumes',
+        what: 'subclass',
+        field: 'for',
+      },
+    ]);
+  });
+
+  it('refuse de se greffer sur une classe qui n’existe pas', () => {
+    expect(issuesOfSubclasses(subclass({ for: 'karn-brumeur' }))).toEqual([
+      {
+        kind: 'unknown-class',
+        at: 1,
+        entry: 'karn-college-des-brumes',
+        what: 'subclass',
+        value: 'karn-brumeur',
+      },
+    ]);
+  });
+
+  it('exige au moins une aptitude : une voie vide n’en est pas une', () => {
+    expect(issuesOfSubclasses(subclass({ features: [] }))).toEqual([
+      {
+        kind: 'missing-field',
+        at: 1,
+        entry: 'karn-college-des-brumes',
+        what: 'subclass',
+        field: 'features',
+      },
+    ]);
+  });
+
+  it('refuse une aptitude sans niveau jouable', () => {
+    const broken = subclass({ features: [{ level: 0, name: 'Voile', text: 'Rien.' }] });
+    expect(issuesOfSubclasses(broken)).toHaveLength(1);
+  });
+
+  it('remplace les repères absents par un tiret, sans en faire une faute', () => {
+    const parsed = parsePack(
+      file({ subclasses: [subclass({ facts: ['Voile'] })] }),
+      MINI_CATALOGUE,
+    );
+    if (parsed.kind !== 'ok') throw new Error('pack refusé');
+    expect(parsed.pack.subclasses[0]?.subclass.facts).toEqual(['Voile', '—', '—']);
+  });
+
+  it('refuse plutôt que de perdre un champ qu’il ne sait pas encore porter', () => {
+    const withSpells = subclass({ alwaysPreparedSpells: ['lumiere'] });
+    expect(issuesOfSubclasses(withSpells)).toEqual([
+      {
+        kind: 'field-not-yet-supported',
+        at: 1,
+        entry: 'karn-college-des-brumes',
+        what: 'subclass',
+        field: 'alwaysPreparedSpells',
+      },
+    ]);
+  });
+
+  it('ne bronche pas sur ces mêmes champs laissés vides', () => {
+    const empty = subclass({
+      proficiencies: null,
+      alwaysPreparedSpells: [],
+      unarmoredDefense: null,
+      bonusHitPointsPerLevel: 0,
+      choices: [],
+    });
+    expect(parsePack(file({ subclasses: [empty] }), MINI_CATALOGUE).kind).toBe('ok');
+  });
+
+  it('partage le jeu d’identifiants avec les sorts', () => {
+    // Un sort et une sous-classe du même nom rendraient la provenance
+    // ambiguë : le préfixe protège d'un autre pack, pas de soi-même.
+    const clash = subclass({ id: 'karn-appel-des-brumes' });
+    const both = file({ spells: [spell()], subclasses: [clash] });
+    expect(issuesOf(both)).toEqual([
+      {
+        kind: 'duplicate-id',
+        at: 1,
+        entry: 'karn-appel-des-brumes',
+        what: 'subclass',
+      },
+    ]);
   });
 });

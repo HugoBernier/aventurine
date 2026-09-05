@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import { catalogueWithPacks } from './packCatalogue';
-import { spellsForClass } from './catalogue';
-import type { ContentPack } from './pack';
+import { findClass, spellsForClass } from './catalogue';
+import type { ContentPack, GraftedSubclass } from './pack';
 
 const pack: ContentPack = {
   info: {
@@ -28,6 +28,7 @@ const pack: ContentPack = {
       classes: ['clerc'],
     },
   ],
+  subclasses: [],
 };
 
 describe('le catalogue augmenté des packs', () => {
@@ -46,6 +47,55 @@ describe('le catalogue augmenté des packs', () => {
     catalogueWithPacks(MINI_CATALOGUE, [pack]);
     expect(MINI_CATALOGUE.spells.map((entry) => entry.id)).not.toContain(
       'karn-appel-des-brumes',
+    );
+  });
+});
+
+const college: GraftedSubclass = {
+  forClassId: 'clerc',
+  subclass: {
+    id: 'karn-domaine-des-brumes',
+    name: 'Domaine des Brumes',
+    blurb: 'Ton dieu parle dans le brouillard.',
+    facts: ['Voile', 'Chant sourd', '—'],
+    features: [{ level: 1, name: 'Voile', text: 'Tu appelles la brume.' }],
+    proficiencies: null,
+    alwaysPreparedSpells: [],
+    unarmoredDefense: null,
+    bonusHitPointsPerLevel: 0,
+    choices: [],
+  },
+};
+
+const grafting: ContentPack = { ...pack, spells: [], subclasses: [college] };
+
+describe('une sous-classe greffée sur une classe du SRD', () => {
+  it('vient s’ajouter aux voies de cette classe', () => {
+    const augmented = catalogueWithPacks(MINI_CATALOGUE, [grafting]);
+    const cleric = findClass(augmented, 'clerc');
+    expect(cleric?.subclasses.map((entry) => entry.id)).toContain(
+      'karn-domaine-des-brumes',
+    );
+  });
+
+  it('n’enlève ni ne remplace aucune voie du SRD', () => {
+    const before = findClass(MINI_CATALOGUE, 'clerc')?.subclasses ?? [];
+    const after =
+      findClass(catalogueWithPacks(MINI_CATALOGUE, [grafting]), 'clerc')?.subclasses ??
+      [];
+    expect(after.slice(0, before.length)).toEqual(before);
+    expect(after).toHaveLength(before.length + 1);
+  });
+
+  it('ne touche pas aux classes qu’elle ne vise pas', () => {
+    const augmented = catalogueWithPacks(MINI_CATALOGUE, [grafting]);
+    expect(findClass(augmented, 'roublard')).toBe(findClass(MINI_CATALOGUE, 'roublard'));
+  });
+
+  it('laisse le catalogue d’origine intact quand le pack s’en va', () => {
+    catalogueWithPacks(MINI_CATALOGUE, [grafting]);
+    expect(findClass(MINI_CATALOGUE, 'clerc')?.subclasses.map((e) => e.id)).not.toContain(
+      'karn-domaine-des-brumes',
     );
   });
 });

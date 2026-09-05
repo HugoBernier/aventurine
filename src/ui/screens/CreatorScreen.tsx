@@ -2,11 +2,14 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
   emptySpellDraft,
+  emptySubclassDraft,
   packDraftFile,
   parsePackDraft,
   slug,
 } from '../../domain/packDraft';
-import type { PackDraft, SpellDraft } from '../../domain/packDraft';
+import type { PackDraft, SpellDraft, SubclassDraft } from '../../domain/packDraft';
+import { findClass } from '../../domain/catalogue';
+import type { Catalogue } from '../../domain/catalogue';
 import { parsePack } from '../../domain/parsePack';
 import { useCatalogue } from '../../state/hooks';
 import { savePackDraft } from '../../state/persistence/creatorStorage';
@@ -15,13 +18,20 @@ import { Explainer } from '../components/Explainer';
 import { Notice } from '../components/Notice';
 import { TextField } from '../components/TextField';
 import { formatPackIssue } from '../format/pack';
+import { counted } from '../format/plural';
 import { formatSchool } from '../format/spellSchool';
 import { saveFile } from '../saveFile';
 import { SpellForm } from './SpellForm';
+import { SubclassForm } from './SubclassForm';
 import styles from './CreatorScreen.module.css';
 
 const LEVEL_LABEL = (level: number): string =>
   level === 0 ? 'Tour de magie' : `Niveau ${String(level)}`;
+
+/** Le nom de la classe visée, ou l'aveu qu'aucune ne l'est encore. */
+function formatClassName(catalogue: Catalogue, classId: string): string {
+  return findClass(catalogue, classId)?.name ?? 'Classe à choisir';
+}
 
 export interface CreatorScreenProps {
   readonly draft: PackDraft;
@@ -37,6 +47,7 @@ export interface CreatorScreenProps {
 export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNode {
   const catalogue = useCatalogue();
   const [editing, setEditing] = useState<SpellDraft | null>(null);
+  const [editingVoie, setEditingVoie] = useState<SubclassDraft | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const update = (parts: Partial<PackDraft>): void => {
@@ -45,11 +56,36 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
     savePackDraft(next);
   };
 
+  const packId = draft.id === '' ? 'pack' : draft.id;
+
+  if (editingVoie !== null) {
+    return (
+      <SubclassForm
+        subclass={editingVoie}
+        packId={packId}
+        onSave={(subclass) => {
+          const isKnown = draft.subclasses.some((entry) => entry.id === subclass.id);
+          update({
+            subclasses: isKnown
+              ? draft.subclasses.map((entry) =>
+                  entry.id === subclass.id ? subclass : entry,
+                )
+              : [...draft.subclasses, subclass],
+          });
+          setEditingVoie(null);
+        }}
+        onCancel={() => {
+          setEditingVoie(null);
+        }}
+      />
+    );
+  }
+
   if (editing !== null) {
     return (
       <SpellForm
         spell={editing}
-        packId={draft.id === '' ? 'pack' : draft.id}
+        packId={packId}
         onSave={(spell) => {
           const isKnown = draft.spells.some((entry) => entry.id === spell.id);
           update({
@@ -188,6 +224,63 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         }}
       >
         + Écrire un sort
+      </button>
+
+      <h2 className={styles.heading}>Tes voies</h2>
+      <p className={styles.hint}>
+        Une voie s’ajoute à une classe qui existe — un collège de barde, un domaine de
+        clerc. Elle ne change rien à cette classe : elle lui donne un choix de plus.
+      </p>
+      {draft.subclasses.length === 0 ? (
+        <p className={styles.empty}>Tu n’as pas encore écrit de voie.</p>
+      ) : (
+        <ul className={styles.list}>
+          {draft.subclasses.map((subclass) => (
+            <li className={styles.item} key={subclass.id}>
+              <span className={styles.name}>
+                {subclass.name === '' ? 'Sans nom' : subclass.name}
+              </span>
+              <p className={styles.facts}>
+                {formatClassName(catalogue, subclass.forClassId)} ·{' '}
+                {counted(subclass.features.length, 'aptitude', 'aptitudes')}
+              </p>
+              <span className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    setEditingVoie(subclass);
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    update({
+                      subclasses: draft.subclasses.filter(
+                        (entry) => entry.id !== subclass.id,
+                      ),
+                    });
+                  }}
+                >
+                  Retirer
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          setEditingVoie(emptySubclassDraft());
+        }}
+      >
+        + Écrire une voie
       </button>
 
       {missing.length > 0 && (
