@@ -50,6 +50,7 @@ const karn: ContentPack = {
   spells: [],
   subclasses: [],
   races: [],
+  backgrounds: [],
 };
 
 describe('ce qu’on dit d’un pack', () => {

@@ -32,6 +32,7 @@ const pack: ContentPack = {
   ],
   subclasses: [],
   races: [],
+  backgrounds: [],
 };
 
 describe('le catalogue augmenté des packs', () => {

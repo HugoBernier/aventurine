@@ -4,7 +4,6 @@ import { counted } from './plural';
 
 const SECTIONS: Readonly<Record<string, string>> = {
   classes: 'des classes',
-  backgrounds: 'des historiques',
 };
 
 const FIELDS: Readonly<Record<string, string>> = {
@@ -24,6 +23,8 @@ const FIELDS: Readonly<Record<string, string>> = {
   speed: 'il lui manque une vitesse de déplacement',
   choices: 'un de ses choix est mal écrit : son genre, son sujet, son titre ou sa liste',
   prefix: 'son identifiant doit commencer par celui du pack',
+  historique: 'ce n’est pas un historique',
+  feature: 'son aptitude n’a pas de nom ou pas de texte',
 };
 
 /** Ce que cette version ne sait pas encore porter, dit dans les mots du jeu. */
@@ -33,6 +34,9 @@ const FIELDS_TO_COME: Readonly<Record<string, string>> = {
   unarmoredDefense: 'donner une défense sans armure',
   bonusHitPointsPerLevel: 'donner des points de vie en plus',
   choices: 'ouvrir un choix au joueur',
+  armor: 'donner une maîtrise d’armure à un historique',
+  weapons: 'donner une maîtrise d’arme à un historique',
+  weaponCategories: 'donner une catégorie d’armes à un historique',
 };
 
 const WHAT: Readonly<Record<PackEntryKind, string>> = {
@@ -40,6 +44,7 @@ const WHAT: Readonly<Record<PackEntryKind, string>> = {
   subclass: 'Sous-classe',
   race: 'Peuple',
   subrace: 'Branche',
+  background: 'Historique',
 };
 
 /** « Sort n° 3 » quand rien ne le nomme, « Sort « karn-brume » » sinon. */
@@ -75,7 +80,7 @@ export function formatPackIssue(issue: PackIssue): string {
       return `${entryOf(issue.at, issue.entry, issue.what)} : cette version ne sait pas encore ${FIELDS_TO_COME[issue.field] ?? 'porter ce champ'}. Retire-le du fichier, ou attends la version qui le lira.`;
     }
     case 'not-yet-supported': {
-      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait lire que les sorts, les sous-classes et les peuples.`;
+      return `Ce pack contient ${SECTIONS[issue.section] ?? 'du contenu'} : cette version d’Aventurine ne sait pas encore les lire.`;
     }
   }
 }
@@ -130,6 +135,9 @@ export function formatPackContents(pack: ContentPack): string {
       ? null
       : counted(pack.subclasses.length, 'sous-classe', 'sous-classes'),
     pack.races.length === 0 ? null : counted(pack.races.length, 'peuple', 'peuples'),
+    pack.backgrounds.length === 0
+      ? null
+      : counted(pack.backgrounds.length, 'historique', 'historiques'),
   ].filter((part): part is string => part !== null);
   return parts.length === 0 ? 'rien pour l’instant' : parts.join(' · ');
 }

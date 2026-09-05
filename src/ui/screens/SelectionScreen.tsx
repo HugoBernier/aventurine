@@ -78,7 +78,10 @@ const CONFIG: Record<SelectionKind, SelectionConfig> = {
     legend: 'Choisis ton historique',
     help: {
       label: 'C’est quoi un « historique » ?',
-      body: 'Ce que tu faisais avant de partir à l’aventure. Il te donne des compétences, du matériel et de quoi jouer ton personnage. Seul l’Acolyte figure tel quel dans le SRD 5.1 : les autres sont écrits pour Aventurine à partir des règles générales d’historique.',
+      // « les autres sont écrits pour Aventurine » cessait d'être vrai dès
+      // qu'un pack en ajoutait un : ceux-là sont écrits par un joueur, et
+      // portent le nom de leur pack sous le leur.
+      body: 'Ce que tu faisais avant de partir à l’aventure. Il te donne des compétences, du matériel et de quoi jouer ton personnage. Seul l’Acolyte figure tel quel dans le SRD 5.1 : les autres sont écrits à partir des règles générales d’historique — par Aventurine, ou par le pack dont ils portent le nom.',
     },
     factLabels: ['Compétences', 'Outils et langues', 'Équipement de départ'],
     entries: (catalogue) => catalogue.backgrounds,

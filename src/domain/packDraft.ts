@@ -98,6 +98,30 @@ export interface RaceDraft {
   readonly subraces: readonly SubraceDraft[];
 }
 
+export interface EquipmentDraft {
+  readonly itemId: string;
+  readonly quantity: number;
+}
+
+export interface BackgroundDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly blurb: string;
+  readonly facts: readonly [string, string, string];
+  readonly skills: readonly string[];
+  readonly tools: readonly string[];
+  readonly choices: readonly ChoiceDraft[];
+  readonly equipment: readonly EquipmentDraft[];
+  readonly goldPieces: number;
+  /** Une seule, et facultative : le nom vide veut dire « aucune ». */
+  readonly featureName: string;
+  readonly featureText: string;
+  readonly traits: readonly string[];
+  readonly ideals: readonly string[];
+  readonly bonds: readonly string[];
+  readonly flaws: readonly string[];
+}
+
 export interface PackDraft {
   readonly id: string;
   readonly name: string;
@@ -106,6 +130,7 @@ export interface PackDraft {
   readonly spells: readonly SpellDraft[];
   readonly subclasses: readonly SubclassDraft[];
   readonly races: readonly RaceDraft[];
+  readonly backgrounds: readonly BackgroundDraft[];
 }
 
 export function emptyPackDraft(): PackDraft {
@@ -117,6 +142,27 @@ export function emptyPackDraft(): PackDraft {
     spells: [],
     subclasses: [],
     races: [],
+    backgrounds: [],
+  };
+}
+
+export function emptyBackgroundDraft(): BackgroundDraft {
+  return {
+    id: '',
+    name: '',
+    blurb: '',
+    facts: ['', '', ''],
+    skills: [],
+    tools: [],
+    choices: [],
+    equipment: [],
+    goldPieces: 10,
+    featureName: '',
+    featureText: '',
+    traits: [],
+    ideals: [],
+    bonds: [],
+    flaws: [],
   };
 }
 
@@ -252,7 +298,6 @@ export function packDraftFile(
       updatedAt,
     },
     classes: [],
-    backgrounds: [],
     spells: draft.spells.map((spell) => ({
       id: spell.id,
       name: spell.name,
@@ -306,6 +351,27 @@ export function packDraftFile(
         features: subrace.features.map((f) => ({ name: f.name, text: f.text })),
         choices: subrace.choices.map((choice) => choiceFile(choice)),
       })),
+    })),
+    backgrounds: draft.backgrounds.map((background) => ({
+      id: background.id,
+      name: background.name,
+      blurb: background.blurb,
+      facts: background.facts,
+      skills: background.skills,
+      proficiencies: { tools: background.tools },
+      choices: background.choices.map((choice) => choiceFile(choice)),
+      equipment: background.equipment,
+      goldPieces: background.goldPieces,
+      feature:
+        background.featureName === ''
+          ? null
+          : { name: background.featureName, text: background.featureText },
+      suggestedTraits: {
+        traits: background.traits,
+        ideals: background.ideals,
+        bonds: background.bonds,
+        flaws: background.flaws,
+      },
     })),
     subclasses: draft.subclasses.map((subclass) => ({
       id: subclass.id,
@@ -480,6 +546,34 @@ function asRaceDraft(value: unknown): RaceDraft {
   };
 }
 
+function asBackgroundDraft(value: unknown): BackgroundDraft {
+  const source = isRecord(value) ? value : {};
+  const proficiencies = isRecord(source.proficiencies) ? source.proficiencies : {};
+  const traits = isRecord(source.suggestedTraits) ? source.suggestedTraits : {};
+  const feature = isRecord(source.feature) ? source.feature : {};
+  const equipment = Array.isArray(source.equipment) ? source.equipment.slice(0, 20) : [];
+  return {
+    id: asText(source.id),
+    name: asText(source.name),
+    blurb: asText(source.blurb),
+    facts: asFacts(source.facts),
+    skills: asStrings(source.skills),
+    tools: asStrings(proficiencies.tools),
+    choices: asChoiceDrafts(source.choices),
+    equipment: equipment.map((line) => {
+      const entry = isRecord(line) ? line : {};
+      return { itemId: asText(entry.itemId), quantity: asNumber(entry.quantity, 1) };
+    }),
+    goldPieces: asNumber(source.goldPieces, 0),
+    featureName: asText(feature.name),
+    featureText: asText(feature.text),
+    traits: asStrings(traits.traits),
+    ideals: asStrings(traits.ideals),
+    bonds: asStrings(traits.bonds),
+    flaws: asStrings(traits.flaws),
+  };
+}
+
 /**
  * Relit un fichier POUR L'ÉCRIRE, pas pour l'installer : ici l'incomplet est
  * normal, donc rien n'est refusé et tout ce qui manque devient un champ vide.
@@ -506,6 +600,9 @@ export function parsePackDraft(value: unknown): PackDraft {
       : [],
     races: Array.isArray(value.races)
       ? value.races.slice(0, 100).map((entry) => asRaceDraft(entry))
+      : [],
+    backgrounds: Array.isArray(value.backgrounds)
+      ? value.backgrounds.slice(0, 100).map((entry) => asBackgroundDraft(entry))
       : [],
   };
 }

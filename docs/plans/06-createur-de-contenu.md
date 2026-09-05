@@ -4,8 +4,8 @@
 > prises (§12 et §13) et la charte est à jour (§10).
 >
 > **Écrit :** la règle de purge du §7, l'export/import d'un personnage, et les
-> tranches 1 à 3 — sorts, sous-classes greffées, peuples — voir §9.
-> **Reste :** historiques, classes entières.
+> tranches 1 à 4 — sorts, sous-classes greffées, peuples, historiques — voir §9.
+> **Reste :** les classes entières.
 > **Ouvert :** le point 10 du §13, à trancher avec la tranche « classes ».
 
 Un écran où l'on fabrique ses races, ses classes et ses sorts. Il produit un
@@ -441,7 +441,7 @@ Chaque tranche est utilisable seule et laisse l'application verte.
 | 1 | **Sorts** ✅ | Plat, sans créneau de choix, référence seulement des classes. Le banc d'essai du format et de l'import. |
 | 2 | **Sous-classes greffées** ✅ | Le homebrew le plus demandé, et **treize fois plus léger qu'une classe** : 0,9 kio et 10 champs contre 12 kio et 16. Amène les aptitudes par niveau et la troisième ligne de purge du §7. |
 | 3 | **Races** ✅ | Ajoute les créneaux (caractéristique, ascendance, tour de magie, langue, compétence, outil) et les sous-races. |
-| 4 | **Historiques** | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
+| 4 | **Historiques** ✅ | Peu de champs, mais valide le cas « une entrée qui n'est pas du SRD » déjà assumé par la charte. |
 | 5 | **Classes entières** | Dé de vie, sauvegardes, magie, équipement, paliers. Le gros morceau, en dernier, avec tout le reste éprouvé. |
 
 La sous-classe est passée **avant** les races et les classes après mesure : un
@@ -510,6 +510,26 @@ Trois choses que l'écriture a tranchées :
   avec le peuple, il donnait `karn-brumeux-brumeux-des-marais` là où le SRD
   écrit `nain-des-collines` sous `nain`. Corrigé avant que le moindre
   identifiant ne parte dans un fichier.
+
+**Tranche 4 faite.** Un historique s'écrit entièrement : compétences, outils,
+choix, équipement de départ, pièces d'or, aptitude et les quatre colonnes
+d'amorces de personnalité. C'est l'entrée la plus autonome du format — elle ne
+nomme ni classe ni peuple, seulement des compétences, des outils et des objets
+du SRD — donc un pack d'historiques seuls est un fichier parfaitement normal.
+
+Deux points tranchés en l'écrivant :
+
+- **`assembledFromGenericRules` n'est jamais lu d'un fichier et vaut toujours
+  faux.** Ce drapeau dit « écrit pour Aventurine sur les règles génériques du
+  SRD » : le revendiquer pour le contenu de quelqu'un d'autre serait faux. Le
+  nom du pack, sous celui de l'entrée, le dit mieux et plus honnêtement.
+- **La phrase de l'écran de choix a dû changer.** Elle affirmait « les autres
+  sont écrits pour Aventurine », ce qui cessait d'être vrai dès qu'un pack en
+  ajoutait un. Elle dit maintenant « par Aventurine, ou par le pack dont ils
+  portent le nom ».
+
+Un historique ne donne ni armure ni arme — aucun de ceux du SRD ne le fait —
+et un fichier qui en porte est refusé plutôt que vidé en silence.
 
 ---
 

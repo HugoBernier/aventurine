@@ -1,4 +1,4 @@
-import type { Race, Spell, Subclass } from './content';
+import type { Background, Race, Spell, Subclass } from './content';
 
 /**
  * Un pack de contenu maison : un fichier, un supplément. Ce n'est pas une
@@ -42,6 +42,8 @@ export interface ContentPack {
   readonly subclasses: readonly GraftedSubclass[];
   /** Des peuples entiers : ils s'ajoutent au choix de race, ils n'y touchent pas. */
   readonly races: readonly Race[];
+  /** L'entrée la plus autonome du format : elle ne référence ni classe ni peuple. */
+  readonly backgrounds: readonly Background[];
 }
 
 /**
@@ -54,7 +56,7 @@ export interface ContentPack {
  * d'entrée, pour que la phrase sache dire « Sort » ou « Sous-classe ». Le
  * domaine ne rédige pas : il donne de quoi nommer.
  */
-export type PackEntryKind = 'spell' | 'subclass' | 'race' | 'subrace';
+export type PackEntryKind = 'spell' | 'subclass' | 'race' | 'subrace' | 'background';
 
 interface AtEntry {
   readonly at: number;

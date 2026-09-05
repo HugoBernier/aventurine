@@ -50,6 +50,7 @@ export function catalogueWithPacks(
     // Les peuples s'ajoutent à la fin : un joueur qui vient d'installer un pack
     // retrouve les neuf du SRD là où il les a laissés (§13.8).
     races: [...base.races, ...packs.flatMap((pack) => pack.races)],
+    backgrounds: [...base.backgrounds, ...packs.flatMap((pack) => pack.backgrounds)],
     classes: withGrafts(base.classes, packs),
     spells: [...base.spells, ...packs.flatMap((pack) => pack.spells)],
   };

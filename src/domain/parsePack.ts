@@ -9,6 +9,7 @@ import type {
   PackParse,
 } from './pack';
 import type {
+  Background,
   Facts,
   LeveledFeature,
   MagicSchool,
@@ -18,6 +19,7 @@ import type {
   Subclass,
 } from './content';
 import { MAX_LEVEL, MIN_LEVEL } from './progression';
+import { parseBackground } from './parseBackground';
 import { parseRace } from './parseRace';
 
 const MAX_ID = 64;
@@ -400,6 +402,28 @@ function collectRaces(
   return kept;
 }
 
+function collectBackgrounds(
+  value: unknown,
+  prefix: string,
+  catalogue: Catalogue,
+  taken: Set<string>,
+  issues: PackIssue[],
+): readonly Background[] {
+  const kept: Background[] = [];
+  for (const [index, entry] of entriesOf(value).entries()) {
+    const parsed = parseBackground(entry, index + 1, prefix, catalogue);
+    issues.push(...parsed.issues);
+    const { background } = parsed;
+    if (
+      background !== null &&
+      isFreeId(background.id, index + 1, 'background', taken, issues)
+    ) {
+      kept.push(background);
+    }
+  }
+  return kept;
+}
+
 /**
  * La seule porte par laquelle un contenu venu d'un fichier entre dans
  * l'application. Elle sert deux fois : à l'import, où elle refuse, et dans le
@@ -421,7 +445,7 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
 
   // Les genres que cette version ne lit pas encore : les taire les perdrait
   // en silence à la réexportation, ce qui est pire que de refuser le fichier.
-  for (const section of ['classes', 'backgrounds']) {
+  for (const section of ['classes']) {
     const entries = value[section];
     if (Array.isArray(entries) && entries.length > 0) {
       issues.push({ kind: 'not-yet-supported', section });
@@ -441,8 +465,15 @@ export function parsePack(value: unknown, catalogue: Catalogue): PackParse {
     issues,
   );
   const races = collectRaces(value.races, prefix, catalogue, taken, issues);
+  const backgrounds = collectBackgrounds(
+    value.backgrounds,
+    prefix,
+    catalogue,
+    taken,
+    issues,
+  );
 
   return issues.length > 0
     ? { kind: 'invalid', issues }
-    : { kind: 'ok', pack: { info, spells, subclasses, races } };
+    : { kind: 'ok', pack: { info, spells, subclasses, races, backgrounds } };
 }

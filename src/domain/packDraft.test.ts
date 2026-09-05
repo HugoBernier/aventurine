@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MINI_CATALOGUE } from './fixtures/miniCatalogue';
 import {
+  emptyBackgroundDraft,
   emptyChoiceDraft,
   emptyPackDraft,
   emptyRaceDraft,
@@ -10,7 +11,13 @@ import {
   parsePackDraft,
   slug,
 } from './packDraft';
-import type { PackDraft, RaceDraft, SpellDraft, SubclassDraft } from './packDraft';
+import type {
+  BackgroundDraft,
+  PackDraft,
+  RaceDraft,
+  SpellDraft,
+  SubclassDraft,
+} from './packDraft';
 import { parsePack } from './parsePack';
 
 const brume: SpellDraft = {
@@ -157,5 +164,41 @@ describe('un peuple dans le brouillon', () => {
     });
     const [race] = (written as { races: { choices: Record<string, unknown>[] }[] }).races;
     expect(Object.keys(race?.choices[0] ?? {})).not.toContain('listFrom');
+  });
+});
+
+describe('un historique dans le brouillon', () => {
+  const batelier: BackgroundDraft = {
+    ...emptyBackgroundDraft(),
+    id: 'karn-batelier-des-brumes',
+    name: 'Batelier des brumes',
+    blurb: 'Tu passais les gens d’une rive à l’autre.',
+    facts: ['Perception, Survie', 'Outils de navigateur', 'Perche, 10 po'],
+    skills: ['perception', 'survie'],
+    equipment: [{ itemId: 'bouclier', quantity: 1 }],
+    goldPieces: 10,
+    featureName: 'Passeur',
+    featureText: 'On te laisse traverser sans payer.',
+    traits: ['Je parle peu.'],
+    ideals: ['Le passage est dû à tous.'],
+  };
+  const withBackground: PackDraft = { ...karn, spells: [], backgrounds: [batelier] };
+
+  it('passe la validation de l’import telle quelle', () => {
+    const parsed = parsePack(packDraftFile(withBackground, ''), MINI_CATALOGUE);
+    expect(parsed.kind === 'invalid' ? parsed.issues : []).toEqual([]);
+  });
+
+  it('revient identique après l’aller-retour', () => {
+    expect(parsePackDraft(packDraftFile(withBackground, ''))).toEqual(withBackground);
+  });
+
+  it('écrit « aucune aptitude » plutôt qu’une aptitude vide', () => {
+    const without: PackDraft = {
+      ...withBackground,
+      backgrounds: [{ ...batelier, featureName: '', featureText: '' }],
+    };
+    const written: unknown = packDraftFile(without, '');
+    expect(written).toMatchObject({ backgrounds: [{ feature: null }] });
   });
 });

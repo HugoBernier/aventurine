@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
+  emptyBackgroundDraft,
   emptyRaceDraft,
   emptySpellDraft,
   emptySubclassDraft,
@@ -9,6 +10,7 @@ import {
   slug,
 } from '../../domain/packDraft';
 import type {
+  BackgroundDraft,
   PackDraft,
   RaceDraft,
   SpellDraft,
@@ -27,6 +29,7 @@ import { formatPackIssue } from '../format/pack';
 import { counted } from '../format/plural';
 import { formatSchool } from '../format/spellSchool';
 import { saveFile } from '../saveFile';
+import { BackgroundForm } from './BackgroundForm';
 import { RaceForm } from './RaceForm';
 import { SpellForm } from './SpellForm';
 import { SubclassForm } from './SubclassForm';
@@ -56,6 +59,9 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   const [editing, setEditing] = useState<SpellDraft | null>(null);
   const [editingVoie, setEditingVoie] = useState<SubclassDraft | null>(null);
   const [editingRace, setEditingRace] = useState<RaceDraft | null>(null);
+  const [editingBackground, setEditingBackground] = useState<BackgroundDraft | null>(
+    null,
+  );
   const fileInput = useRef<HTMLInputElement>(null);
 
   const update = (parts: Partial<PackDraft>): void => {
@@ -65,6 +71,29 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
   };
 
   const packId = draft.id === '' ? 'pack' : draft.id;
+
+  if (editingBackground !== null) {
+    return (
+      <BackgroundForm
+        background={editingBackground}
+        packId={packId}
+        onSave={(background) => {
+          const isKnown = draft.backgrounds.some((entry) => entry.id === background.id);
+          update({
+            backgrounds: isKnown
+              ? draft.backgrounds.map((entry) =>
+                  entry.id === background.id ? background : entry,
+                )
+              : [...draft.backgrounds, background],
+          });
+          setEditingBackground(null);
+        }}
+        onCancel={() => {
+          setEditingBackground(null);
+        }}
+      />
+    );
+  }
 
   if (editingRace !== null) {
     return (
@@ -362,6 +391,63 @@ export function CreatorScreen({ draft, onChange }: CreatorScreenProps): ReactNod
         }}
       >
         + Écrire un peuple
+      </button>
+
+      <h2 className={styles.heading}>Tes historiques</h2>
+      <p className={styles.hint}>
+        Ce que ton personnage faisait avant de partir. C’est l’entrée la plus indépendante
+        : elle ne nomme ni classe ni peuple.
+      </p>
+      {draft.backgrounds.length === 0 ? (
+        <p className={styles.empty}>Tu n’as pas encore écrit d’historique.</p>
+      ) : (
+        <ul className={styles.list}>
+          {draft.backgrounds.map((background) => (
+            <li className={styles.item} key={background.id}>
+              <span className={styles.name}>
+                {background.name === '' ? 'Sans nom' : background.name}
+              </span>
+              <p className={styles.facts}>
+                {counted(background.skills.length, 'compétence', 'compétences')} ·{' '}
+                {String(background.goldPieces)} po
+              </p>
+              <span className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    setEditingBackground(background);
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    update({
+                      backgrounds: draft.backgrounds.filter(
+                        (entry) => entry.id !== background.id,
+                      ),
+                    });
+                  }}
+                >
+                  Retirer
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={styles.add}
+        onClick={() => {
+          setEditingBackground(emptyBackgroundDraft());
+        }}
+      >
+        + Écrire un historique
       </button>
 
       {missing.length > 0 && (

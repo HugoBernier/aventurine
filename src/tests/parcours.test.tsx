@@ -134,6 +134,37 @@ const RACE_FILE = new File(
   { type: 'application/json' },
 );
 
+/** Un historique seul : il ne nomme ni classe ni peuple, et se suffit. */
+const BACKGROUND_FILE = new File(
+  [
+    JSON.stringify({
+      aventurine: 2,
+      pack: {
+        id: 'karn',
+        name: 'Les Brumes de Karn',
+        author: 'Hugo',
+        description: '',
+        updatedAt: '2026-09-04T10:12:00.000Z',
+      },
+      backgrounds: [
+        {
+          id: 'karn-batelier-des-brumes',
+          name: 'Batelier des brumes',
+          blurb: 'Tu passais les gens d’une rive à l’autre.',
+          facts: ['Perception, Survie', 'Outils de navigateur', 'Perche, 10 po'],
+          skills: ['perception', 'survie'],
+          proficiencies: { tools: ['outils-de-navigateur'] },
+          goldPieces: 10,
+          feature: { name: 'Passeur', text: 'On te laisse traverser sans payer.' },
+          suggestedTraits: { traits: ['Je parle peu.'] },
+        },
+      ],
+    }),
+  ],
+  'pack-karn.json',
+  { type: 'application/json' },
+);
+
 const next = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Suivant ›' }));
 };
@@ -611,6 +642,32 @@ describe('parcours de création', () => {
     await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
     expect(screen.getByText('Voile natal')).toBeInTheDocument();
     expect(screen.getByText('Pas feutré')).toBeInTheDocument();
+    expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
+  });
+
+  it('ajoute un historique de pack, qui ne dépend d’aucun autre contenu', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    await user.click(screen.getByRole('button', { name: /Tes packs/ }));
+    await user.upload(screen.getByLabelText(/Installer un pack/), BACKGROUND_FILE);
+    expect(screen.getByText(/1 historique/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Revenir à l’assistant' }));
+    await user.click(screen.getByRole('radio', { name: /Humain/ }));
+    for (let step = 0; step < 14; step++) {
+      if (screen.queryByRole('radio', { name: /Batelier des brumes/ }) !== null) {
+        break;
+      }
+      await next(user);
+    }
+    // Ceux du SRD sont tous là ; celui du pack s'ajoute au bout.
+    expect(screen.getByRole('radio', { name: /Acolyte/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /Batelier des brumes/ }));
+
+    await user.click(screen.getByRole('button', { name: 'Ma fiche' }));
+    expect(screen.getByText('Passeur')).toBeInTheDocument();
     expect(screen.getAllByText('Les Brumes de Karn').length).toBeGreaterThan(0);
   });
 
